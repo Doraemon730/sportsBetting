@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
 // @desc     Authenticate user & get token
 // @access   Public
 router.post(
-  '/',
+  '/login',
   check('email', 'Please include a valid email').isEmail(),
   check('password', 'Password is required').exists(),
   async (req, res) => {
@@ -64,7 +64,7 @@ router.post(
       jwt.sign(
         payload,
         config.get('jwtSecret'),
-        { expiresIn: '5 days' },
+        { expiresIn: '24 hours' },
         (err, token) => {
           if (err) throw err;
           res.json({ token });
@@ -79,8 +79,16 @@ router.post(
 
 router.post(
   '/email',
+  check('email', 'Please include a valid email').isEmail(),
   async (req, res) => {
-    console.log("email");
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    console.log(req.body);
+    const { email } = req.body;
+    // console.log(email);
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
@@ -89,7 +97,7 @@ router.post(
         pass: process.env.FROM_PASS,
       },
     });
-    console.log(transporter);
+    // console.log(transporter);
     
     // Function to send the verification email
     const sendVerificationEmail = (email, verificationCode) => {
@@ -103,14 +111,16 @@ router.post(
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.error('Error sending email:', error);
+          res.status(400).send('Server error');
         } else {
           console.log('Email sent:', info.response);
+          res.json({res:"Mail sent, check your inbox."});
         }
       });
     };
     
     // Usage example
-    const email = 'funniestdev730@gmail.com';
+    // const email = 'test@gmail.com';
     const verificationCode = '123456'; // Generate a verification code dynamically
     sendVerificationEmail(email, verificationCode);
 

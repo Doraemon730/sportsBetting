@@ -11,20 +11,23 @@ const User = require('../../models/User');
 // @desc     Register user
 // @access   Public
 router.post(
-  '/',
-  check('name', 'Name is required').notEmpty(),
+  '/register',
   check('email', 'Please include a valid email').isEmail(),
+  check('firstName', 'First Name is required').notEmpty(),
+  check('lastName', 'Last Name is required').notEmpty(),
   check(
     'password',
     'Please enter a password with 6 or more characters'
   ).isLength({ min: 6 }),
+  //check('birthday', 'Date of Birth is required').isDate(),
   async (req, res) => {
+    console.log(req.body)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { email, firstName, lastName, password, birthday } = req.body;
 
     try {
       let user = await User.findOne({ email });
@@ -35,12 +38,11 @@ router.post(
           .json({ errors: [{ msg: 'User already exists' }] });
       }
 
-      
-
       user = new User({
-        name,
         email,
-        password
+        firstName,
+        lastName,
+        birthday
       });
 
       const salt = await bcrypt.genSalt(10);
@@ -58,7 +60,7 @@ router.post(
       jwt.sign(
         payload,
         config.get('jwtSecret'),
-        { expiresIn: '5 days' },
+        { expiresIn: '24 hours' },
         (err, token) => {
           if (err) throw err;
           res.json({ token });
