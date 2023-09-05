@@ -12,6 +12,11 @@ const BetSchema = new mongoose.Schema({
   },
   prize: {
     type: Number,
+    default: 0
+  },
+  betType: {
+    type: String,
+    enum: ['low', 'high'],
     require: true
   },
   picks: [{
