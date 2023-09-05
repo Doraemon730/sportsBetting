@@ -15,9 +15,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Define Routes
+const apiRoutes = require('./routes/api/betroutes');
 app.use('/api/auth', require('./routes/api/auth'));
 app.use('/api/users', require('./routes/api/users'));
-
+app.use('/api/bet', apiRoutes);
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder
