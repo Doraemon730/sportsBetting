@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const TeamSchema  = new mongoose.Schema({
+const TeamSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true
@@ -9,6 +9,10 @@ const TeamSchema  = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Sport',
     required: true
+  },
+  remoteId: {
+    type: String,
+    require: true
   },
   logo: String
 });

@@ -5,6 +5,10 @@ const ContestSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  remoteId: {
+    type: String,
+    require: true
+  },
   startTime: {
     type: Date,
     required: true
@@ -17,6 +21,12 @@ const ContestSchema = new mongoose.Schema({
     ref: 'Sport',
     required: true
   },
+  teams: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team'
+    }
+  ],
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

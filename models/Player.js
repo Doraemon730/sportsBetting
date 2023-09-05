@@ -10,6 +10,10 @@ const PlayerSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
+  remoteId: {
+    type: String,
+    require: true
+  },
   name: {
     type: String,
     required: true
