@@ -5,6 +5,9 @@ const ContestSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  season: {
+    type:String
+  },
   startTime: {
     type: Date,
     required: true
