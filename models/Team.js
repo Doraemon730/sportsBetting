@@ -12,7 +12,7 @@ const TeamSchema = new mongoose.Schema({
   },
   remoteId: {
     type: String,
-    require: true
+    required: true
   },
   logo: String
 });

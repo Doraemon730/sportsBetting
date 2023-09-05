@@ -7,7 +7,7 @@ const ContestSchema = new mongoose.Schema({
   },
   remoteId: {
     type: String,
-    require: true
+    required: true
   },
   startTime: {
     type: Date,
