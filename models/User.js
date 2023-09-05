@@ -28,6 +28,9 @@ const UserSchema = new mongoose.Schema({
   balance: {
     type: Number,
     default: 0
+  },
+  referralCode: {
+    type: String
   }
 });
 

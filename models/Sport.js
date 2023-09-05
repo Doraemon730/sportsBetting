@@ -5,6 +5,7 @@ const SportSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  icon: String,
   description: String,
 });
 
