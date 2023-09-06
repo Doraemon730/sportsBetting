@@ -1,15 +1,15 @@
 const Contest = require("../models/Contest");
-const Sport = require("../models/Sport");
+// const Sport = require("../models/Sport");
 
 
 const getPlayersByProps = async (req, res) => {
   // try {
   const { sportName, propName } = req.body;
 
-  const sport = await Sport.findOne({ name: sportName });
-  if (!sport) {
-    return res.status(404).json({ message: 'Sport not found' });
-  }
+  // const sport = await Sport.findOne({ name: sportName });
+  // if (!sport) {
+  //   return res.status(404).json({ message: 'Sport not found' });
+  // }
 
   const now = new Date();
   const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
@@ -65,15 +65,22 @@ const getPlayersByProps = async (req, res) => {
       },
       { $match: { [`contestPlayer.statistics.${propName}`]: { $exists: true } } },
       {
+        $addFields: {
+          contestId: '$_id',
+          contestName: '$name', // Add the contestName field from Contest collection
+        },
+      },
+      {
         $project: {
           _id: 0,
           playerId: '$contestPlayer._id',
           playerName: '$contestPlayer.name',
+          contestId: 1,
+          contestName: 1,
+          playerNumber: '$contestPlayer.jerseyNumber',
           sportName: { $arrayElemAt: ['$sportInfo.name', 0] },
           teamName: { $arrayElemAt: ['$teamInfo.name', 0] },
-          // remoteId: '$contestPlayer.remoteId',
           statistics: '$contestPlayer.statistics',
-          // playerInfo: 1,
         },
       },
     ]);
