@@ -27,7 +27,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, firstName, lastName, password, birthday } = req.body;
+    const { email, firstName, lastName, password, birthday, referralCode } = req.body;
 
     try {
       let user = await User.findOne({ email });
@@ -42,7 +42,8 @@ router.post(
         email,
         firstName,
         lastName,
-        birthday
+        birthday,
+        referralCode
       });
 
       const salt = await bcrypt.genSalt(10);

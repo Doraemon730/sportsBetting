@@ -8,33 +8,36 @@ const playerService = require('../../services/playerService');
 // Betting routes
 
 
+router.post('/bets/getPlayers', playerController.getPlayersByProps);
+
+
 
 
 
 // Route to add NBA contests to the database
-router.get('/addContests', async(req, res) => {
+router.get('/addContests', async (req, res) => {
     try {
         await contestService.addNBAContestsToDatabase();
         res.json({ message: 'NBA contests added to the database.' });
-      } catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
-      }
+    }
 });
-router.get('/addTeams', async(req, res) => {
+router.get('/addTeams', async (req, res) => {
     try {
         await teamService.addNBATeamsToDatabase();
         res.json({ message: 'NBA Teams added to the database.' });
-      } catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
-      }
+    }
 });
-router.get('/addPlayers', async(req, res) => {
+router.get('/addPlayers', async (req, res) => {
     try {
         await playerService.addNBAPlayersToDatabase();
         res.json({ message: 'NBA Players added to the database.' });
-      } catch (error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
-      }
+    }
 });
 router.get('/addPlayerNumber', async(req, res) => {
     try {
