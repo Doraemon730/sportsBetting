@@ -25,12 +25,24 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  balance: {
+  ETH_balance: {
+    type: Number,
+    default: 0
+  },
+  Fiat_balance: {
     type: Number,
     default: 0
   },
   referralCode: {
     type: String
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+  level: {
+    type: Number,
+    default: 0
   }
 });
 
