@@ -1,33 +1,41 @@
-const Player = require("../models/Player");
-const Sport = require("../models/Sport");
 const Contest = require("../models/Contest");
+const Sport = require("../models/Sport");
 
 
-async function getPlayersByProps(req, res) {
+const getPlayersByProps = async (req, res) => {
   // try {
   const { sportName, propName } = req.body;
 
-  // const sport = await Sport.findOne({ name: sportName });
-  // if (!sport) {
-  //   return res.status(404).json({ message: 'Sport not found' });
-  // }
+  const sport = await Sport.findOne({ name: sportName });
+  if (!sport) {
+    return res.status(404).json({ message: 'Sport not found' });
+  }
 
   const now = new Date();
   const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
 
   try {
     const results = await Contest.aggregate([
-      // Match contests within the specified date range
+      {
+        $lookup: {
+          from: 'sports', // The name of the Sport collection in your database
+          localField: 'sportId',
+          foreignField: '_id',
+          as: 'sport',
+        },
+      },
+      {
+        $unwind: '$sport',
+      },
       {
         $match: {
           startTime: { $gte: now, $lte: threeDaysFromNow },
+          'sport.name': sportName,
         },
       },
-      // Unwind the teams array to create separate documents for each team in a contest
       {
         $unwind: '$teams',
       },
-      // Lookup to join the players collection based on teamId
       {
         $lookup: {
           from: 'players',
@@ -36,11 +44,9 @@ async function getPlayersByProps(req, res) {
           as: 'contestPlayer',
         },
       },
-      // Unwind the contestPlayer array (since there can be multiple players in a team)
       {
         $unwind: '$contestPlayer',
       },
-      // Lookup to fetch sportName from sportId
       {
         $lookup: {
           from: 'sports',
@@ -49,7 +55,6 @@ async function getPlayersByProps(req, res) {
           as: 'sportInfo',
         },
       },
-      // Lookup to fetch teamName from teamId
       {
         $lookup: {
           from: 'teams',
@@ -58,7 +63,7 @@ async function getPlayersByProps(req, res) {
           as: 'teamInfo',
         },
       },
-      // Project the desired player fields, statistics, sportName, and teamName for the final output
+      { $match: { [`contestPlayer.statistics.${propName}`]: { $exists: true } } },
       {
         $project: {
           _id: 0,
@@ -66,12 +71,13 @@ async function getPlayersByProps(req, res) {
           playerName: '$contestPlayer.name',
           sportName: { $arrayElemAt: ['$sportInfo.name', 0] },
           teamName: { $arrayElemAt: ['$teamInfo.name', 0] },
-          remoteId: '$contestPlayer.remoteId',
+          // remoteId: '$contestPlayer.remoteId',
           statistics: '$contestPlayer.statistics',
+          // playerInfo: 1,
         },
       },
     ]);
-    console.log(results.length);
+    // console.log(results.length);
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: err.message })
