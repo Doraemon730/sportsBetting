@@ -1,9 +1,8 @@
-const Player = require("../models/Player");
-const Sport = require("../models/Sport");
 const Contest = require("../models/Contest");
+// const Sport = require("../models/Sport");
 
 
-async function getPlayersByProps(req, res) {
+const getPlayersByProps = async (req, res) => {
   // try {
   const { sportName, propName } = req.body;
 
@@ -17,17 +16,26 @@ async function getPlayersByProps(req, res) {
 
   try {
     const results = await Contest.aggregate([
-      // Match contests within the specified date range
+      {
+        $lookup: {
+          from: 'sports', // The name of the Sport collection in your database
+          localField: 'sportId',
+          foreignField: '_id',
+          as: 'sport',
+        },
+      },
+      {
+        $unwind: '$sport',
+      },
       {
         $match: {
           startTime: { $gte: now, $lte: threeDaysFromNow },
+          'sport.name': sportName,
         },
       },
-      // Unwind the teams array to create separate documents for each team in a contest
       {
         $unwind: '$teams',
       },
-      // Lookup to join the players collection based on teamId
       {
         $lookup: {
           from: 'players',
@@ -36,11 +44,9 @@ async function getPlayersByProps(req, res) {
           as: 'contestPlayer',
         },
       },
-      // Unwind the contestPlayer array (since there can be multiple players in a team)
       {
         $unwind: '$contestPlayer',
       },
-      // Lookup to fetch sportName from sportId
       {
         $lookup: {
           from: 'sports',
@@ -49,7 +55,6 @@ async function getPlayersByProps(req, res) {
           as: 'sportInfo',
         },
       },
-      // Lookup to fetch teamName from teamId
       {
         $lookup: {
           from: 'teams',
@@ -58,20 +63,29 @@ async function getPlayersByProps(req, res) {
           as: 'teamInfo',
         },
       },
-      // Project the desired player fields, statistics, sportName, and teamName for the final output
+      { $match: { [`contestPlayer.statistics.${propName}`]: { $exists: true } } },
+      {
+        $addFields: {
+          contestId: '$_id',
+          contestName: '$name', // Add the contestName field from Contest collection
+        },
+      },
       {
         $project: {
           _id: 0,
           playerId: '$contestPlayer._id',
           playerName: '$contestPlayer.name',
+          contestId: 1,
+          contestName: 1,
+          playerNumber: '$contestPlayer.jerseyNumber',
           sportName: { $arrayElemAt: ['$sportInfo.name', 0] },
           teamName: { $arrayElemAt: ['$teamInfo.name', 0] },
-          remoteId: '$contestPlayer.remoteId',
           statistics: '$contestPlayer.statistics',
         },
       },
     ]);
-    console.log(results.length);
+    // console.log(results.length);
+    results.sort((a, b) => b.statistics[propName] - a.statistics[propName])
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -99,8 +113,7 @@ async function getPlayersByProps(req, res) {
   //     players.push(player);
   //   });
   // }
-  // players.sort((a, b) => b.contestPlayer.statistics[propName] - a.contestPlayer.statistics[propName])
-  // res.json(players);
+
   // } catch (err) {
   //   res.status(500).json({ message: err.message })
   // }
