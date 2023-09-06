@@ -10,6 +10,10 @@ const TeamSchema  = new mongoose.Schema({
     ref: 'Sport',
     required: true
   },
+  remoteId: {
+    type: String,
+    required: true
+  },
   logo: String
 });
 
