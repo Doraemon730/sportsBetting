@@ -85,6 +85,7 @@ const getPlayersByProps = async (req, res) => {
       },
     ]);
     // console.log(results.length);
+    results.sort((a, b) => b.statistics[propName] - a.statistics[propName])
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -112,8 +113,7 @@ const getPlayersByProps = async (req, res) => {
   //     players.push(player);
   //   });
   // }
-  // players.sort((a, b) => b.contestPlayer.statistics[propName] - a.contestPlayer.statistics[propName])
-  // res.json(players);
+
   // } catch (err) {
   //   res.status(500).json({ message: err.message })
   // }
