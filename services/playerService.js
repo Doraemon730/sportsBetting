@@ -25,6 +25,22 @@ const fetchPlayerProfile = async (playerId) => {
       //throw new Error('Error retrieving player Info:', error);
     });
 }
+const fetchPlayerNumber = async (playerId) => {
+    const apiKey = process.env.NBA_API_KEY;
+    const baseUrl = process.env.NBA_API_BASEURL;
+    const locale = process.env.NBA_API_LOCALE;    
+    console.log(playerId);
+    return axios.get(`${baseUrl}/${locale}/players/${playerId}/profile.json?api_key=${apiKey}`)
+    .then(response => {     
+        if(!response.data.jersey_number)
+            return null;
+        return parseInt(response.data.jersey_number);
+    })
+    .catch(error => {
+        console.log(error.message);
+      //throw new Error('Error retrieving player Info:', error);
+    });
+}
 const getPlayerById = async (playerId) => {
     try {
       const player = await Player.findById(playerId).populate('teamId', 'name'); // Use .populate() to populate team data
@@ -37,6 +53,23 @@ const getPlayerById = async (playerId) => {
       //throw new Error(`Error getting player by ID: ${error.message}`);
     }
   };
+
+const updateNBAPlayers = async () => {
+    try {
+        const players = await Player.find({});
+        for (const player of players) {
+            if(!player.jerseyNumber) {
+                const playerNumber = await fetchPlayerNumber(player.remoteId);
+                if(playerNumber) {  
+                    player.jerseyNumber = playerNumber;
+                    await player.save();
+                }
+            }
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 const addNBAPlayersToDatabase = async () => {
     try {
       // Fetch contest data from the Sportradar NBA API
@@ -72,4 +105,4 @@ const addNBAPlayersToDatabase = async () => {
     }
   };
 
-module.exports = { addNBAPlayersToDatabase};
+module.exports = { addNBAPlayersToDatabase, updateNBAPlayers};
