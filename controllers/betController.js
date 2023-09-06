@@ -2,6 +2,7 @@ const Player = require("../models/Player");
 const Sport = require("../models/Sport");
 const Contest = require("../models/Contest");
 const Bet = require("../models/Bet");
+const betService = require("../services/betService");
 const { ObjectId } = require("mongodb");
 
 const startBetting = async (req, res) => {
@@ -30,6 +31,8 @@ const startBetting = async (req, res) => {
 
 }
 
+
+
 module.exports = {
-    startBetting
+    startBetting    
 }
