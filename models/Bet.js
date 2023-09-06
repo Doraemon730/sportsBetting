@@ -4,11 +4,11 @@ const BetSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    require: true
+    required: true
   },
   entryFee: {
     type: Number,
-    require: true
+    required: true
   },
   prize: {
     type: Number,
@@ -17,34 +17,33 @@ const BetSchema = new mongoose.Schema({
   betType: {
     type: String,
     enum: ['low', 'high'],
-    require: true
+    required: true
   },
   picks: [{
     playerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Player',
-      require: true
+      required: true
     },
     contest: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Contest',
-      require: true
-
+      required: true
     },
     prop: {
       propName: {
         type: String,
-        require: true
+        required: true
       },
       odds: {
         type: Number,
-        require: true
+        required: true
       }
     },
     overUnder: {
       type: String,
       enum: ['over', 'under'],
-      require: true
+      required: true
     },
   }],
   status: {
