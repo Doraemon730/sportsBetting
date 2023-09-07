@@ -47,6 +47,9 @@ const UserSchema = new mongoose.Schema({
   wins: {
     type: Number,
     default: 0
+  },
+  walletAddress: {
+    type: String
   }
 });
 

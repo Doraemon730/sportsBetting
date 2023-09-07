@@ -4,14 +4,17 @@ const betController = require('../../controllers/betController');
 const playerController = require('../../controllers/playerController');
 const contestController = require('../../controllers/contestController');
 const teamController = require('../../controllers/teamController');
+const transactionController = require('../../controllers/transactionController');
 const auth = require('../../middleware/auth');
 // Betting routes
 
 
-router.post('/getPlayers', playerController.getPlayersByProps);
-router.post('/start', auth, betController.startBetting);
+router.post('/bet/getPlayers', playerController.getPlayersByProps);
+router.post('/bet/start', auth, betController.startBetting);
 
+// Transactions routes
 
+router.post('/transaction/getTransactionDetails', auth, transactionController.depositBallance);
 
 
 
