@@ -45,6 +45,9 @@ const BetSchema = new mongoose.Schema({
       enum: ['over', 'under'],
       required: true
     },
+    result: {
+      type: Number
+    }
   }],
   status: {
     type: String,

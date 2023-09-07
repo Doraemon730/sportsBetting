@@ -8,8 +8,8 @@ const auth = require('../../middleware/auth');
 // Betting routes
 
 
-router.post('/bets/getPlayers', playerController.getPlayersByProps);
-router.post('/bets/start', auth, betController.startBetting);
+router.post('/getPlayers', playerController.getPlayersByProps);
+router.post('/start', auth, betController.startBetting);
 
 
 

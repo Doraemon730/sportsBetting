@@ -11,7 +11,7 @@ const ContestSchema = new mongoose.Schema({
     required: true
   },
   season: {
-    type:String
+    type: String
 
   },
   startTime: {
@@ -36,7 +36,7 @@ const ContestSchema = new mongoose.Schema({
 
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'Bet'
   }
   ]
 });

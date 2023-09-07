@@ -1,23 +1,31 @@
-const Player = require("../models/Player");
-const Sport = require("../models/Sport");
-const Contest = require("../models/Contest");
 const Bet = require("../models/Bet");
-const betService = require("../services/betService");
+const Contest = require("../models/Contest");
 const { ObjectId } = require("mongodb");
 
 const startBetting = async (req, res) => {
 
     try {
         user = req.user;
+        userId = new ObjectId(user.id);
         const { entryFee, betType, picks } = req.body;
         jsonArray = JSON.parse(picks);
-        jsonArray.forEach(element => {
+        jsonArray.forEach(async element => {
             element.playerId = new ObjectId(element.playerId);
             element.contestId = new ObjectId(element.contestId);
+            const contest = await Contest.findById(element.contestId);
+            participants = contest.participants;
+            if (!participants) {
+                participants = [];
+            }
+            if (!participants.includes(element.contestId)) {
+                participants.push(element.contestId);
+                contest.participants = participants;
+                await contest.save();
+            }
         });
 
         const myBet = new Bet({
-            userId: new ObjectId(user.id),
+            userId,
             entryFee,
             betType,
             picks: jsonArray
@@ -31,8 +39,6 @@ const startBetting = async (req, res) => {
 
 }
 
-
-
 module.exports = {
-    startBetting    
+    startBetting
 }

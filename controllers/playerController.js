@@ -1,9 +1,9 @@
 const Contest = require("../models/Contest");
 const Player = require("../models/Player");
 // const Sport = require("../models/Sport");
-const {fetchPlayerNumber, fetchPlayerProfile} = require("../services/playerService");
-const {fetchNBATeamsFromRemoteId} = require("../services/teamService");
-const {getAllTeamsFromDatabase} = require("./teamController");
+const { fetchPlayerNumber, fetchPlayerProfile } = require("../services/playerService");
+const { fetchNBATeamsFromRemoteId } = require("../services/teamService");
+const { getAllTeamsFromDatabase } = require("./teamController");
 
 
 const getPlayersByProps = async (req, res) => {
@@ -130,54 +130,54 @@ const getPlayerById = async (playerId) => {
     }
     return player;
   } catch (error) {
-      console.log(error.message);
+    console.log(error.message);
     //throw new Error(`Error getting player by ID: ${error.message}`);
   }
 };
 const updateNBAPlayers = async () => {
   try {
-      const players = await Player.find({});
-      for (const player of players) {
-          if(!player.jerseyNumber) {
-              const playerNumber = await fetchPlayerNumber(player.remoteId);
-              if(playerNumber) {  
-                  player.jerseyNumber = playerNumber;
-                  await player.save();
-              }
-          }
+    const players = await Player.find({});
+    for (const player of players) {
+      if (!player.jerseyNumber) {
+        const playerNumber = await fetchPlayerNumber(player.remoteId);
+        if (playerNumber) {
+          player.jerseyNumber = playerNumber;
+          await player.save();
+        }
       }
+    }
   } catch (error) {
-      console.log(error.message);
+    console.log(error.message);
   }
 }
 const addNBAPlayersToDatabase = async (req, res) => {
   try {
     // Fetch contest data from the Sportradar NBA API
-    
+
     const teams = await getAllTeamsFromDatabase();
-      
-    
+
+
     // Loop through the fetched data and add contests to the database
     for (const team of teams) {
-      
+
       const remoteteam = await fetchNBATeamsFromRemoteId(team.remoteId);
       //console.log(remoteteam);
-      for(const player of remoteteam.players){
-          const playerProfile = await fetchPlayerProfile(player.id);
-          console.log(playerProfile);
-          if(playerProfile) {
-              const newPlayer = new Player({
-                  name: player.full_name,
-                  sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
-                  remoteId: player.id,
-                  teamId: team._id,
-                  position: player.position,
-                  statistics : playerProfile.average
-              });
-              await newPlayer.save();        
-          }
-      }  
-  }
+      for (const player of remoteteam.players) {
+        const playerProfile = await fetchPlayerProfile(player.id);
+        console.log(playerProfile);
+        if (playerProfile) {
+          const newPlayer = new Player({
+            name: player.full_name,
+            sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
+            remoteId: player.id,
+            teamId: team._id,
+            position: player.position,
+            statistics: playerProfile.average
+          });
+          await newPlayer.save();
+        }
+      }
+    }
     res.status(200).json({ message: 'NBA players added to the database.' });
     console.log('NBA Players added to the database.');
   } catch (error) {
@@ -185,4 +185,4 @@ const addNBAPlayersToDatabase = async (req, res) => {
   }
 };
 
-module.exports = { getPlayersByProps, addNBAPlayersToDatabase, updateNBAPlayers};
+module.exports = { getPlayersByProps, addNBAPlayersToDatabase, updateNBAPlayers };
