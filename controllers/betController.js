@@ -17,8 +17,8 @@ const startBetting = async (req, res) => {
             if (!participants) {
                 participants = [];
             }
-            if (!participants.includes(userId)) {
-                participants.push(userId);
+            if (!participants.includes(element.contestId)) {
+                participants.push(element.contestId);
                 contest.participants = participants;
                 await contest.save();
             }
