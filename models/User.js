@@ -43,6 +43,9 @@ const UserSchema = new mongoose.Schema({
   level: {
     type: Number,
     default: 0
+  },
+  walletAddress: {
+    type: String
   }
 });
 
