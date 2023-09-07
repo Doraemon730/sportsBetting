@@ -23,6 +23,8 @@ const fetchGameSummary = async (gameId) => {
   return axios.get(`${baseUrl}/${locale}/games/${gameId}/summary.json?api_key=${apiKey}`)
   .then(response => {
       const summary = response.data; 
+      //console.log(summary);
+      
       return summary;
   })
   .catch(error => {
