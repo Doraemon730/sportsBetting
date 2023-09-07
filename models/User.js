@@ -42,6 +42,10 @@ const UserSchema = new mongoose.Schema({
   },
   level: {
     type: Number,
+    default: 1
+  },
+  wins: {
+    type: Number,
     default: 0
   },
   walletAddress: {

@@ -20,7 +20,7 @@ const PlayerSchema = new mongoose.Schema({
   },
   position: String,
   age: Number,
-  jerseyNumber: Number,
+  jerseyNumber: Number,  
   statistics: {
     minutes: Number,
     points: Number,
