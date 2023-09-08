@@ -5,31 +5,31 @@ const Transaction = require("../models/Transaction");
 const { ObjectId } = require("mongodb");
 
 const startBetting = async (req, res) => {
-
     try {
-        userId = new ObjectId(req.user.id);
+        const userId = new ObjectId(req.user.id);
         const user = await User.findOne({ _id: userId });
         const { entryFee, betType, picks } = req.body;
 
-        if (user.ETH_balance < req.body.entryFee) {
+        if (!user || user.ETH_balance < 0) {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
-        jsonArray = JSON.parse(picks);
-        jsonArray.forEach(async element => {
-            element.playerId = new ObjectId(element.playerId);
-            element.contestId = new ObjectId(element.contestId);
-            const contest = await Contest.findById(element.contestId);
-            participants = contest.participants;
-            if (!participants) {
-                participants = [];
+        const jsonArray = JSON.parse(picks);
+        for (const element of jsonArray) {
+            const contestId = new ObjectId(element.contestId);
+
+            const contest = await Contest.findById(contestId);
+            if (!contest) {
+                continue;
             }
-            if (!participants.includes(element.contestId)) {
-                participants.push(element.contestId);
+
+            let participants = contest.participants || [];
+            if (!participants.includes(contestId)) {
+                participants.push(contestId);
                 contest.participants = participants;
                 await contest.save();
             }
-        });
+        }
 
         const myBet = new Bet({
             userId,
@@ -39,14 +39,13 @@ const startBetting = async (req, res) => {
         });
         await myBet.save();
 
-
-        user.amount = user.amount - entryFee;
+        user.Fiat_balance -= entryFee;
         await user.save();
 
-        transaction = new Transaction({
+        const transaction = new Transaction({
             userId,
             amount: entryFee,
-            type: "bet",
+            transactionType: "bet",
             currency: "USD"
         });
         await transaction.save();
@@ -55,7 +54,6 @@ const startBetting = async (req, res) => {
     } catch (error) {
         res.status(500).json(error.message);
     }
-
 }
 
 module.exports = {
