@@ -14,12 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Define Routes
-const apiRoutes = require('./routes/api/betroutes');
-const authRoutes = require('./routes/api/auth');
-const usersRoutes = require('./routes/api/users');
-
-app.use('/api/auth', authRoutes);
-app.use('/api/users', usersRoutes);
+const apiRoutes = require('./routes/routes');
 app.use('/api', apiRoutes);
 
 // Serve static assets in production

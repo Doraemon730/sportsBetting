@@ -1,12 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const betController = require('../../controllers/betController');
-const playerController = require('../../controllers/playerController');
-const contestController = require('../../controllers/contestController');
-const teamController = require('../../controllers/teamController');
-const transactionController = require('../../controllers/transactionController');
-const auth = require('../../middleware/auth');
-const { body } = require('express-validator');
+const betController = require('../controllers/betController');
+const playerController = require('../controllers/playerController');
+const contestController = require('../controllers/contestController');
+const teamController = require('../controllers/teamController');
+const userController = require('../controllers/userController');
+const transactionController = require('../controllers/transactionController');
+const auth = require('../middleware/auth');
+const { checkRegister, checkLogin, checkUpdate } = require('../middleware/checkObject');
+
+//User routes
+router.post(
+    '/users/register',
+    checkRegister,
+    userController.registerUser);
+
+router.get(
+    '/users/getUserDetail',
+    auth,
+    userController.getUserDetail);
+
+router.post('/users/login',
+    checkLogin,
+    userController.loginUser);
+
+router.post('/users/update',
+    auth,
+    checkUpdate,
+    userController.updateUser);
 
 // Betting routes
 router.post(
