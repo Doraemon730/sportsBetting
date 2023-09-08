@@ -20,13 +20,21 @@ router.post(
 );
 
 router.post('/bet/getPlayers', playerController.getPlayersByProps);
-router.post('/bet/start', auth, betController.startBetting);
+router.post('/bet/start',
+    auth,
+    betController.startBetting
+);
 
 // Transactions routes
 router.post(
-    '/transaction/getTransactionDetails',
+    '/transaction/deposit',
     auth,
     transactionController.depositBalance
+);
+router.post(
+    '/transaction/withdraw',
+    auth,
+    transactionController.withdrawBalance
 );
 
 // Contest routes

@@ -10,7 +10,7 @@ const startBetting = async (req, res) => {
         const user = await User.findOne({ _id: userId });
         const { entryFee, betType, picks } = req.body;
 
-        if (!user || user.ETH_balance < 0) {
+        if (!user || user.ETH_balance < entryFee) {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
