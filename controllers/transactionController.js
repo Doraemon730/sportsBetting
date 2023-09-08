@@ -6,9 +6,9 @@ const { ObjectId } = require('mongodb');
 
 const depositBallance = async (req, res) => {
 
-    const userId = req.user.id;
+    const userId = new ObjectId(req.user.id);
     const { hashTransaction } = req.body;
-    const user = await User.findOne({ _id: new ObjectId(userId) });
+    const user = await User.findOne({ _id: userId });
 
 
     axios.get(`https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${hashTransaction}&apikey=${etherApiKey}`).then(async response => {
