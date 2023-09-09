@@ -47,6 +47,13 @@ const UserSchema = new mongoose.Schema({
   },
   walletAddress: {
     type: String
+  },
+  promotion: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Promotion',
+    default: function () {
+      return new mongoose.Types.ObjectId('64fbe8cd009753bb7aa7a4fb');
+    }
   }
 });
 

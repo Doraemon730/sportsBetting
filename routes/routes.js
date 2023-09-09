@@ -6,8 +6,10 @@ const contestController = require('../controllers/contestController');
 const teamController = require('../controllers/teamController');
 const userController = require('../controllers/userController');
 const transactionController = require('../controllers/transactionController');
+const promotionController = require('../controllers/promotionController');
 const auth = require('../middleware/auth');
 const { checkRegister, checkLogin, checkUpdate } = require('../middleware/checkObject');
+const { checkWednesday } = require('../middleware/checkDay');
 
 //User routes
 router.post(
@@ -50,6 +52,7 @@ router.post('/bet/start',
     auth,
     betController.startBetting
 );
+router.post('/bet/sixLegParlay', checkWednesday, betController.sixLegParlayBetting);
 
 // Transactions routes
 router.post(
@@ -80,4 +83,13 @@ router.post('/player/fetchAll', auth, playerController.addNBAPlayersToDatabase);
 
 router.post('/player/update', auth, playerController.updateNBAPlayers);
 
+
+//Promotion routes
+router.post('/promotion/add', promotionController.addPromotion);
+
+router.post('/promotion/fetchAll', auth, promotionController.getPromotions);
+
+router.post('/promotion/update', auth, promotionController.updatePromotion);
+
+//Transaction routes
 module.exports = router;
