@@ -33,13 +33,11 @@ const addNBAContestsToDatabase = async (req, res) => {
 
     const contestData = await fetchNBAContest("2023/REG");
 
-    //console.log(contestData);
     // Loop through the fetched data and add contests to the database
     for (const contestInfo of contestData) {
       const homeID = await teamService.getIdfromRemoteId(contestInfo.home.id);
       const awayID = await teamService.getIdfromRemoteId(contestInfo.away.id);
 
-      console.log(homeID, awayID);
       const contest = new Contest({
         name: contestInfo.home.alias + " vs " + contestInfo.away.alias,
         season: "2023/REG",
@@ -62,7 +60,6 @@ const preprocessPlayers = async (players) => {
   const playerList = [];
   for (let play of players) {
     const t = play;
-    //console.log(play);
     const p = await Player.findOne({
       remoteId: play.id
     });
@@ -79,7 +76,6 @@ const updateBetfromContest = async () => {
     if (summary.home.players.length > 0) {
       const players = summary.home.players; //.concat(summary.away.players);
       const playerList = await preprocessPlayers(players);
-      //console.log(playerList.map(player => player.oid));
       const contest = await Contest.findOne({
         remoteId: summary.id
       });
@@ -109,24 +105,24 @@ const updateBetfromContest = async () => {
           }
         }
         if (finished == pending.picks.length) {
-          switch(finished){
+          switch (finished) {
             case 2:
-              if(win == 2) {
+              if (win == 2) {
                 pending.prize = pending.entryFee * BET_2_2_HIGH;
                 pending.status = "win"
               } else {
                 pending.prize = 0;
                 pending.status = "lost"
-              }             
+              }
               break;
             case 3:
-              switch(win){
+              switch (win) {
                 case 2:
                   pending.prize = pending.entryFee * BET_2_3_LOW;
                   pending.status = "win"
                   break;
                 case 3:
-                  if(pending.betType.equals("high"))
+                  if (pending.betType.equals("high"))
                     pending.prize = pending.entryFee * BET_3_3_HIGH;
                   else
                     pending.prize = pending.entryFee * BET_3_3_LOW;
@@ -136,16 +132,16 @@ const updateBetfromContest = async () => {
                   pending.prize = 0;
                   pending.status = "lost"
                   break;
-              }              
+              }
               break;
             case 4:
-              switch(win) {
+              switch (win) {
                 case 3:
                   pending.prize = pending.entryFee * BET_3_4_LOW;
                   pending.status = "win"
                   break;
                 case 4:
-                  if(pending.betType.equals("high"))
+                  if (pending.betType.equals("high"))
                     pending.prize = pending.entryFee * BET_4_4_HIGH;
                   else
                     pending.prize = pending.entryFee * BET_4_4_LOW;
@@ -155,78 +151,74 @@ const updateBetfromContest = async () => {
                   pending.prize = 0;
                   pending.status = "lost"
                   break;
-              };              
+              };
               break;
             case 5:
-              switch(win) {
+              switch (win) {
                 case 3:
                   pending.prize = pending.entryFee * BET_3_5_LOW;
                   pending.status = "win"
                   break;
                 case 4:
-                    pending.prize = pending.entryFee * BET_4_5_LOW;
-                    pending.status = "win"
-                    break;
+                  pending.prize = pending.entryFee * BET_4_5_LOW;
+                  pending.status = "win"
+                  break;
                 case 5:
                   pending.prize = pending.entryFee * BET_5_5_LOW;
                   pending.status = "win"
                   break;
-                defaut:
+                  defaut:
                   pending.prize = 0;
                   pending.status = "lost";
                   break;
-              }              
+              }
               break;
-            case 6: 
-            switch(win) {
-              case 4:
-                pending.prize = pending.entryFee * BET_4_6_LOW;
-                pending.status = "win"
-                break;
-              case 5:
+            case 6:
+              switch (win) {
+                case 4:
+                  pending.prize = pending.entryFee * BET_4_6_LOW;
+                  pending.status = "win"
+                  break;
+                case 5:
                   pending.prize = pending.entryFee * BET_5_6_LOW;
                   pending.status = "win"
                   break;
-              case 6:
-                pending.prize = pending.entryFee * BET_6_6_LOW;
-                pending.status = "win"
-                break;
-              defaut:
-                pending.prize = 0;
-                pending.status = "lost"
-                break;
-            }               
+                case 6:
+                  pending.prize = pending.entryFee * BET_6_6_LOW;
+                  pending.status = "win"
+                  break;
+                  defaut:
+                  pending.prize = 0;
+                  pending.status = "lost"
+                  break;
+              }
               break;
-            default:              
+            default:
               break;
           }
           if (pending.status == 'win') {
             const user = await User.findById(pending.userId);
-            if(user){
+            if (user) {
               user.wins += 1;
-              if(user.level <= 33)
-                user.level ++;
-              else if(user.level <= 66){
-                if(user.wins % 2 == 0)
-                  user.level ++;
+              if (user.level <= 33)
+                user.level++;
+              else if (user.level <= 66) {
+                if (user.wins % 2 == 0)
+                  user.level++;
               } else {
-                if(user.wins % 3 == 0)
-                  user.level ++;
-              }              
-              await user.save();              
+                if (user.wins % 3 == 0)
+                  user.level++;
+              }
+              await user.save();
             }
           }
         }
-        
+
         await pending.save();
 
       };
-
-      console.log("ends");
-
     }
   } catch (error) {
-    console.log(error.message);
   }
 }
 module.exports = {

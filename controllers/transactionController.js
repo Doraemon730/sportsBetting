@@ -4,7 +4,6 @@ const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
 
-
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
 const infura_project_id = process.env.INFURA_PROJECT_ID;
