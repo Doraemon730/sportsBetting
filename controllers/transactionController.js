@@ -4,7 +4,6 @@ const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
 
-
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
 const infura_project_id = process.env.INFURA_PROJECT_ID;
@@ -33,8 +32,7 @@ const depositBalance = async (req, res) => {
                 userId,
                 hashTransaction,
                 transactionType: "deposit",
-                amount: etherAmount,
-                currency: "ETH"
+                amount: etherAmount
             });
 
             user.ETH_balance += etherAmount;
@@ -87,8 +85,7 @@ const withdrawBalance = async (req, res) => {
                     userId,
                     hashTransaction: sendTransaction.hash,
                     transactionType: "withdraw",
-                    amount: amountToSend,
-                    currency: "ETH"
+                    amount: amountToSend
                 });
                 await trans.save();
             }

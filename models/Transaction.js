@@ -11,16 +11,11 @@ const TransactionSchema = new mongoose.Schema({
   },
   transactionType: {
     type: String,
-    enum: ['deposit', 'withdrawal', 'bet', 'prize'],
+    enum: ['deposit', 'withdraw', 'bet', 'prize'],
     required: true
   },
   amount: {
     type: Number,
-    required: true
-  },
-  currency: {
-    type: String,
-    enum: ['ETH', 'USD'],
     required: true
   },
   createdAt: {

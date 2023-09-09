@@ -2,7 +2,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../models/User');
+const Referral = require('../models/Referral');
 const { ObjectId } = require('mongoose').Types;
+const generateReferralCode = require('../utils/util');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
@@ -16,12 +18,15 @@ const registerUser = async (req, res) => {
         .json({ errors: [{ msg: 'User already exists' }] });
     }
 
+    const myReferralCode = generateReferralCode()
+    console.log(myReferralCode)
+
     user = new User({
       email,
       firstName,
       lastName,
       birthday,
-      referralCode
+      referralCode: myReferralCode,
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -29,6 +34,22 @@ const registerUser = async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
 
     await user.save();
+
+    const myReferral = new Referral({
+      referralcode: myReferralCode,
+      userId: user.id
+    });
+    await myReferral.save();
+
+    if (referralCode) {
+      const referral = await Referral.findOne({ referralCode: myReferralCode });
+      referral.invitesList.push(user.id);
+      await referral.save();
+
+      const referralUser = await User.findById(refferal.userId);
+      referralUser.credits += 100;
+      await referralUser.save();
+    }
 
     const payload = {
       user: {
@@ -45,6 +66,7 @@ const registerUser = async (req, res) => {
         res.json({ token });
       }
     );
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

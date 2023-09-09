@@ -48,6 +48,7 @@ router.post(
 );
 
 router.post('/bet/getPlayers', playerController.getPlayersByProps);
+
 router.post('/bet/start',
     auth,
     betController.startBetting

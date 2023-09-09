@@ -2,6 +2,7 @@ const Bet = require("../models/Bet");
 const Contest = require("../models/Contest");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
+const Ethereum = require("../models/Ethereum");
 const { ObjectId } = require("mongodb");
 
 const startBetting = async (req, res) => {
@@ -10,7 +11,11 @@ const startBetting = async (req, res) => {
         const user = await User.findOne({ _id: userId });
         const { entryFee, betType, picks } = req.body;
 
-        if (!user || user.ETH_balance < entryFee) {
+        const etherPrice = await Ethereum.find();
+
+        const entryFeeEther = entryFee / etherPrice[0].price;
+
+        if (!user || user.ETH_balance < entryFeeEther) {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
@@ -33,20 +38,19 @@ const startBetting = async (req, res) => {
 
         const myBet = new Bet({
             userId,
-            entryFee,
+            entryFee: entryFeeEther,
             betType,
             picks: jsonArray
         });
         await myBet.save();
 
-        user.Fiat_balance -= entryFee;
+        user.Fiat_balance -= entryFeeEther;
         await user.save();
 
         const transaction = new Transaction({
             userId,
-            amount: entryFee,
-            transactionType: "bet",
-            currency: "USD"
+            amount: entryFeeEther,
+            transactionType: "bet"
         });
         await transaction.save();
 
