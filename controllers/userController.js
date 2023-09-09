@@ -4,7 +4,7 @@ const config = require('config');
 const User = require('../models/User');
 const Referral = require('../models/Referral');
 const { ObjectId } = require('mongoose').Types;
-const generateReferralCode = require('../utils/util');
+const { generateReferralCode } = require('../utils/util');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
