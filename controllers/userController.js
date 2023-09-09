@@ -19,6 +19,7 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode()
+    console.log(myReferralCode)
 
     user = new User({
       email,
@@ -35,7 +36,7 @@ const registerUser = async (req, res) => {
     await user.save();
 
     const myReferral = new Referral({
-      referralCode: myReferralCode,
+      referralcode: myReferralCode,
       userId: user.id
     });
     await myReferral.save();
