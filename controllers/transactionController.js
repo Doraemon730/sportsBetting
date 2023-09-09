@@ -95,5 +95,18 @@ const withdrawBalance = async (req, res) => {
         }
     })();
 }
+const addPrizeTransaction = (userId, amount) {
+    try {
 
-module.exports = { depositBalance, withdrawBalance }
+        const trans = new Transaction({
+            userId,
+            transactionType: 'prize',
+            amount
+        })
+        await trans.save();
+
+    } catch (error) {
+        console.error('Error on prize transaction', error);
+    }
+}
+module.exports = { depositBalance, withdrawBalance, addPrizeTransaction}

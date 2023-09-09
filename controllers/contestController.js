@@ -10,9 +10,7 @@ const {
 } = require('../services/contestService')
 const Player = require('../models/Player');
 const Bet = require('../models/Bet');
-const { defaultMaxListeners } = require('nodemailer/lib/xoauth2');
-const LOW_PRIZE = process.env.BET_LOW_PRIZE;
-const HIGH_PRIZE = process.env.BET_HIGH_PRIZE;
+
 const BET_2_2_HIGH = process.env.BET_2_2_HIGH
 const BET_3_3_HIGH = process.env.BET_3_3_HIGH
 const BET_2_3_LOW = process.env.BET_2_3_LOW;
@@ -24,8 +22,8 @@ const BET_3_5_LOW = process.env.BET_3_5_LOW;
 const BET_4_5_LOW = process.env.BET_4_5_LOW;
 const BET_5_5_LOW = process.env.BET_5_5_LOW;
 const BET_4_6_LOW = process.env.BET_4_6_LOW;
-const BET_5_6_LOW = process.env.BET_4_6_LOW;
-const BET_6_6_LOW = process.env.BET_4_6_LOW;
+const BET_5_6_LOW = process.env.BET_5_6_LOW;
+const BET_6_6_LOW = process.env.BET_6_6_LOW;
 
 const addNBAContestsToDatabase = async (req, res) => {
   try {
@@ -131,15 +129,15 @@ const updateBetfromContest = async () => {
                     break;
                   case 3:
                     switch(win){
-                      case 2:
-                        pending.prize = pending.entryFee * BET_2_3_LOW;
-                        pending.status = "win"
-                        break;
+                      // case 2:
+                      //   pending.prize = pending.entryFee * BET_2_3_LOW;
+                      //   pending.status = "win"
+                      //   break;
                       case 3:
-                        if(pending.betType.equals("high"))
+                        // if(pending.betType.equals("high"))
                           pending.prize = pending.entryFee * BET_3_3_HIGH;
-                        else
-                          pending.prize = pending.entryFee * BET_3_3_LOW;
+                        //else
+                          //pending.prize = pending.entryFee * BET_3_3_LOW;
                         pending.status = "win"
                         break;
                       default:
@@ -150,15 +148,15 @@ const updateBetfromContest = async () => {
                     break;
                   case 4:
                     switch(win) {
-                      case 3:
-                        pending.prize = pending.entryFee * BET_3_4_LOW;
-                        pending.status = "win"
-                        break;
+                      // case 3:
+                      //   pending.prize = pending.entryFee * BET_3_4_LOW;
+                      //   pending.status = "win"
+                      //   break;
                       case 4:
-                        if(pending.betType.equals("high"))
+                        // if(pending.betType.equals("high"))
                           pending.prize = pending.entryFee * BET_4_4_HIGH;
-                        else
-                          pending.prize = pending.entryFee * BET_4_4_LOW;
+                        // else
+                        //   pending.prize = pending.entryFee * BET_4_4_LOW;
                         pending.status = "win"
                         break;
                       default:
@@ -169,14 +167,14 @@ const updateBetfromContest = async () => {
                     break;
                   case 5:
                     switch(win) {
-                      case 3:
-                        pending.prize = pending.entryFee * BET_3_5_LOW;
-                        pending.status = "win"
-                        break;
-                      case 4:
-                          pending.prize = pending.entryFee * BET_4_5_LOW;
-                          pending.status = "win"
-                          break;
+                      // case 3:
+                      //   pending.prize = pending.entryFee * BET_3_5_LOW;
+                      //   pending.status = "win"
+                      //   break;
+                      // case 4:
+                      //     pending.prize = pending.entryFee * BET_4_5_LOW;
+                      //     pending.status = "win"
+                      //     break;
                       case 5:
                         pending.prize = pending.entryFee * BET_5_5_LOW;
                         pending.status = "win"
@@ -189,14 +187,14 @@ const updateBetfromContest = async () => {
                     break;
                   case 6: 
                   switch(win) {
-                    case 4:
-                      pending.prize = pending.entryFee * BET_4_6_LOW;
-                      pending.status = "win"
-                      break;
-                    case 5:
-                        pending.prize = pending.entryFee * BET_5_6_LOW;
-                        pending.status = "win"
-                        break;
+                    // case 4:
+                    //   pending.prize = pending.entryFee * BET_4_6_LOW;
+                    //   pending.status = "win"
+                    //   break;
+                    // case 5:
+                    //     pending.prize = pending.entryFee * BET_5_6_LOW;
+                    //     pending.status = "win"
+                    //     break;
                     case 6:
                       pending.prize = pending.entryFee * BET_6_6_LOW;
                       pending.status = "win"
