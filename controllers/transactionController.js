@@ -33,8 +33,7 @@ const depositBalance = async (req, res) => {
                 userId,
                 hashTransaction,
                 transactionType: "deposit",
-                amount: etherAmount,
-                currency: "ETH"
+                amount: etherAmount
             });
 
             user.ETH_balance += etherAmount;
@@ -87,8 +86,7 @@ const withdrawBalance = async (req, res) => {
                     userId,
                     hashTransaction: sendTransaction.hash,
                     transactionType: "withdraw",
-                    amount: amountToSend,
-                    currency: "ETH"
+                    amount: amountToSend
                 });
                 await trans.save();
             }

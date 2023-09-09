@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  Fiat_balance: {
+  credits: {
     type: Number,
     default: 0
   },
