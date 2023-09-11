@@ -76,10 +76,10 @@ const withdrawBalance = async (req, res) => {
             };
 
             const sendTransaction = await wallet.sendTransaction(transaction);
-            if (sendTransaction.status === "success") {
+            const status = await sendTransaction.wait();
+            if (status === "success") {
                 console.log('Transaction sent:', sendTransaction.hash);
                 user.ETH_balance -= amountToSend;
-                res.json({ message: "Withdraw successful" });
                 await user.save();
                 const trans = new Transaction({
                     userId,
@@ -88,6 +88,7 @@ const withdrawBalance = async (req, res) => {
                     amount: amountToSend
                 });
                 await trans.save();
+                res.json({ message: "Withdraw successful" });
             }
 
         } catch (error) {

@@ -59,6 +59,25 @@ const startBetting = async (req, res) => {
     }
 }
 
+const getAllBetsByUserId = async (req, res) => {
+    try {
+        const userId = new ObjectId(req.user.id);
+        const myBets = await Bet.find({ userId: userId });
+        res.json(myBets);
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+}
+
+const getAllBets = async (req, res) => {
+    try {
+        const myBets = await Bet.find();
+        res.json(myBets);
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+}
+
 const isAllowedSixLegParlay = async (req, res) => {
     const userId = new ObjectId(req.user.id);
     const user = await User.findOne({ _id: userId }).populate('promotion');
@@ -142,5 +161,7 @@ const sixLegParlayBetting = async (req, res) => {
 module.exports = {
     startBetting,
     sixLegParlayBetting,
-    isAllowedSixLegParlay
+    isAllowedSixLegParlay,
+    getAllBets,
+    getAllBetsByUserId
 }
