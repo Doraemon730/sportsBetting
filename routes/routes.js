@@ -69,6 +69,10 @@ router.post(
     auth,
     transactionController.withdrawBalance
 );
+router.get(
+    '/transaction/getEtherPrice',
+    transactionController.getETHPrice
+)
 
 // Contest routes
 router.post(
