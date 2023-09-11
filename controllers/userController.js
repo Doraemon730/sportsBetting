@@ -229,7 +229,7 @@ const resetPassword = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(newPassword, salt);
   const result = await User.updateOne({ _id: user._id }, { $set: user });
-  await Recovery.deleteOne({ emailHash });
+  await Recovery.deleteMany({ emailHash });
   res.json(result);
 }
 
