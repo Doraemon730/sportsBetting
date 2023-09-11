@@ -6,6 +6,21 @@ const Ethereum = require("../models/Ethereum");
 const { ObjectId } = require("mongodb");
 const { USD2Ether } = require("../utils/util");
 
+const checkBet = async (newbet) => {
+    try {
+        const bet = await Bet.findOne({userId:newbet.userId,
+            entryFee: newbet.entryFee,
+            betType: newbet.betType,
+            picks: newbet.picks,
+            parlay: newbet.parlay,
+            palrayNumber: newbet.palrayNumber})
+        if(bet)
+            return true;
+        return false;
+    } catch (error) {
+        console.log(error);
+    }    
+}
 const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
@@ -97,7 +112,7 @@ const isAllowedSixLegParlay = async (req, res) => {
         res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available. In order to proceed, you are required to place a minimum bet of $25.' });
     }
     res.status(200).json({ message: 'You can proceed six leg parlay' });
-}
+} 
 const sixLegParlayBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
@@ -138,6 +153,7 @@ const sixLegParlayBetting = async (req, res) => {
                 await contest.save();
             }
         }
+        
         const myBet = new Bet({
             userId,
             entryFee,
@@ -146,6 +162,10 @@ const sixLegParlayBetting = async (req, res) => {
             parlay: true,
             palrayNumber
         });
+        if(checkBet(myBet))
+        {
+            res.status(403).json({ message: 'Sorry, you have to select different bet'});
+        }
         await myBet.save();
         if (palrayNumber == 6) {
             user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
