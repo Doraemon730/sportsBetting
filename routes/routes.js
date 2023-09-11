@@ -9,7 +9,7 @@ const transactionController = require('../controllers/transactionController');
 const promotionController = require('../controllers/promotionController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
-const { checkRegister, checkLogin, checkUpdate } = require('../middleware/checkObject');
+const { checkRegister, checkLogin, checkUpdate, checkResetPassword } = require('../middleware/checkObject');
 const { checkWednesday } = require('../middleware/checkDay');
 
 //User routes
@@ -41,6 +41,7 @@ router.post('/users/sendResetPasswordEmail',
     userController.sendResetPasswordEmail);
 
 router.post('/users/resetPassword',
+    checkResetPassword,
     userController.resetPassword);
 
 // Betting routes

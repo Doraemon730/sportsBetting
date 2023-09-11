@@ -187,7 +187,6 @@ const updateUser = async (req, res) => {
 }
 
 const sendResetPasswordEmail = async (req, res) => {
-  console.log(req.body);
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) {

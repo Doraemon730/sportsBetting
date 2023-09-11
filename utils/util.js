@@ -60,4 +60,12 @@ const USD2Ether = async amount => {
     return amount / etherPrice[0].price;
 }
 
-module.exports = { generateReferralCode, sendEmail, Ether2USD, USD2Ether };
+const isEmpty = async (stringVariable) => {
+    if (stringVariable === undefined || stringVariable === null || stringVariable === '') {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+module.exports = { generateReferralCode, sendEmail, Ether2USD, USD2Ether, isEmpty, };
