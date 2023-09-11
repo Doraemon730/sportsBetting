@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const Ethereum = require('../models/Ethereum');
 
 function generateReferralCode() {
     const randomString = generateRandomString(6); // Specify the desired length of the random string
@@ -21,4 +22,14 @@ function generateRandomString(length) {
     return randomString;
 }
 
-module.exports = generateReferralCode;
+async function Ether2USD(amount) {
+    const etherPrice = await Ethereum.find();
+    return amount * etherPrice[0].price;
+}
+
+async function USD2Ether(amount) {
+    const etherPrice = await Ethereum.find();
+    return amount / etherPrice[0].price;
+}
+
+module.exports = { generateReferralCode, Ether2USD, USD2Ether };

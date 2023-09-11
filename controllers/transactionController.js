@@ -3,6 +3,7 @@ const User = require('../models/User');
 const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
+const { USD2Ether } = require('../utils/util');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
@@ -95,9 +96,12 @@ const withdrawBalance = async (req, res) => {
         }
     })();
 }
-const addPrizeTransaction = (userId, amount) {
+const addPrizeTransaction = async (userId, amount) => {
     try {
-
+        amount = await USD2Ether(amount);
+        const user = await User.findOne({ _id: userId });
+        user.ETH_balance += amount;
+        await user.save();
         const trans = new Transaction({
             userId,
             transactionType: 'prize',

@@ -2,9 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../models/User');
+const Promotion = require('../models/Promotion')
 const Referral = require('../models/Referral');
 const { ObjectId } = require('mongoose').Types;
-const generateReferralCode = require('../utils/util');
+const { generateReferralCode } = require('../utils/util');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
@@ -229,4 +230,32 @@ const verifyEmail = async (req, res) => {
   }
 }
 
-module.exports = { registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail };
+const updatePromotion = async (userId, promotion) => {
+  try {
+    const user = await User.findById(userId);
+    if(user) {
+      user.promotion = promotion;
+      user.save();
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+
+const updateAllPromotion = async (approach) => {
+  try {
+    const promotion = await Promotion.findOne({approach: approach});
+
+    const users = await User.find();
+    if(users) {
+      users.forEach(user => {
+        user.promotion = promotion._id;
+        user.save();
+      });
+    }
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+module.exports = { registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail, 
+ updatePromotion, updateAllPromotion};
