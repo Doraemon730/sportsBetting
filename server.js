@@ -4,6 +4,11 @@ const connectDB = require('./config/db');
 const path = require('path');
 const bodyParser = require('body-parser');
 const app = express();
+const {
+  WednesdayJob,
+  ThursdayJob,
+  EtherJob
+} = require('./services/betService');
 app.use(cors());
 
 // Connect Database
@@ -11,7 +16,9 @@ connectDB();
 
 // Init Middleware
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
 // Define Routes
 const apiRoutes = require('./routes/routes');
@@ -26,5 +33,13 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const now = new Date();
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+
+  WednesdayJob.start();
+  ThursdayJob.start();
+  EtherJob.start();
+});

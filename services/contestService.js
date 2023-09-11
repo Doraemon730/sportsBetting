@@ -4,12 +4,12 @@ const teamService = require('./teamService');
 const { ObjectId } = require('mongodb');
 const axios = require('axios');
 const apiKey = process.env.NBA_API_KEY;
-const baseUrl = process.env.NBA_API_BASEURL;
-const locale = process.env.NBA_API_LOCALE;
+const { NBA_API_BASEURL, LOCALE } = require('../config/constant');
+
 
 const fetchNBAContest = async (season) => {
 
-  return axios.get(`${baseUrl}/${locale}/games/${season}/schedule.json?api_key=${apiKey}`)
+  return axios.get(`${NBA_API_BASEURL}/${LOCALE}/games/${season}/schedule.json?api_key=${apiKey}`)
     .then(response => {
       const schedule = response.data.games;
       return schedule;
@@ -19,7 +19,7 @@ const fetchNBAContest = async (season) => {
     });
 }
 const fetchGameSummary = async (gameId) => {
-  return axios.get(`${baseUrl}/${locale}/games/${gameId}/summary.json?api_key=${apiKey}`)
+  return axios.get(`${NBA_API_BASEURL}/${LOCALE}/games/${gameId}/summary.json?api_key=${apiKey}`)
     .then(response => {
       const summary = response.data;
 

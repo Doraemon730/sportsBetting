@@ -2,12 +2,11 @@ const Team = require('../models/Team');
 const {ObjectId} = require('mongodb');
 const axios = require('axios');
 const apiKey = process.env.NBA_API_KEY;
-const baseUrl = process.env.NBA_API_BASEURL;
-const locale = process.env.NBA_API_LOCALE;   
+const { NBA_API_BASEURL, LOCALE } = require('../config/constant');
 
 const fetchNBATeams = async () => {
     
-    return axios.get(`${baseUrl}/${locale}/league/hierarchy.json?api_key=${apiKey}`)
+    return axios.get(`${NBA_API_BASEURL}/${LOCALE}/league/hierarchy.json?api_key=${apiKey}`)
     .then(response => {
       const conferences = response.data.conferences;
 
@@ -19,7 +18,7 @@ const fetchNBATeams = async () => {
 }
 const fetchNBATeamsFromRemoteId = async (remoteId) => {
     
-    return axios.get(`${baseUrl}/${locale}/teams/${remoteId}/profile.json?api_key=${apiKey}`)
+    return axios.get(`${NBA_API_BASEURL}/${LOCALE}/teams/${remoteId}/profile.json?api_key=${apiKey}`)
    .then(response => {
         const team = response.data;
         return team;
@@ -29,4 +28,4 @@ const fetchNBATeamsFromRemoteId = async (remoteId) => {
 }
 
   
-  module.exports = { fetchNBATeamsFromRemoteId};
+  module.exports = { fetchNBATeamsFromRemoteId, fetchNBATeams};
