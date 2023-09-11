@@ -8,7 +8,8 @@ const userController = require('../controllers/userController');
 const transactionController = require('../controllers/transactionController');
 const promotionController = require('../controllers/promotionController');
 const auth = require('../middleware/auth');
-const { checkRegister, checkLogin, checkUpdate } = require('../middleware/checkObject');
+const admin = require('../middleware/admin');
+const { checkRegister, checkLogin, checkUpdate, checkResetPassword } = require('../middleware/checkObject');
 const { checkWednesday } = require('../middleware/checkDay');
 
 //User routes
@@ -24,7 +25,7 @@ router.get(
 
 router.get(
     '/users/getAllUsers',
-    auth,
+    admin,
     userController.getAllUsers);
 
 router.post('/users/login',
@@ -36,9 +37,15 @@ router.post('/users/update',
     checkUpdate,
     userController.updateUser);
 
+router.post('/users/sendResetPasswordEmail',
+    userController.sendResetPasswordEmail);
+
+router.post('/users/resetPassword',
+    checkResetPassword,
+    userController.resetPassword);
+
 // Betting routes
-router.post(
-    '/bet/getPlayers',
+router.post('/bet/getPlayers',
     //   [
     //     // Input validation using express-validator
     //     body('prop').notEmpty().isString(),
@@ -47,13 +54,16 @@ router.post(
     playerController.getPlayersByProps
 );
 
-router.post('/bet/getPlayers', playerController.getPlayersByProps);
-
 router.post('/bet/start',
     auth,
     betController.startBetting
 );
+
 router.post('/bet/sixLegParlay', checkWednesday, betController.sixLegParlayBetting);
+
+router.post('/bet/getAllBets', admin, betController.getAllBets);
+
+router.post('/bet/getAllBetsByUserId', auth, betController.getAllBetsByUserId);
 
 // Transactions routes
 router.post(
@@ -66,6 +76,10 @@ router.post(
     auth,
     transactionController.withdrawBalance
 );
+router.get(
+    '/transaction/getEtherPrice',
+    transactionController.getETHPrice
+)
 
 // Contest routes
 router.post(

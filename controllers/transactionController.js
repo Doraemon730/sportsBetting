@@ -1,9 +1,11 @@
 const Transaction = require('../models/Transaction');
+const Ethereum = require('../models/Ethereum');
 const User = require('../models/User');
 const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
 const { USD2Ether } = require('../utils/util');
+const { ETHER_PRICE_API } = require('../config/constant');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
@@ -77,10 +79,10 @@ const withdrawBalance = async (req, res) => {
             };
 
             const sendTransaction = await wallet.sendTransaction(transaction);
-            if (sendTransaction.status === "success") {
+            const status = await sendTransaction.wait();
+            if (status === "success") {
                 console.log('Transaction sent:', sendTransaction.hash);
                 user.ETH_balance -= amountToSend;
-                res.json({ message: "Withdraw successful" });
                 await user.save();
                 const trans = new Transaction({
                     userId,
@@ -89,6 +91,7 @@ const withdrawBalance = async (req, res) => {
                     amount: amountToSend
                 });
                 await trans.save();
+                res.json({ message: "Withdraw successful" });
             }
 
         } catch (error) {
@@ -96,6 +99,19 @@ const withdrawBalance = async (req, res) => {
         }
     })();
 }
+
+const getETHPrice = async (req, res) => {
+    try {
+        const response = await axios.get(ETHER_PRICE_API + etherApiKey);
+        const price = parseFloat(response.data.result.ethusd);
+        await Ethereum.deleteMany();
+        await Ethereum.create({ price });
+        res.json(price);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 const addPrizeTransaction = async (userId, amount) => {
     try {
         amount = await USD2Ether(amount);
@@ -113,4 +129,4 @@ const addPrizeTransaction = async (userId, amount) => {
         console.error('Error on prize transaction', error);
     }
 }
-module.exports = { depositBalance, withdrawBalance, addPrizeTransaction}
+module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice }

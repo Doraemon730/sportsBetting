@@ -2,10 +2,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const User = require('../models/User');
-const Promotion = require('../models/Promotion')
+const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
+const Recovery = require('../models/Recovery');
+const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
-const { generateReferralCode } = require('../utils/util');
+const { generateReferralCode, sendEmail } = require('../utils/util');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
@@ -141,7 +143,6 @@ const getAllUsers = async (req, res) => {
   }
 }
 
-
 const updateUser = async (req, res) => {
   const userId = req.user.id;
 
@@ -185,45 +186,62 @@ const updateUser = async (req, res) => {
   }
 }
 
-const verifyEmail = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+const sendResetPasswordEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res
+      .status(400)
+      .json({ errors: [{ msg: 'User not registered!' }] });
   }
 
-  const { email } = req.body;
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    auth: {
-      user: process.env.FROM_MAIL,
-      pass: process.env.FROM_PASS,
-    },
-  });
-
-  const sendVerificationEmail = (email, verificationCode) => {
-    const mailOptions = {
-      from: process.env.FROM_MAIL,
-      to: email,
-      subject: 'Email Verification',
-      text: `Your verification code is: ${verificationCode}`,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error);
-        res.status(400).send('Server error');
-      } else {
-        res.json({ res: "Mail sent, check your inbox." });
-      }
+  const emailHash = crypto.createHash('sha256').update(email).digest('hex');
+  const subject = "Password Reset";
+  const text = `Please send this link to reset your password: reset-password/${emailHash}`;
+  try {
+    result = await sendEmail(email, subject, text);
+    const recovery = new Recovery({
+      email,
+      emailHash
     });
-  };
+    await recovery.save();
+    res.json(result);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+}
+
+const resetPassword = async (req, res) => {
+  const { emailHash, newPassword, confirmPassword } = req.body;
+  const recovery = await Recovery.findOne({ emailHash });
+  if (!recovery) {
+    return res
+      .status(400)
+      .json({ errors: [{ msg: 'Invalid Link!' }] });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ errors: [{ msg: 'Passwords do not match!' }] });
+  }
+  const email = recovery.email;
+  const user = await User.findOne({ email });
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(newPassword, salt);
+  const result = await User.updateOne({ _id: user._id }, { $set: user });
+  await Recovery.deleteMany({ emailHash });
+  res.json(result);
+}
+
+const verifyEmail = async (req, res) => {
+  const { email } = req.body;
 
   const verificationCode = '123456'; // Generate a verification code dynamically
-  sendVerificationEmail(email, verificationCode);
+  const subject = "Email Verification";
+  const text = `Your verification code is: ${verificationCode}`;
 
   try {
-
+    result = sendEmail(email, subject, text);
+    res.json(result);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -233,7 +251,7 @@ const verifyEmail = async (req, res) => {
 const updatePromotion = async (userId, promotion) => {
   try {
     const user = await User.findById(userId);
-    if(user) {
+    if (user) {
       user.promotion = promotion;
       user.save();
     }
@@ -244,10 +262,10 @@ const updatePromotion = async (userId, promotion) => {
 
 const updateAllPromotion = async (approach) => {
   try {
-    const promotion = await Promotion.findOne({approach: approach});
+    const promotion = await Promotion.findOne({ approach: approach });
 
     const users = await User.find();
-    if(users) {
+    if (users) {
       users.forEach(user => {
         user.promotion = promotion._id;
         user.save();
@@ -257,5 +275,7 @@ const updateAllPromotion = async (approach) => {
     console.error(err.message);
   }
 }
-module.exports = { registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail, 
- updatePromotion, updateAllPromotion};
+module.exports = {
+  registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail,
+  updatePromotion, updateAllPromotion, sendResetPasswordEmail, resetPassword
+};
