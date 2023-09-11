@@ -37,6 +37,12 @@ router.post('/users/update',
     checkUpdate,
     userController.updateUser);
 
+router.post('/users/sendResetPasswordEmail',
+    userController.sendResetPasswordEmail);
+
+router.post('/users/resetPassword',
+    userController.resetPassword);
+
 // Betting routes
 router.post('/bet/getPlayers',
     //   [

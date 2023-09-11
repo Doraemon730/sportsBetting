@@ -1,7 +1,8 @@
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const Ethereum = require('../models/Ethereum');
 
-function generateReferralCode() {
+const generateReferralCode = () => {
     const randomString = generateRandomString(6); // Specify the desired length of the random string
     const timestamp = Date.now().toString();
     const hash = crypto.createHash('sha256').update(randomString + timestamp).digest('hex');
@@ -10,7 +11,7 @@ function generateReferralCode() {
     return referralCode;
 }
 
-function generateRandomString(length) {
+const generateRandomString = length => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let randomString = '';
 
@@ -22,14 +23,41 @@ function generateRandomString(length) {
     return randomString;
 }
 
-async function Ether2USD(amount) {
+const sendEmail = async (email, subject, text) => {
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+            user: process.env.FROM_MAIL,
+            pass: process.env.FROM_PASS,
+        },
+    });
+    const mailOptions = {
+        from: process.env.FROM_MAIL,
+        to: email,
+        subject: subject,
+        text: text,
+    };
+
+    return new Promise((resolve, reject) => {
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve({ res: "Mail sent successfully. Please check your Email Inbox." });
+            }
+        });
+    });
+};
+
+const Ether2USD = async amount => {
     const etherPrice = await Ethereum.find();
     return amount * etherPrice[0].price;
 }
 
-async function USD2Ether(amount) {
+const USD2Ether = async amount => {
     const etherPrice = await Ethereum.find();
     return amount / etherPrice[0].price;
 }
 
-module.exports = { generateReferralCode, Ether2USD, USD2Ether };
+module.exports = { generateReferralCode, sendEmail, Ether2USD, USD2Ether };
