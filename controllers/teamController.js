@@ -1,4 +1,5 @@
 const Team = require('../models/Team');
+const {fetchNBATeams} = require('../services/teamService');
 const {ObjectId} = require('mongodb');
 
 const getIdfromRemoteId = async (remoteId) => {

@@ -100,18 +100,27 @@ const withdrawBalance = async (req, res) => {
     })();
 }
 
-const getETHPrice = async (req, res) => {
+const getETHPriceFromMarket = async () => {
     try {
         const response = await axios.get(ETHER_PRICE_API + etherApiKey);
         const price = parseFloat(response.data.result.ethusd);
         await Ethereum.deleteMany();
         await Ethereum.create({ price });
-        res.json(price);
+        console.log("Etherium price:" + price);
+
+    } catch (error) {        
+        console.log(error.message);
+    }
+}
+
+const getETHPrice = async (req, res) => {
+    try{
+        const ether = await Ethereum.find();
+        res.json(ether[0].price);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
-
 const addPrizeTransaction = async (userId, amount) => {
     try {
         amount = await USD2Ether(amount);
@@ -129,4 +138,4 @@ const addPrizeTransaction = async (userId, amount) => {
         console.error('Error on prize transaction', error);
     }
 }
-module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice }
+module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice, getETHPriceFromMarket }
