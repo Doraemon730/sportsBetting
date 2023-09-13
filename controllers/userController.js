@@ -80,8 +80,7 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
-
+    const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(400)
@@ -101,6 +100,9 @@ const loginUser = async (req, res) => {
         id: user.id
       }
     };
+    user.password = undefined;
+    user.isAdmin = undefined;
+    user.promotion = undefined;
 
     jwt.sign(
       payload,
@@ -108,7 +110,10 @@ const loginUser = async (req, res) => {
       { expiresIn: '24 hours' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({
+          token: token,
+          user: user
+        });
       }
     );
   } catch (err) {
