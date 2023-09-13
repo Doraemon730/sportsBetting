@@ -8,6 +8,7 @@ const Recovery = require('../models/Recovery');
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
+const { updateTotal } = require('../controllers/statisticsController');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
@@ -101,7 +102,7 @@ const loginUser = async (req, res) => {
         id: user.id
       }
     };
-
+    
     jwt.sign(
       payload,
       config.get('jwtSecret'),
