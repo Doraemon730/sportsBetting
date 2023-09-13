@@ -9,7 +9,7 @@ const transactionController = require('../controllers/transactionController');
 const promotionController = require('../controllers/promotionController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
-const { checkRegister, checkLogin, checkUpdate, checkResetPassword } = require('../middleware/checkObject');
+const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
 const { checkWednesday } = require('../middleware/checkDay');
 
 //User routes
@@ -38,6 +38,7 @@ router.post('/users/update',
     userController.updateUser);
 
 router.post('/users/sendResetPasswordEmail',
+    checkEmail,
     userController.sendResetPasswordEmail);
 
 router.post('/users/resetPassword',

@@ -129,4 +129,5 @@ const addPrizeTransaction = async (userId, amount) => {
         console.error('Error on prize transaction', error);
     }
 }
+
 module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice }
