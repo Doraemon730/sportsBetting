@@ -119,6 +119,5 @@ router.post('/capital', capitalController.addCapital);
 
 // Statistics routes
 router.post('/statistics', statisticsController.getStatistics);
-
 //Transaction routes
 module.exports = router;

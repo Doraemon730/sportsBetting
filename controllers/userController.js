@@ -81,8 +81,7 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
-
+    const user = await User.findOne({ email });
     if (!user) {
       return res
         .status(400)
@@ -102,14 +101,30 @@ const loginUser = async (req, res) => {
         id: user.id
       }
     };
-    
+
+    user.password = undefined;
+    user.isAdmin = undefined;
+    user.promotion = undefined;
+
+    const now = new Date();
+    if(user.lastlogin){
+      if(now.getDate() !== user.lastlogin.getDate())
+        await updateTotal();
+    } else {
+      await updateTotal();
+    }
+    user.lastlogin = now;
+    await user.save();
     jwt.sign(
       payload,
       config.get('jwtSecret'),
       { expiresIn: '24 hours' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({
+          token: token,
+          user: user
+        });
       }
     );
   } catch (err) {

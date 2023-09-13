@@ -1,7 +1,7 @@
 const Statistics = require('../models/Statistics');
 
 const updateTotal = async () => {
-    try{
+    try {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         const statistic = await Statistics.findOne({}, {}, {
@@ -9,9 +9,9 @@ const updateTotal = async () => {
                 _id: -1
             }
         });
-        if(now == statistic.date) {
-            statistic.total_users ++;
-            statistic.daily_users ++;
+        if (now.getDate() === statistic.date.getDate()) {
+            statistic.total_users++;
+            statistic.daily_users++;
             await statistic.save();
         } else {
             const newstatistic = new Statistics({
@@ -28,9 +28,11 @@ const updateTotal = async () => {
 }
 
 const getStatisticsByDate = async (date) => {
-    try{
+    try {
         date.setHours(0, 0, 0, 0);
-        const statistics = await Statistics.findOne({date:date});
+        const statistics = await Statistics.findOne({
+            date: date
+        });
         return statistics;
     } catch (error) {
         console.log(error.message);
@@ -38,9 +40,11 @@ const getStatisticsByDate = async (date) => {
 }
 
 const getStatistics = async (req, res) => {
-    try{
-        let {date} = req.body;
-        if(!date)
+    try {
+        let {
+            date
+        } = req.body;
+        if (!date)
             date = new Date();
         const statistic = await getStatisticsByDate(date);
     } catch (error) {
@@ -48,6 +52,8 @@ const getStatistics = async (req, res) => {
         res.status(500).json(error.message);
     }
 }
+
+
 
 module.exports = {
     getStatistics,

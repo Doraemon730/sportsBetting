@@ -54,6 +54,9 @@ const UserSchema = new mongoose.Schema({
     default: function () {
       return new mongoose.Types.ObjectId('64fbe8cd009753bb7aa7a4fb');
     }
+  },
+  lastlogin: {
+    type :Date
   }
 });
 
