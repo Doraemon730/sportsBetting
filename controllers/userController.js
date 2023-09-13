@@ -8,6 +8,7 @@ const Recovery = require('../models/Recovery');
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
+const { updateTotal } = require('../controllers/statisticsController');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
@@ -100,10 +101,20 @@ const loginUser = async (req, res) => {
         id: user.id
       }
     };
+
     user.password = undefined;
     user.isAdmin = undefined;
     user.promotion = undefined;
 
+    const now = new Date();
+    if(user.lastlogin){
+      if(now.getDate() !== user.lastlogin.getDate())
+        await updateTotal();
+    } else {
+      await updateTotal();
+    }
+    user.lastlogin = now;
+    await user.save();
     jwt.sign(
       payload,
       config.get('jwtSecret'),

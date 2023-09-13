@@ -10,6 +10,7 @@ const promotionController = require('../controllers/promotionController');
 const propController = require('../controllers/propController');
 const discountController = require('../controllers/discountController');
 const capitalController = require('../controllers/capitalController');
+const statisticsController = require('../controllers/statisticsController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -112,8 +113,11 @@ router.post('/promotion/update', auth, promotionController.updatePromotion);
 
 // Props routes
 router.post('/props/add', propController.addProp);
-router.get('/props/fetchAll', propController.getProps);
+router.post('/props/fetchAll', propController.getProps);
 
-router.get('/capital', capitalController.addCapital);
+router.post('/capital', capitalController.addCapital);
+
+// Statistics routes
+router.post('/statistics', statisticsController.getStatistics);
 //Transaction routes
 module.exports = router;
