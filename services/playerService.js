@@ -3,12 +3,12 @@ const { getAllTeamsFromDatabase, fetchNBATeamsFromRemoteId } = require('./teamSe
 const { ObjectId } = require('mongodb');
 const axios = require('axios');
 const apiKey = process.env.NBA_API_KEY;
-const baseUrl = process.env.NBA_API_BASEURL;
-const locale = process.env.NBA_API_LOCALE;
+const { NBA_API_BASEURL, LOCALE } = require('../config/constant');
+
 
 const fetchPlayerProfile = async (playerId) => {
 
-  return axios.get(`${baseUrl}/${locale}/players/${playerId}/profile.json?api_key=${apiKey}`)
+  return axios.get(`${NBA_API_BASEURL}/${LOCALE}/players/${playerId}/profile.json?api_key=${apiKey}`)
     .then(response => {
       if (response.data.seasons.length > 0) {
         const team_review = response.data.seasons[0].teams[0];
@@ -25,7 +25,7 @@ const fetchPlayerProfile = async (playerId) => {
 }
 const fetchPlayerNumber = async (playerId) => {
 
-  return axios.get(`${baseUrl}/${locale}/players/${playerId}/profile.json?api_key=${apiKey}`)
+  return axios.get(`${NBA_API_BASEURL}/${LOCALE}/players/${playerId}/profile.json?api_key=${apiKey}`)
     .then(response => {
       if (!response.data.jersey_number)
         return null;

@@ -1,6 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Ethereum = require('../models/Ethereum');
 const User = require('../models/User');
+const { updateCapital } = require('../controllers/capitalController');
 const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
@@ -42,7 +43,7 @@ const depositBalance = async (req, res) => {
 
             await transaction.save();
             await user.save();
-
+            await updateCapital(0, etherAmount);
             res.json({ message: "Transaction successful" });
         } else {
             return res.status(400).json({ message: "Transaction not successful!" });
@@ -91,6 +92,7 @@ const withdrawBalance = async (req, res) => {
                     amount: amountToSend
                 });
                 await trans.save();
+                await updateCapital(1, amountToSend);
                 res.json({ message: "Withdraw successful" });
             }
 
@@ -100,18 +102,27 @@ const withdrawBalance = async (req, res) => {
     })();
 }
 
-const getETHPrice = async (req, res) => {
+const getETHPriceFromMarket = async () => {
     try {
         const response = await axios.get(ETHER_PRICE_API + etherApiKey);
         const price = parseFloat(response.data.result.ethusd);
         await Ethereum.deleteMany();
         await Ethereum.create({ price });
-        res.json(price);
+        console.log("Etherium price:" + price);
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+const getETHPrice = async (req, res) => {
+    try {
+        const ether = await Ethereum.find();
+        res.json(ether[0].price);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
-
 const addPrizeTransaction = async (userId, amount) => {
     try {
         amount = await USD2Ether(amount);
@@ -129,5 +140,5 @@ const addPrizeTransaction = async (userId, amount) => {
         console.error('Error on prize transaction', error);
     }
 }
+module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice, getETHPriceFromMarket }
 
-module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice }
