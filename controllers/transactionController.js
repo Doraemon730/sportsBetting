@@ -1,6 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Ethereum = require('../models/Ethereum');
 const User = require('../models/User');
+const {updateCapital} = require('../controllers/capitalController');
 const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
@@ -37,12 +38,12 @@ const depositBalance = async (req, res) => {
                 transactionType: "deposit",
                 amount: etherAmount
             });
-
+            
             user.ETH_balance += etherAmount;
 
             await transaction.save();
             await user.save();
-
+            await updateCapital(0, etherAmount);
             res.json({ message: "Transaction successful" });
         } else {
             return res.status(400).json({ message: "Transaction not successful!" });
@@ -91,6 +92,7 @@ const withdrawBalance = async (req, res) => {
                     amount: amountToSend
                 });
                 await trans.save();
+                await updateCapital(1, amountToSend);
                 res.json({ message: "Withdraw successful" });
             }
 

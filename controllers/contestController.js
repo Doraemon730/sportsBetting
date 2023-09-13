@@ -7,12 +7,15 @@ const {
   fetchNBAContest,
   fetchGameSummary,
   FinalizeBet
-} = require('../services/contestService')
+} = require('../services/contestService');
 const Player = require('../models/Player');
 const Bet = require('../models/Bet');
 const {
   addPrizeTransaction
 } = require('../controllers/transactionController');
+const { updateCapital} = require('../controllers/capitalController');
+
+const { USD2Ether } = require('../utils/util');
 const {
   BET_2_2_HIGH,
   BET_3_3_HIGH,
@@ -318,7 +321,11 @@ const updateBetfromContest = async () => {
                     break;
                 }
                 if (pending.status == "win")
+                {
+                  
                   await addPrizeTransaction(pending.userId, pending.prize);
+
+                }  
                 break;
             }
           } else {
@@ -434,6 +441,9 @@ const updateBetfromContest = async () => {
               }
               await user.save();
             }
+            await updateCapital(3, USD2Ether(pending.prize - pending.entryFee));
+          } else {
+            await updateCapital(2, USD2Ether(pending.entryFee));
           }
         }
 
