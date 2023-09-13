@@ -1,7 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Ethereum = require('../models/Ethereum');
 const User = require('../models/User');
-const {updateCapital} = require('../controllers/capitalController');
+const { updateCapital } = require('../controllers/capitalController');
 const axios = require('axios');
 const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
@@ -38,7 +38,7 @@ const depositBalance = async (req, res) => {
                 transactionType: "deposit",
                 amount: etherAmount
             });
-            
+
             user.ETH_balance += etherAmount;
 
             await transaction.save();
@@ -110,13 +110,13 @@ const getETHPriceFromMarket = async () => {
         await Ethereum.create({ price });
         console.log("Etherium price:" + price);
 
-    } catch (error) {        
+    } catch (error) {
         console.log(error.message);
     }
 }
 
 const getETHPrice = async (req, res) => {
-    try{
+    try {
         const ether = await Ethereum.find();
         res.json(ether[0].price);
     } catch (error) {
@@ -141,3 +141,4 @@ const addPrizeTransaction = async (userId, amount) => {
     }
 }
 module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice, getETHPriceFromMarket }
+
