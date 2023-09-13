@@ -1,5 +1,7 @@
 const Contest = require("../models/Contest");
 const Player = require("../models/Player");
+const Discount = require("../models/Discount")
+const { ObjectId } = require("mongodb");
 // const Sport = require("../models/Sport");
 const { fetchPlayerNumber, fetchPlayerProfile } = require("../services/playerService");
 const { fetchNBATeamsFromRemoteId } = require("../services/teamService");
@@ -81,7 +83,19 @@ const getPlayersByProps = async (req, res) => {
         },
       },
     ]);
-    results.sort((a, b) => b.statistics[propName] - a.statistics[propName])
+    // results.sort((a, b) => b.statistics[propName] - a.statistics[propName])
+    if(now.getDay() === 0){
+      now.setHours(0, 0, 0, 0);
+      results = results.map(async (player) => {
+
+        let discountPlayer = await Discount.find({date: now, playerId:player.playerId}).populate('prop');
+        if(!discountPlayer)
+          return player;
+        player.statistics[discountPlayer.prop.name] = discountPlayer.discount;
+        return player;
+      })
+    }
+    
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -151,4 +165,18 @@ const addNBAPlayersToDatabase = async (req, res) => {
   }
 };
 
-module.exports = { getPlayersByProps, addNBAPlayersToDatabase, updateNBAPlayers };
+const getPlayerProp = async (req, res) => {
+  try{
+    let { id } = req.body;
+    console.log(id);
+    const player = await Player.findById(new ObjectId(id));    
+    if(player)
+      res.json(player.statistics);
+    else
+      res.status(404).json("Player not found");
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+}
+
+module.exports = { getPlayersByProps, addNBAPlayersToDatabase, updateNBAPlayers, getPlayerProp};

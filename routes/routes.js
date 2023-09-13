@@ -7,10 +7,20 @@ const teamController = require('../controllers/teamController');
 const userController = require('../controllers/userController');
 const transactionController = require('../controllers/transactionController');
 const promotionController = require('../controllers/promotionController');
+const propController = require('../controllers/propController');
+const discountController = require('../controllers/discountController');
+const capitalController = require('../controllers/capitalController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
-const { checkRegister, checkLogin, checkUpdate, checkResetPassword } = require('../middleware/checkObject');
-const { checkWednesday } = require('../middleware/checkDay');
+const {
+    checkRegister,
+    checkLogin,
+    checkUpdate,
+    checkResetPassword
+} = require('../middleware/checkObject');
+const {
+    checkWednesday
+} = require('../middleware/checkDay');
 
 //User routes
 router.post(
@@ -95,16 +105,22 @@ router.post('/team/fetchAll', auth, teamController.addNBATeamsToDatabase);
 
 // Player routes
 router.post('/player/fetchAll', auth, playerController.addNBAPlayersToDatabase);
-
 router.post('/player/update', auth, playerController.updateNBAPlayers);
+router.post('/player/props', playerController.getPlayerProp);
+router.post('/player/addDiscount', discountController.addDiscount);
 
 
-//Promotion routes
+// Promotion routes
 router.post('/promotion/add', promotionController.addPromotion);
 
 router.post('/promotion/fetchAll', auth, promotionController.getPromotions);
 
 router.post('/promotion/update', auth, promotionController.updatePromotion);
 
+// Props routes
+router.post('/props/add', propController.addProp);
+router.get('/props/fetchAll', propController.getProps);
+
+router.get('/capital', capitalController.addCapital);
 //Transaction routes
 module.exports = router;

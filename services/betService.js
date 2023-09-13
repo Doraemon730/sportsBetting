@@ -24,7 +24,7 @@ const cronThursdayJob = () => {
 const cronEtherPriceJob = () => {
   getETHPriceFromMarket();
   const time = new Date().toString();
-  console.log('ETH Price has been updated at :'+ time);
+  console.log('ETH Price has been updated at : '+ time);
 }
 
 // Set up the cron job
