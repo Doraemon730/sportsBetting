@@ -31,8 +31,9 @@ const getPromotion = async (req, res) => {
 
 const updatePromotion = async (req, res) => {
     try {
-        const promotion = await Promotion.findByIdAndUpdate(req.params.id, req.body, {new: true});
-        res.json(promotion);
+        const {id, promotion} = req.body;
+        const updatedpromotion = await Promotion.findByIdAndUpdate(id, promotion, {new: true});
+        res.json(updatedpromotion);
     } catch (error) {
         res.status(500).json(error.message);
     }
