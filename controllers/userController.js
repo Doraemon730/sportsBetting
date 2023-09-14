@@ -102,24 +102,27 @@ const loginUser = async (req, res) => {
       }
     };
 
-    user.password = undefined;
-    user.isAdmin = undefined;
-    user.promotion = undefined;
-
     const now = new Date();
-    if(user.lastlogin){
-      if(now.getDate() !== user.lastlogin.getDate())
+    if (user.lastlogin) {
+      if (now.getDate() !== user.lastlogin.getDate())
         await updateTotal();
     } else {
       await updateTotal();
     }
     user.lastlogin = now;
+
     await user.save();
+
+    user.password = undefined;
+    user.isAdmin = undefined;
+    user.promotion = undefined;
+
     jwt.sign(
       payload,
       config.get('jwtSecret'),
       { expiresIn: '24 hours' },
       (err, token) => {
+
         if (err) throw err;
         res.json({
           token: token,
