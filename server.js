@@ -3,6 +3,9 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const path = require('path');
 const bodyParser = require('body-parser');
+const https = require('https');
+const fs = require('fs');
+
 const app = express();
 const {
   WednesdayJob,
@@ -33,13 +36,26 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+const options = {
+  key: fs.readFileSync('private.key'),
+  cert: fs.readFileSync('certificate.crt'),
+  passphrase: '!@QWAS3ed'
+}
 
 const PORT = process.env.PORT || 5000;
 const now = new Date();
-app.listen(PORT, () => {
+https.createServer(options, app).listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 
   WednesdayJob.start();
   ThursdayJob.start();
   EtherJob.start();
 });
+
+// app.listen(PORT, () => {
+//   console.log(`Server started on port ${PORT}`);
+
+//   WednesdayJob.start();
+//   ThursdayJob.start();
+//   EtherJob.start();
+// });
