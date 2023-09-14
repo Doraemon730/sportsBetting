@@ -85,7 +85,7 @@ const getPlayersByProps = async (req, res) => {
     ]);
     // results.sort((a, b) => b.statistics[propName] - a.statistics[propName])
     if(now.getDay() === 0){
-      now.setHours(0, 0, 0, 0);
+      now.setUTCHours(0, 0, 0, 0);
       results = results.map(async (player) => {
 
         let discountPlayer = await Discount.find({date: now, playerId:player.playerId}).populate('prop');

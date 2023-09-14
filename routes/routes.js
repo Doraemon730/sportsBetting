@@ -87,7 +87,7 @@ router.get(
 
 // Contest routes
 router.post(
-    '/contest/fetchAll',
+    '/contest/fetchAllNBAContest',
     auth,
     contestController.addNBAContestsToDatabase
 );
@@ -95,11 +95,11 @@ router.post(
 router.post('/contest/updateContest', contestController.updateBetfromContest);
 
 // Team routes
-router.post('/team/fetchAll', auth, teamController.addNBATeamsToDatabase);
+router.post('/team/fetchAllNBATeams', auth, teamController.addNBATeamsToDatabase);
 
 // Player routes
-router.post('/player/fetchAll', auth, playerController.addNBAPlayersToDatabase);
-router.post('/player/update', auth, playerController.updateNBAPlayers);
+router.post('/player/fetchAllNBAPlayers', auth, playerController.addNBAPlayersToDatabase);
+router.post('/player/updateNBAPlayer', auth, playerController.updateNBAPlayers);
 router.post('/player/props', playerController.getPlayerProp);
 router.post('/player/addDiscount', discountController.addDiscount);
 
@@ -115,7 +115,7 @@ router.post('/promotion/update', auth, promotionController.updatePromotion);
 router.post('/props/add', propController.addProp);
 router.post('/props/fetchAll', propController.getProps);
 
-router.post('/capital', capitalController.addCapital);
+router.post('/revenue', capitalController.getCaptital);
 
 // Statistics routes
 router.post('/statistics', statisticsController.getStatistics);

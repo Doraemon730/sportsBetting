@@ -30,9 +30,9 @@ const fetchGameSummary = async (gameId) => {
     });
 }
 
-const FinalizeBet = async () => {
+const FinalizeBet = async (gameId) => {
   try {
-    const gameId = "fad728ad-79a1-475d-bfdc-ca9bf32db526";
+    //const gameId = "fad728ad-79a1-475d-bfdc-ca9bf32db526";
     const summary = await fetchGameSummary(gameId);
     return summary;
   } catch (error) {

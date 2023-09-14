@@ -3,7 +3,7 @@ const Statistics = require('../models/Statistics');
 const updateTotal = async () => {
     try {
         const now = new Date();
-        now.setHours(0, 0, 0, 0);
+        now.setUTCHours(0, 0, 0, 0);
         const statistic = await Statistics.findOne({}, {}, {
             sort: {
                 _id: -1
@@ -29,7 +29,8 @@ const updateTotal = async () => {
 
 const getStatisticsByDate = async (date) => {
     try {
-        date.setHours(0, 0, 0, 0);
+        date.setUTCHours(0, 0, 0, 0);        
+        console.log(date);
         const statistics = await Statistics.findOne({
             date: date
         });
@@ -41,12 +42,16 @@ const getStatisticsByDate = async (date) => {
 
 const getStatistics = async (req, res) => {
     try {
+        console.log("asdf");
         let {
             date
         } = req.body;
         if (!date)
             date = new Date();
-        const statistic = await getStatisticsByDate(date);
+        console.log(date);
+        const statistics = await getStatisticsByDate(date);
+
+        res.json(statistics);
     } catch (error) {
         console.log(error.message);
         res.status(500).json(error.message);

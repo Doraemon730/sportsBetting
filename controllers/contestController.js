@@ -8,6 +8,7 @@ const {
   fetchGameSummary,
   FinalizeBet
 } = require('../services/contestService');
+const teamController = require('../controllers/teamController')
 const Player = require('../models/Player');
 const Bet = require('../models/Bet');
 const {
@@ -41,10 +42,10 @@ const addNBAContestsToDatabase = async (req, res) => {
     //console.log(contestData);
     // Loop through the fetched data and add contests to the database
     for (const contestInfo of contestData) {
-      const homeID = await teamService.getIdfromRemoteId(contestInfo.home.id);
-      const awayID = await teamService.getIdfromRemoteId(contestInfo.away.id);
+      const homeID = await teamController.getIdfromRemoteId(contestInfo.home.id);
+      const awayID = await teamController.getIdfromRemoteId(contestInfo.away.id);
 
-      console.log(homeID, awayID);
+      /////////console.log(homeID, awayID);
       const contest = new Contest({
         name: contestInfo.home.alias + " vs " + contestInfo.away.alias,
         season: "2023/REG",
@@ -78,9 +79,9 @@ const preprocessPlayers = async (players) => {
   }
   return playerList;
 }
-const updateBetfromContest = async () => {
+const updateBetfromContest = async (gameId) => {
   try {
-    const summary = await FinalizeBet();
+    const summary = await FinalizeBet(gameId);
     if (summary.home.players.length > 0) {
       const players = summary.home.players; //.concat(summary.away.players);
       const playerList = await preprocessPlayers(players);

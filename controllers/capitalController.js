@@ -12,7 +12,7 @@ const updateDeposit = async (amount) => {
         now.setMinutes(0, 0, 0);
         const created = capital.createdAt;
         created.setMinutes(0, 0, 0);
-        if (now == created) {
+        if (now.getDate() === created.getDate() && now.getHours() === created.getHours()) {
             capital.total += amount;
             capital.deposit += amount;
             capital.createdAt = now;
@@ -44,7 +44,7 @@ const updateWithdraw = async (amount) => {
         now.setMinutes(0, 0, 0);
         const created = capital.createdAt;
         created.setMinutes(0, 0, 0);
-        if (now == created) {
+        if (now.getDate() === created.getDate() && now.getHours() === created.getHours()) {
             capital.total -= amount;
             capital.withdraw += amount;
             capital.createdAt = now;
@@ -76,7 +76,7 @@ const updateProfit = async (amount) => {
         now.setMinutes(0, 0, 0);
         const created = capital.createdAt;
         created.setMinutes(0, 0, 0);
-        if (now == created) {            
+        if (now.getDate() === created.getDate() && now.getHours() === created.getHours()) {
             capital.profit += amount;
             capital.createdAt = now;
             await capital.save();
@@ -106,7 +106,7 @@ const updateLost = async (amount) => {
         now.setMinutes(0, 0, 0);
         const created = capital.createdAt;
         created.setMinutes(0, 0, 0);
-        if (now == created) {            
+        if (now.getDate() === created.getDate() && now.getHours() === created.getHours()) {            
             capital.lost += amount;
             capital.createdAt = now;
             await capital.save();
@@ -164,8 +164,20 @@ const addCapital = async (req, res) => {
         res.status(500).json(error.message);
     }
 }
-
+const getCaptital = async (req, res) => {
+    try{
+        const capital = await Capital.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+        res.json(capital);
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+}
 module.exports = {
     updateCapital,
-    addCapital
+    addCapital,
+    getCaptital
 }
