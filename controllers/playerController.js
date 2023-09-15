@@ -22,7 +22,7 @@ const getTopPlayerBySport = async (req, res) => {
     let {
       sportId
     } = req.body;
-    console.log(sportId);
+    
     sportId = new ObjectId(sportId);
     const props = await Prop.find({
       sportId: sportId
@@ -32,7 +32,8 @@ const getTopPlayerBySport = async (req, res) => {
     const result = {};
     result.props = props;
     const now = new Date();
-    const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
+    const threeDaysFromNow = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
+    
     const results = await Contest.aggregate([
     {
       $match: {
@@ -56,6 +57,14 @@ const getTopPlayerBySport = async (req, res) => {
     },
     {
       $unwind: '$contestPlayer',
+    },
+    {
+      $lookup: {
+        from: 'teams',
+        localField: 'contestPlayer.teamId',
+        foreignField: '_id',
+        as: 'teamInfo',
+      },
     },    
     {
       $project: {
@@ -65,17 +74,18 @@ const getTopPlayerBySport = async (req, res) => {
         contestId: 1,
         contestName: 1,
         playerNumber: '$contestPlayer.jerseyNumber',
-        sportName: {
-          $arrayElemAt: ['$sportInfo.name', 0]
-        },
         teamName: {
           $arrayElemAt: ['$teamInfo.name', 0]
         },
         statistics: '$contestPlayer.statistics',
       },
     },
-  ]);
-    res.status(200).json(result);
+    ]);
+  for(const prop of props){
+    results.sort((a, b) => b.statistics[prop.name] - a.statistics[prop.name]);
+    result[prop.name] = results.slice(0, 10);
+  }
+  res.status(200).json(result);
   } catch (error) {
     console.log(error.message);
     res.status(500).json(error.message);
