@@ -55,9 +55,8 @@ router.post('/bet/getPlayers',
     //     body('prop').notEmpty().isString(),
     //     body('value').notEmpty().isString()
     //   ],
-    playerController.getPlayersByProps
+    playerController.getTopPlayerBySport
 );
-
 
 
 router.post('/bet/start',
