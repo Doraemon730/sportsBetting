@@ -51,13 +51,28 @@ const sendEmail = async (email, subject, text) => {
 };
 
 const Ether2USD = async amount => {
-    const etherPrice = await Ethereum.find();
-    return amount * etherPrice[0].price;
+    return new Promise(async (resolve, reject) => {
+        try {
+            const etherPrice = await Ethereum.find();
+            const convertedAmount = amount * etherPrice[0].price;
+            resolve(convertedAmount);
+        } catch (error) {
+            console.log(error)
+            reject(error);
+        }
+    });
 }
 
-const USD2Ether = async amount => {
-    const etherPrice = await Ethereum.find();
-    return amount / etherPrice[0].price;
+const USD2Ether = amount => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const etherPrice = await Ethereum.find();
+            const convertedAmount = amount / etherPrice[0].price;
+            resolve(convertedAmount);
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
 
 const isEmpty = async (stringVariable) => {
