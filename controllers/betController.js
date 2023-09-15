@@ -99,7 +99,7 @@ const isAllowedSixLegParlay = async (req, res) => {
     if (user.promotion.approach != 1)
         res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set the time to the start of the day
+    today.setUTCHours(0, 0, 0, 0); // Set the time to the start of the day
     const bet = await Bet.findOne({
         userId: userId, createdAt: {
             $gte: today,
@@ -120,7 +120,7 @@ const sixLegParlayBetting = async (req, res) => {
         if (user.promotion.approach != 1)
             res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set the time to the start of the day
+        today.setUTCHours(0, 0, 0, 0); // Set the time to the start of the day
         const bet = await Bet.findOne({
             userId: userId, createdAt: {
                 $gte: today,

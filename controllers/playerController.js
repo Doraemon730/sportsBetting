@@ -1,21 +1,96 @@
 const Contest = require("../models/Contest");
 const Player = require("../models/Player");
-const Discount = require("../models/Discount")
-const { ObjectId } = require("mongodb");
+const Discount = require("../models/Discount");
+const Prop = require('../models/Prop');
+const {
+  ObjectId
+} = require("mongodb");
 // const Sport = require("../models/Sport");
-const { fetchPlayerNumber, fetchPlayerProfile } = require("../services/playerService");
-const { fetchNBATeamsFromRemoteId } = require("../services/teamService");
-const { getAllTeamsFromDatabase } = require("./teamController");
+const {
+  fetchPlayerNumber,
+  fetchPlayerProfile
+} = require("../services/playerService");
+const {
+  fetchNBATeamsFromRemoteId
+} = require("../services/teamService");
+const {
+  getAllTeamsFromDatabase
+} = require("./teamController");
 
-
+const getTopPlayerBySport = async (req, res) => {
+  try {
+    let {
+      sportId
+    } = req.body;
+    console.log(sportId);
+    sportId = new ObjectId(sportId);
+    const props = await Prop.find({
+      sportId: sportId
+    }).select('name');
+    if (props.length == 0)
+      res.status(404).json("There is not props");
+    const result = {};
+    result.props = props;
+    const now = new Date();
+    const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
+    const results = await Contest.aggregate([
+    {
+      $match: {
+        sportId: sportId,
+        startTime: {
+          $gte: now,
+          $lte: threeDaysFromNow
+        }        
+      },
+    },
+    {
+      $unwind: '$teams',
+    },
+    {
+      $lookup: {
+        from: 'players',
+        localField: 'teams',
+        foreignField: 'teamId',
+        as: 'contestPlayer',
+      },
+    },
+    {
+      $unwind: '$contestPlayer',
+    },    
+    {
+      $project: {
+        _id: 0,
+        playerId: '$contestPlayer._id',
+        playerName: '$contestPlayer.name',
+        contestId: 1,
+        contestName: 1,
+        playerNumber: '$contestPlayer.jerseyNumber',
+        sportName: {
+          $arrayElemAt: ['$sportInfo.name', 0]
+        },
+        teamName: {
+          $arrayElemAt: ['$teamInfo.name', 0]
+        },
+        statistics: '$contestPlayer.statistics',
+      },
+    },
+  ]);
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error.message);
+  }
+}
 const getPlayersByProps = async (req, res) => {
-  const { sportName, propName } = req.body;
+  const {
+    sportName,
+    propName
+  } = req.body;
   const now = new Date();
   const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
 
   try {
-    const results = await Contest.aggregate([
-      {
+    const results = await Contest.aggregate([{
         $lookup: {
           from: 'sports', // The name of the Sport collection in your database
           localField: 'sportId',
@@ -28,7 +103,10 @@ const getPlayersByProps = async (req, res) => {
       },
       {
         $match: {
-          startTime: { $gte: now, $lte: threeDaysFromNow },
+          startTime: {
+            $gte: now,
+            $lte: threeDaysFromNow
+          },
           'sport.name': sportName,
         },
       },
@@ -62,7 +140,13 @@ const getPlayersByProps = async (req, res) => {
           as: 'teamInfo',
         },
       },
-      { $match: { [`contestPlayer.statistics.${propName}`]: { $exists: true } } },
+      {
+        $match: {
+          [`contestPlayer.statistics.${propName}`]: {
+            $exists: true
+          }
+        }
+      },
       {
         $addFields: {
           contestId: '$_id',
@@ -77,28 +161,39 @@ const getPlayersByProps = async (req, res) => {
           contestId: 1,
           contestName: 1,
           playerNumber: '$contestPlayer.jerseyNumber',
-          sportName: { $arrayElemAt: ['$sportInfo.name', 0] },
-          teamName: { $arrayElemAt: ['$teamInfo.name', 0] },
+          sportName: {
+            $arrayElemAt: ['$sportInfo.name', 0]
+          },
+          teamName: {
+            $arrayElemAt: ['$teamInfo.name', 0]
+          },
           statistics: '$contestPlayer.statistics',
         },
       },
     ]);
-    // results.sort((a, b) => b.statistics[propName] - a.statistics[propName])
-    if(now.getDay() === 0){
+
+    results.sort((a, b) => b.statistics[propName] - a.statistics[propName]);
+
+    if (now.getDay() === 0) {
       now.setUTCHours(0, 0, 0, 0);
       results = results.map(async (player) => {
 
-        let discountPlayer = await Discount.find({date: now, playerId:player.playerId}).populate('prop');
-        if(!discountPlayer)
+        let discountPlayer = await Discount.find({
+          date: now,
+          playerId: player.playerId
+        }).populate('prop');
+        if (!discountPlayer)
           return player;
         player.statistics[discountPlayer.prop.name] = discountPlayer.discount;
         return player;
-      })
+      });
     }
-    
+
     res.json(results);
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    res.status(500).json({
+      message: err.message
+    })
   }
 }
 
@@ -159,18 +254,22 @@ const addNBAPlayersToDatabase = async (req, res) => {
         }
       }
     }
-    res.status(200).json({ message: 'NBA players added to the database.' });
+    res.status(200).json({
+      message: 'NBA players added to the database.'
+    });
   } catch (error) {
     throw new Error(`Error adding NBA contests to the database: ${error.message}`);
   }
 };
 
 const getPlayerProp = async (req, res) => {
-  try{
-    let { id } = req.body;
+  try {
+    let {
+      id
+    } = req.body;
     console.log(id);
-    const player = await Player.findById(new ObjectId(id));    
-    if(player)
+    const player = await Player.findById(new ObjectId(id));
+    if (player)
       res.json(player.statistics);
     else
       res.status(404).json("Player not found");
@@ -179,4 +278,10 @@ const getPlayerProp = async (req, res) => {
   }
 }
 
-module.exports = { getPlayersByProps, addNBAPlayersToDatabase, updateNBAPlayers, getPlayerProp};
+module.exports = {
+  getPlayersByProps,
+  addNBAPlayersToDatabase,
+  updateNBAPlayers,
+  getPlayerProp,
+  getTopPlayerBySport
+};

@@ -294,7 +294,44 @@ const updateAllPromotion = async (approach) => {
     console.error(err.message);
   }
 }
+
+const getUsers = async (req, res) =>{
+  try {
+    const page = parseInt(req.body.page) || 1;
+    const limit = parseInt(req.body.limit) || 10;
+
+    const count = await User.countDocuments();
+    const totalPages = Math.ceil(count / limit);
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const results = {};
+
+    if (endIndex < count) {
+      results.next = {
+        page: page + 1,
+        limit: limit
+      };
+    }
+
+    if (startIndex > 0) {
+      results.previous = {
+        page: page - 1,
+        limit: limit
+      };
+    }
+
+    results.totalPages = totalPages;
+    results.results = await User.find().skip(startIndex).limit(limit);
+    res.json(results);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+}
+
 module.exports = {
   registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail,
-  updatePromotion, updateAllPromotion, sendResetPasswordEmail, resetPassword
+  updatePromotion, updateAllPromotion, sendResetPasswordEmail, resetPassword,
+  getUsers
 };

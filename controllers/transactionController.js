@@ -7,6 +7,7 @@ const { ethers } = require('ethers');
 const { ObjectId } = require('mongodb');
 const { USD2Ether } = require('../utils/util');
 const { ETHER_PRICE_API } = require('../config/constant');
+const { join } = require('path');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
@@ -106,8 +107,7 @@ const getETHPriceFromMarket = async () => {
     try {
         const response = await axios.get(ETHER_PRICE_API + etherApiKey);
         const price = parseFloat(response.data.result.ethusd);
-        await Ethereum.deleteMany();
-        await Ethereum.create({ price });
+        const ether = await Ethereum.findOneAndUpdate({}, {price : price}, {new: true});
         console.log("Etherium price:" + price);
 
     } catch (error) {
