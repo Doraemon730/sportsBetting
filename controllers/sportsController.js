@@ -1,4 +1,4 @@
-const Prop = require('../models/Sport');
+const Sport = require('../models/Sport');
 const { ObjectId } = require("mongodb");
 
 const getAllSports = async (req, res) => {
