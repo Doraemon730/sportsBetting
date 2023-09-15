@@ -58,6 +58,8 @@ router.post('/bet/getPlayers',
     playerController.getPlayersByProps
 );
 
+
+
 router.post('/bet/start',
     auth,
     betController.startBetting
@@ -92,7 +94,7 @@ router.post(
     contestController.addNBAContestsToDatabase
 );
 
-router.post('/contest/updateContest', contestController.updateBetfromContest);
+router.post('/contest/updateContest', auth, contestController.updateBetfromContest);
 
 // Team routes
 router.post('/team/fetchAllNBATeams', auth, teamController.addNBATeamsToDatabase);
@@ -100,24 +102,24 @@ router.post('/team/fetchAllNBATeams', auth, teamController.addNBATeamsToDatabase
 // Player routes
 router.post('/player/fetchAllNBAPlayers', auth, playerController.addNBAPlayersToDatabase);
 router.post('/player/updateNBAPlayer', auth, playerController.updateNBAPlayers);
-router.post('/player/props', playerController.getPlayerProp);
-router.post('/player/addDiscount', discountController.addDiscount);
+router.post('/player/props', auth, playerController.getPlayerProp);
+router.post('/player/addDiscount', auth, discountController.addDiscount);
 
 
 // Promotion routes
-router.post('/promotion/add', promotionController.addPromotion);
+router.post('/promotion/add', auth, promotionController.addPromotion);
 
 router.post('/promotion/fetchAll', auth, promotionController.getPromotions);
 
 router.post('/promotion/update', auth, promotionController.updatePromotion);
 
 // Props routes
-router.post('/props/add', propController.addProp);
-router.post('/props/fetchAll', propController.getProps);
+router.post('/props/add', auth, propController.addProp);
+router.post('/props/fetchAll', auth, propController.getProps);
 
-router.post('/revenue', capitalController.getCaptital);
+router.post('/revenue', auth, capitalController.getCaptital);
 
 // Statistics routes
-router.post('/statistics', statisticsController.getStatistics);
+router.post('/statistics', auth, statisticsController.getStatistics);
 //Transaction routes
 module.exports = router;
