@@ -7,9 +7,25 @@ const StatisticSchema = new mongoose.Schema({
     },
     total_users:{
         type:Number ,
-        default:0
+        default: 0
     },
     daily_users: {
+        type: Number,
+        default: 0
+    },
+    total_bet_users:{
+        type: Number,
+        default: 0
+    },
+    total_bet_amount: {
+        type: Number,
+        default: 0
+    },
+    daily_bet_users:{
+        type: Number,
+        default: 0
+    },
+    daily_bet_amount: {
         type: Number,
         default: 0
     }

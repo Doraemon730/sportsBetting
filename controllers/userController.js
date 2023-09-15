@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
 const Recovery = require('../models/Recovery');
+
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
@@ -329,6 +330,9 @@ const getUsers = async (req, res) =>{
     res.status(500).json(error.message);
   }
 }
+
+
+
 
 module.exports = {
   registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail,

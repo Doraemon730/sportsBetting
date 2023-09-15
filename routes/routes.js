@@ -120,5 +120,7 @@ router.post('/revenue', auth, capitalController.getCaptital);
 
 // Statistics routes
 router.post('/statistics', auth, statisticsController.getStatistics);
+router.post('/statistics/getTotalBet', admin, statisticsController.getTotalUserWithBet);
+router.post('/statistics/getDailyBet', admin, statisticsController.getUserBetStats);
 //Transaction routes
 module.exports = router;

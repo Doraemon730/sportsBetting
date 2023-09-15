@@ -22,7 +22,7 @@ const getTopPlayerBySport = async (req, res) => {
     let {
       sportId
     } = req.body;
-    console.log(sportId);
+    
     sportId = new ObjectId(sportId);
     const props = await Prop.find({
       sportId: sportId
@@ -33,7 +33,7 @@ const getTopPlayerBySport = async (req, res) => {
     result.props = props;
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
-    console.log(threeDaysFromNow);
+    
     const results = await Contest.aggregate([
     {
       $match: {

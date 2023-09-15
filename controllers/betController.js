@@ -3,6 +3,7 @@ const Contest = require("../models/Contest");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const Ethereum = require("../models/Ethereum");
+const {updateBetWithNew, updateBetWithDaily} = require('./statisticsController');
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 
@@ -71,6 +72,16 @@ const startBetting = async (req, res) => {
                 await contest.save();
             }
         }
+        let isNew = false, isFirst = false;
+        const bet = await Bet.findOne({userId}).sort({createdAt: -1}).exec();
+        if(!bet){
+            isNew = true;
+        } else {
+            let now = new Date();
+            if(now.getDate() !== bet.createdAt.getDate()){
+                isFirst = true;
+            }
+        }
 
         const myBet = new Bet({
             userId,
@@ -78,7 +89,7 @@ const startBetting = async (req, res) => {
             betType,
             picks: jsonArray
         });
-        await myBet.save();
+        await myBet.save();        
 
         user.ETH_balance -= entryFeeEther;
         await user.save();
@@ -89,7 +100,12 @@ const startBetting = async (req, res) => {
             transactionType: "bet"
         });
         await transaction.save();
-
+        if(isNew)
+        {
+            await updateBetWithNew(entryFeeEtherSave);            
+        } else {
+            await updateBetWithDaily(isFirst, entryFeeEtherSave);
+        }
         res.json(myBet);
     } catch (error) {
         res.status(500).json(error.message);
