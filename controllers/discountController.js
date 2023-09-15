@@ -1,11 +1,11 @@
 const Discount = require('../models/Discount')
 const Player = require('../models/Player')
 
-const {ObjectId} = require('mongodb')
+const { ObjectId } = require('mongodb')
 
-const addDiscount = async (req, res) => {
+const setDiscount = async (req, res) => {
     try {
-        let {playerId, date, original, discount, propId} = req.body;
+        let { playerId, date, original, discount, propId } = req.body;
         date.setUTCHours(0, 0, 0, 0);
         const data = new Discount({
             playerId: new ObjectId(playerId),
@@ -22,5 +22,5 @@ const addDiscount = async (req, res) => {
     }
 }
 
-module.exports = {addDiscount}
+module.exports = { setDiscount }
 

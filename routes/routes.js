@@ -103,19 +103,19 @@ router.post('/team/fetchAllNBATeams', auth, teamController.addNBATeamsToDatabase
 router.post('/player/fetchAllNBAPlayers', auth, playerController.addNBAPlayersToDatabase);
 router.post('/player/updateNBAPlayer', auth, playerController.updateNBAPlayers);
 router.post('/player/props', auth, playerController.getPlayerProp);
-router.post('/player/addDiscount', auth, discountController.addDiscount);
+router.post('/player/setDiscount', admin, discountController.setDiscount);
 
 
 // Promotion routes
-router.post('/promotion/add', auth, promotionController.addPromotion);
+router.post('/promotion/add', admin, promotionController.addPromotion);
 
-router.post('/promotion/fetchAll', auth, promotionController.getPromotions);
+router.post('/promotion/fetchAll', admin, promotionController.getPromotions);
 
-router.post('/promotion/update', auth, promotionController.updatePromotion);
+router.post('/promotion/update', admin, promotionController.updatePromotion);
 
 // Props routes
-router.post('/props/add', auth, propController.addProp);
-router.post('/props/fetchAll', auth, propController.getProps);
+router.post('/props/add', admin, propController.addProp);
+router.post('/props/fetchAll', admin, propController.getProps);
 
 router.post('/revenue', auth, capitalController.getCaptital);
 

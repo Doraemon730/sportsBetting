@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
+const User = require('../models/User');
 
 module.exports = function (req, res, next) {
   // Get token from header
@@ -12,11 +13,13 @@ module.exports = function (req, res, next) {
 
   // Verify token
   try {
-    jwt.verify(token, config.get('jwtSecret'), (error, decoded) => {
+    jwt.verify(token, config.get('jwtSecret'), async (error, decoded) => {
       if (error) {
         return res.status(401).json({ msg: 'Token is not valid' });
       } else {
-        if (!decoded.user.isAdmin) {
+        const user = await User.findById(decoded.user.id);
+        console.log(user)
+        if (!user.isAdmin) {
           return res.status(401).json({ msg: 'Unauthorized' });
         }
         req.user = decoded.user;
