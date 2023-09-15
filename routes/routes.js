@@ -11,6 +11,7 @@ const propController = require('../controllers/propController');
 const discountController = require('../controllers/discountController');
 const capitalController = require('../controllers/capitalController');
 const statisticsController = require('../controllers/statisticsController');
+const sportsController = require('../controllers/sportsController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -49,7 +50,7 @@ router.post('/users/resetPassword',
     userController.resetPassword);
 
 // Betting routes
-router.post('/bet/getPlayers',
+router.post('/bet/getPlayersBySports',
     //   [
     //     // Input validation using express-validator
     //     body('prop').notEmpty().isString(),
@@ -58,6 +59,14 @@ router.post('/bet/getPlayers',
     playerController.getTopPlayerBySport
 );
 
+router.post('/bet/getAllSports',
+    //   [
+    //     // Input validation using express-validator
+    //     body('prop').notEmpty().isString(),
+    //     body('value').notEmpty().isString()
+    //   ],
+    sportsController.getAllSports
+);
 
 router.post('/bet/start',
     auth,
