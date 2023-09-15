@@ -45,7 +45,7 @@ const checkUpdate = [
   }
 ];
 
-const checkResetPassword = [
+const checkEmail = [
   check('email', 'Please include a valid email').isEmail(),
   (req, res, next) => {
     const errors = validationResult(req);
@@ -57,7 +57,7 @@ const checkResetPassword = [
   }
 ];
 
-const checkEmail = [
+const checkResetPassword = [
   check('newPassword', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
   check('confirmPassword', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
   (req, res, next) => {
