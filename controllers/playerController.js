@@ -22,7 +22,13 @@ const getTopPlayerBySport = async (req, res) => {
     let {
       sportId
     } = req.body;
-    
+
+    if (!sportId) {
+      return res.status(400).json({
+        message: "sportId is required"
+      });
+    }
+
     sportId = new ObjectId(sportId);
     const props = await Prop.find({
       sportId: sportId
@@ -33,91 +39,15 @@ const getTopPlayerBySport = async (req, res) => {
     result.props = props;
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
-    
-    const results = await Contest.aggregate([
-    {
-      $match: {
-        sportId: sportId,
-        startTime: {
-          $gte: now,
-          $lte: threeDaysFromNow
-        }        
-      },
-    },
-    {
-      $unwind: '$teams',
-    },
-    {
-      $lookup: {
-        from: 'players',
-        localField: 'teams',
-        foreignField: 'teamId',
-        as: 'contestPlayer',
-      },
-    },
-    {
-      $unwind: '$contestPlayer',
-    },
-    {
-      $lookup: {
-        from: 'teams',
-        localField: 'contestPlayer.teamId',
-        foreignField: '_id',
-        as: 'teamInfo',
-      },
-    },    
-    {
-      $project: {
-        _id: 0,
-        playerId: '$contestPlayer._id',
-        playerName: '$contestPlayer.name',
-        contestId: 1,
-        contestName: 1,
-        playerNumber: '$contestPlayer.jerseyNumber',
-        teamName: {
-          $arrayElemAt: ['$teamInfo.name', 0]
-        },
-        statistics: '$contestPlayer.statistics',
-      },
-    },
-    ]);
-  for(const prop of props){
-    results.sort((a, b) => b.statistics[prop.name] - a.statistics[prop.name]);
-    result[prop.name] = results.slice(0, 10);
-  }
-  res.status(200).json(result);
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json(error.message);
-  }
-}
-const getPlayersByProps = async (req, res) => {
-  const {
-    sportName,
-    propName
-  } = req.body;
-  const now = new Date();
-  const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
 
-  try {
-    const results = await Contest.aggregate([{
-        $lookup: {
-          from: 'sports', // The name of the Sport collection in your database
-          localField: 'sportId',
-          foreignField: '_id',
-          as: 'sport',
-        },
-      },
-      {
-        $unwind: '$sport',
-      },
+    const results = await Contest.aggregate([
       {
         $match: {
+          sportId: sportId,
           startTime: {
             $gte: now,
             $lte: threeDaysFromNow
-          },
-          'sport.name': sportName,
+          }
         },
       },
       {
@@ -136,31 +66,10 @@ const getPlayersByProps = async (req, res) => {
       },
       {
         $lookup: {
-          from: 'sports',
-          localField: 'contestPlayer.sportId',
-          foreignField: '_id',
-          as: 'sportInfo',
-        },
-      },
-      {
-        $lookup: {
           from: 'teams',
           localField: 'contestPlayer.teamId',
           foreignField: '_id',
           as: 'teamInfo',
-        },
-      },
-      {
-        $match: {
-          [`contestPlayer.statistics.${propName}`]: {
-            $exists: true
-          }
-        }
-      },
-      {
-        $addFields: {
-          contestId: '$_id',
-          contestName: '$name', // Add the contestName field from Contest collection
         },
       },
       {
@@ -171,15 +80,112 @@ const getPlayersByProps = async (req, res) => {
           contestId: 1,
           contestName: 1,
           playerNumber: '$contestPlayer.jerseyNumber',
-          sportName: {
-            $arrayElemAt: ['$sportInfo.name', 0]
-          },
           teamName: {
             $arrayElemAt: ['$teamInfo.name', 0]
           },
           statistics: '$contestPlayer.statistics',
         },
       },
+    ]);
+    for (const prop of props) {
+      results.sort((a, b) => b.statistics[prop.name] - a.statistics[prop.name]);
+      result[prop.name] = results.slice(0, 10);
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json(error.message);
+  }
+}
+const getPlayersByProps = async (req, res) => {
+  const {
+    sportName,
+    propName
+  } = req.body;
+  const now = new Date();
+  const threeDaysFromNow = new Date(now.getTime() + 32 * 24 * 60 * 60 * 1000);
+
+  try {
+    const results = await Contest.aggregate([{
+      $lookup: {
+        from: 'sports', // The name of the Sport collection in your database
+        localField: 'sportId',
+        foreignField: '_id',
+        as: 'sport',
+      },
+    },
+    {
+      $unwind: '$sport',
+    },
+    {
+      $match: {
+        startTime: {
+          $gte: now,
+          $lte: threeDaysFromNow
+        },
+        'sport.name': sportName,
+      },
+    },
+    {
+      $unwind: '$teams',
+    },
+    {
+      $lookup: {
+        from: 'players',
+        localField: 'teams',
+        foreignField: 'teamId',
+        as: 'contestPlayer',
+      },
+    },
+    {
+      $unwind: '$contestPlayer',
+    },
+    {
+      $lookup: {
+        from: 'sports',
+        localField: 'contestPlayer.sportId',
+        foreignField: '_id',
+        as: 'sportInfo',
+      },
+    },
+    {
+      $lookup: {
+        from: 'teams',
+        localField: 'contestPlayer.teamId',
+        foreignField: '_id',
+        as: 'teamInfo',
+      },
+    },
+    {
+      $match: {
+        [`contestPlayer.statistics.${propName}`]: {
+          $exists: true
+        }
+      }
+    },
+    {
+      $addFields: {
+        contestId: '$_id',
+        contestName: '$name', // Add the contestName field from Contest collection
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        playerId: '$contestPlayer._id',
+        playerName: '$contestPlayer.name',
+        contestId: 1,
+        contestName: 1,
+        playerNumber: '$contestPlayer.jerseyNumber',
+        sportName: {
+          $arrayElemAt: ['$sportInfo.name', 0]
+        },
+        teamName: {
+          $arrayElemAt: ['$teamInfo.name', 0]
+        },
+        statistics: '$contestPlayer.statistics',
+      },
+    },
     ]);
 
     results.sort((a, b) => b.statistics[propName] - a.statistics[propName]);
