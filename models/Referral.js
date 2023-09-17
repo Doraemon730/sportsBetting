@@ -9,6 +9,10 @@ const ReferralSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    level: {
+        type: Number,
+        default: 1
+    },
     invitesList: [{
         invitedUserId: {
             type: mongoose.Schema.Types.ObjectId,

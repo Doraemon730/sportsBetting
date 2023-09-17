@@ -17,7 +17,6 @@ const registerUser = async (req, res) => {
 
   try {
     let user = await User.findOne({ email });
-
     if (user) {
       return res
         .status(400)
@@ -25,7 +24,6 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode();
-
     user = new User({
       email,
       firstName,
@@ -34,11 +32,8 @@ const registerUser = async (req, res) => {
       myReferralCode,
       referralCode
     });
-
     const salt = await bcrypt.genSalt(10);
-
     user.password = await bcrypt.hash(password, salt);
-
     await user.save();
 
     const myReferral = new Referral({
@@ -46,8 +41,6 @@ const registerUser = async (req, res) => {
       userId: user.id
     });
     await myReferral.save();
-
-    console.log(isEmpty(referralCode));
 
     if (!isEmpty(referralCode)) {
       console.log(referralCode);
@@ -57,7 +50,6 @@ const registerUser = async (req, res) => {
         referral.invitesList = [];
       }
       referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
-      console.log(referral.invitesList);
       await referral.save();
 
       const referralUser = await User.findById(referral.userId);
