@@ -325,7 +325,7 @@ const getUsers = async (req, res) => {
     }
 
     results.totalPages = totalPages;
-    results.results = await User.find().skip(startIndex).limit(limit);
+    results.results = await User.find({}, { password: 0, promotion: 0 }).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
     res.status(500).json(error.message);

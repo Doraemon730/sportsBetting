@@ -164,8 +164,34 @@ const getReferralPrize = async (referralCode, invitedUserId, betAmount) => {
 const getAllBetsByUserId = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
-        const myBets = await Bet.find({ userId: userId });
-        res.json(myBets);
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Bet.find({ userId }).countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Bet.find({ userId }).skip(startIndex).limit(limit);
+        res.json(results);
     } catch (error) {
         res.status(500).json(error.message);
     }
@@ -173,8 +199,34 @@ const getAllBetsByUserId = async (req, res) => {
 
 const getAllBets = async (req, res) => {
     try {
-        const myBets = await Bet.find();
-        res.json(myBets);
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Bet.countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Bet.find().skip(startIndex).limit(limit);
+        res.json(results);
     } catch (error) {
         res.status(500).json(error.message);
     }
