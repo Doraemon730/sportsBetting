@@ -75,7 +75,7 @@ const USD2Ether = amount => {
     });
 }
 
-const isEmpty = async (stringVariable) => {
+const isEmpty = stringVariable => {
     if (stringVariable === undefined || stringVariable === null || stringVariable === '') {
         return true;
     } else {

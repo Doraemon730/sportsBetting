@@ -5,12 +5,19 @@ const ReferralSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    referralcode: {
+    referralCode: {
         type: String,
         required: true
     },
     invitesList: [{
-        type: mongoose.Schema.Types.ObjectId,
+        invitedUserId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Player'
+        },
+        betAmount: {
+            type: Number,
+            default: 0
+        }
     }],
 });
 

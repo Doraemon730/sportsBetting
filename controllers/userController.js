@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
+const { isEmpty } = require('../utils/util');
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
@@ -23,15 +24,15 @@ const registerUser = async (req, res) => {
         .json({ errors: [{ msg: 'User already exists' }] });
     }
 
-    const myReferralCode = generateReferralCode()
-    console.log(myReferralCode)
+    const myReferralCode = generateReferralCode();
 
     user = new User({
       email,
       firstName,
       lastName,
       birthday,
-      referralCode: myReferralCode,
+      myReferralCode,
+      referralCode
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -41,17 +42,25 @@ const registerUser = async (req, res) => {
     await user.save();
 
     const myReferral = new Referral({
-      referralcode: myReferralCode,
+      referralCode: myReferralCode,
       userId: user.id
     });
     await myReferral.save();
 
-    if (referralCode) {
-      const referral = await Referral.findOne({ referralCode: myReferralCode });
-      referral.invitesList.push(user.id);
+    console.log(isEmpty(referralCode));
+
+    if (!isEmpty(referralCode)) {
+      console.log(referralCode);
+      const referral = await Referral.findOne({ referralCode: referralCode });
+      // referral.invitesList.push(user.id);
+      if (referral.invitesList == null) {
+        referral.invitesList = [];
+      }
+      referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
+      console.log(referral.invitesList);
       await referral.save();
 
-      const referralUser = await User.findById(refferal.userId);
+      const referralUser = await User.findById(referral.userId);
       referralUser.credits += 100;
       await referralUser.save();
     }
@@ -296,7 +305,7 @@ const updateAllPromotion = async (approach) => {
   }
 }
 
-const getUsers = async (req, res) =>{
+const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.body.page) || 1;
     const limit = parseInt(req.body.limit) || 10;

@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
   referralCode: {
     type: String
   },
+  myReferralCode: {
+    type: String,
+    required: true
+  },
   isAdmin: {
     type: Boolean,
     default: false
@@ -56,7 +60,7 @@ const UserSchema = new mongoose.Schema({
     }
   },
   lastlogin: {
-    type :Date
+    type: Date
   }
 });
 
