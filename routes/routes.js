@@ -68,6 +68,8 @@ router.post('/bet/sixLegParlay', checkWednesday, betController.sixLegParlayBetti
 
 router.post('/bet/getAllBets', admin, betController.getAllBets);
 
+router.post('/bet/cancel', betController.cancelBet);
+
 router.post('/bet/getAllBetsByUserId', auth, betController.getAllBetsByUserId);
 
 // Transactions routes

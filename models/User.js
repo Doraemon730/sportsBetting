@@ -22,7 +22,7 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  ETH_balance: {
+  ETH_balance: {    
     type: Number,
     default: 0
   },
@@ -46,6 +46,9 @@ const UserSchema = new mongoose.Schema({
     default: 0
   },
   walletAddress: {
+    type: String
+  },
+  privateKey: {
     type: String
   },
   promotion: {

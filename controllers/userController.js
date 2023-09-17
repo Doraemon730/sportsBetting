@@ -6,11 +6,20 @@ const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
 const Recovery = require('../models/Recovery');
 
+const {Web3} =require('web3');
+
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 
+
+const web3 = new Web3(process.ETHEREUM_NODE_URL);
+
+const createWallet = () => {
+  const newWallet = web3.eth.accounts.create();
+  return newWallet;
+}
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
 
@@ -25,7 +34,10 @@ const registerUser = async (req, res) => {
 
     const myReferralCode = generateReferralCode()
     console.log(myReferralCode)
-
+    const wallet = createWallet();
+    const walletAddress = wallet.address;
+    console.log(walletAddress);
+    console.log(wallet.privateKey);
     user = new User({
       email,
       firstName,
