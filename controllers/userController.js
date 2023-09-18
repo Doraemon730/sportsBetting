@@ -18,10 +18,10 @@ const { isEmpty } = require('../utils/util');
 const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
-const createWallet = () => {
-  const newWallet = web3.eth.accounts.create();
-  return newWallet;
-}
+// const createWallet = () => {
+//   const newWallet = web3.eth.accounts.create();
+//   return newWallet;
+// }
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
 
@@ -34,7 +34,9 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode();
-    const wallet = createWallet();
+    const infuraWebSocket = "https://sepolia.infura.io/v3/7bb47d850a2f4695834c80aeb781dd01";
+    const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+    const wallet = web3.eth.accounts.create();
     const walletAddress = wallet.address;
     console.log(walletAddress);
     console.log(wallet.privateKey);
