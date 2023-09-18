@@ -67,9 +67,14 @@ const depositBalance = async (req, res) => {
                 amount: etherAmount
             });
             const usd = await Ether2USD(etherAmount);
-            if(usd >= 25 && user.freeSix == 0)
+            if (usd >= 25 && user.freeSix == 0)
                 user.freeSix = 1;
             user.ETH_balance += etherAmount;
+
+            if (user.level === 0) {
+                user.level = 1;
+                user.credits += usd > 100 ? 100 : usd;
+            }
 
             await transaction.save();
             await user.save();
@@ -241,7 +246,7 @@ const makePayment = async (req, res) => {
         const walletAddress = user.walletAddress;
         const privateKey = user.privateKey;
         const userBalance = await web3.eth.getBalance(web3.eth.accounts.privateKeyToAccount(privateKey).address);
-        
+
         const amountWei = web3.utils.toWei(amount, 'ether');
         console.log(userBalance);
         console.log(amountWei);
@@ -251,7 +256,7 @@ const makePayment = async (req, res) => {
             });
         }
         // Create a transaction
-        
+
         const rpc = "https://rpc.notadegen.com/eth/sepolia"
         var provider = new ethers.JsonRpcProvider(rpc);
         const wallet = new ethers.Wallet(privateKey, provider);
@@ -275,6 +280,6 @@ module.exports = {
     addPrizeTransaction,
     getETHPrice,
     getETHPriceFromMarket,
-	getAllTransactions,
+    getAllTransactions,
     makePayment
 }

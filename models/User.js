@@ -22,7 +22,7 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  ETH_balance: {    
+  ETH_balance: {
     type: Number,
     default: 0
   },
@@ -43,7 +43,7 @@ const UserSchema = new mongoose.Schema({
   },
   level: {
     type: Number,
-    default: 1
+    default: 0
   },
   wins: {
     type: Number,
@@ -67,7 +67,7 @@ const UserSchema = new mongoose.Schema({
   },
   freeSix: {
     type: Number,
-    default : 0
+    default: 0
   }
 });
 
