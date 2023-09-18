@@ -12,6 +12,7 @@ const discountController = require('../controllers/discountController');
 const capitalController = require('../controllers/capitalController');
 const statisticsController = require('../controllers/statisticsController');
 const sportsController = require('../controllers/sportsController');
+const referralController = require('../controllers/referralController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -28,9 +29,9 @@ router.get(
     userController.getUserDetail);
 
 router.get(
-    '/users/getAllUsers',
+    '/admin/users/getAllUsers',
     admin,
-    userController.getAllUsers);
+    userController.getUsers);
 
 router.post('/users/login',
     checkLogin,
@@ -73,13 +74,21 @@ router.post('/bet/start',
     betController.startBetting
 );
 
-router.post('/bet/sixLegParlay', checkWednesday, betController.sixLegParlayBetting);
+router.post('/bet/sixLegParlay',
+    checkWednesday,
+    betController.sixLegParlayBetting);
 
-router.post('/bet/getAllBets', admin, betController.getAllBets);
+router.post('/admin/bet/getAllBets',
+    admin,
+    betController.getAllBets);
 
-router.post('/bet/cancel', betController.cancelBet);
+router.post('/bet/getAllBetsByUserId',
+    auth,
+    betController.getAllBetsByUserId);
 
-router.post('/bet/getAllBetsByUserId', auth, betController.getAllBetsByUserId);
+router.post('/bet/cancel',
+	auth,
+	betController.cancelBet);
 
 // Transactions routes
 router.post(
@@ -92,48 +101,98 @@ router.post(
     auth,
     transactionController.withdrawBalance
 );
+
 router.get(
     '/transaction/getEtherPrice',
     transactionController.getETHPrice
-)
+);
+
+router.post(
+    '/admin/transaction/getAllTransactions',
+    admin,
+    transactionController.getAllTransactions
+);
 
 // Contest routes
 router.post(
     '/contest/fetchAllNBAContest',
-    auth,
+    admin,
     contestController.addNBAContestsToDatabase
 );
 
-router.post('/contest/updateContest', auth, contestController.updateBetfromContest);
+router.post('/contest/updateContest',
+    admin,
+    contestController.updateBetfromContest);
 
 // Team routes
-router.post('/team/fetchAllNBATeams', auth, teamController.addNBATeamsToDatabase);
+router.post('/team/fetchAllNBATeams',
+    admin,
+    teamController.addNBATeamsToDatabase);
 
 // Player routes
-router.post('/player/fetchAllNBAPlayers', auth, playerController.addNBAPlayersToDatabase);
-router.post('/player/updateNBAPlayer', auth, playerController.updateNBAPlayers);
-router.post('/player/props', auth, playerController.getPlayerProp);
-router.post('/player/setDiscount', admin, discountController.setDiscount);
+router.post('/player/fetchAllNBAPlayers',
+    admin,
+    playerController.addNBAPlayersToDatabase);
 
+router.post('/player/updateNBAPlayer',
+    admin,
+    playerController.updateNBAPlayers);
+
+router.post('/player/props',
+    auth,
+    playerController.getPlayerProp);
+
+router.post('/admin/player/setDiscount',
+    admin,
+    discountController.setDiscount);
 
 // Promotion routes
-router.post('/promotion/add', admin, promotionController.addPromotion);
+router.post('/admin/promotion/add',
+    admin,
+    promotionController.addPromotion);
 
-router.post('/promotion/fetchAll', admin, promotionController.getPromotions);
+router.post('/admin/promotion/fetchAll',
+    admin,
+    promotionController.getPromotions);
 
-router.post('/promotion/update', admin, promotionController.updatePromotion);
+router.post('/admin/promotion/update',
+    admin,
+    promotionController.updatePromotion);
 
 // Props routes
-router.post('/props/add', admin, propController.addProp);
-router.post('/props/fetchAll', admin, propController.getProps);
+router.post('/admin/props/add',
+    admin,
+    propController.addProp);
+router.post('/admin/props/fetchAll',
+    admin,
+    propController.getProps);
 
-router.post('/revenue', auth, capitalController.getCaptital);
+router.post('/admin/revenue',
+    admin,
+    capitalController.getCaptital);
 
 // Statistics routes
-router.post('/statistics', auth, statisticsController.getStatistics);
-router.post('/statistics/getTotalBet', admin, statisticsController.getTotalUserWithBet);
-router.post('/statistics/getDailyBet', admin, statisticsController.getUserBetStats);
-//Transaction routes
+router.post('/admin/statistics',
+    admin,
+    statisticsController.getStatistics);
+
+router.post('/admin/statistics/getTotalBet',
+    admin,
+    statisticsController.getTotalUserWithBet);
+
+router.post('/admin/statistics/getDailyBet',
+    admin,
+    statisticsController.getUserBetStats);
+
+// Referral routes
+router.post('/admin/referral/setReferralLevel',
+    admin,
+    referralController.setReferralLevel);
+
+router.post('/admin/referral/getAllReferrals',
+    admin,
+    referralController.getAllReferrals)
+
 
 router.post('/transaction/payment', auth, transactionController.makePayment);
 module.exports = router;

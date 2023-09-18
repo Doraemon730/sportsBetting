@@ -3,7 +3,7 @@ const Contest = require("../models/Contest");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const Ethereum = require("../models/Ethereum");
-const {updateBetWithNew, updateBetWithDaily} = require('./statisticsController');
+const Referral = require("../models/Referral");
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 
@@ -40,20 +40,18 @@ const startBetting = async (req, res) => {
 
         if (currencyType === "ETH") {
             entryFee = await Ether2USD(entryFee);
-            console.log(entryFee);
         }
 
         const entryFeeEtherSave = await USD2Ether(entryFee);
 
         let creditSave = 0;
-        let temp = user.credits;
         user.credits -= entryFee;
-        creditSave = user.credits > 0 ? entryFee: temp;        
-        user.credits = user.credits > 0 ? creditSave = entryFee : 0;        
+        creditSave = user.credits > 0 ? entryFee: temp;
+        user.credits = user.credits > 0 ? creditSave = entryFee : 0;
         entryFee = entryFee - temp;
-        entryFee = entryFee > 0 ? entryFee : 0;      
+        entryFee = entryFee > 0 ? entryFee : 0;
 
-        
+
         const entryFeeEther = await USD2Ether(entryFee);
 
         if (!user || user.ETH_balance < entryFeeEther) {
@@ -93,7 +91,7 @@ const startBetting = async (req, res) => {
             picks: jsonArray,
             credit: creditSave,
         });
-        await myBet.save();        
+        await myBet.save();
 
         user.ETH_balance -= entryFeeEther;
         await user.save();
@@ -106,21 +104,97 @@ const startBetting = async (req, res) => {
         await transaction.save();
         if(isNew)
         {
-            await updateBetWithNew(entryFeeEtherSave);            
+            await updateBetWithNew(entryFeeEtherSave);
+
         } else {
             await updateBetWithDaily(isFirst, entryFeeEtherSave);
         }
+        getReferralPrize(user.referralCode, user._id, entryFeeEtherSave);
         res.json(myBet);
     } catch (error) {
         res.status(500).json(error.message);
     }
 }
 
+const getReferralPrize = async (referralCode, invitedUserId, betAmount) => {
+    const referral = await Referral.findOne({ referralCode });
+    if (!referral) {
+        return;
+    }
+    const user = await User.findOne({ _id: referral.userId });
+
+    const checkUserLevel = () => {
+        const bettingUsers = referral.invitesList.filter((i) => i.betAmount > 0);
+        if (bettingUsers.length > 1) {
+            if (referral.level == 1) {
+                referral.level = 2;
+                const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
+                user.ETH_balance += sum * 0.003;
+            }
+            if (bettingUsers.length > 250) {
+                if (referral.level == 2) {
+                    referral.level = 3;
+                    const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
+                    user.ETH_balance += sum * 0.0035;
+                }
+            }
+        }
+    }
+    const updatedList = referral.invitesList.map((i) => {
+        if (i.invitedUserId.toString() === invitedUserId.toString()) {
+            i.betAmount += parseFloat(betAmount);
+        }
+        return i;
+    });
+    referral.invitesList = updatedList;
+    switch (referral.level) {
+        case 1:
+            user.ETH_balance += betAmount * 0.007;
+            checkUserLevel();
+            break;
+        case 2:
+            user.ETH_balance += betAmount * 0.01;
+            checkUserLevel();
+            break;
+        case 3:
+            user.ETH_balance += betAmount * 0.0135;
+            break;
+    }
+    await referral.save();
+    await user.save();
+}
+
 const getAllBetsByUserId = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
-        const myBets = await Bet.find({ userId: userId });
-        res.json(myBets);
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Bet.find({ userId }).countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Bet.find({ userId }).skip(startIndex).limit(limit);
+        res.json(results);
     } catch (error) {
         res.status(500).json(error.message);
     }
@@ -128,8 +202,34 @@ const getAllBetsByUserId = async (req, res) => {
 
 const getAllBets = async (req, res) => {
     try {
-        const myBets = await Bet.find();
-        res.json(myBets);
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Bet.countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Bet.find().skip(startIndex).limit(limit);
+        res.json(results);
     } catch (error) {
         res.status(500).json(error.message);
     }
@@ -246,7 +346,7 @@ const sixLegParlayBetting = async (req, res) => {
             palrayNumber ++;
             if(palrayNumber != 1)
                 entryFee = 0;
-            
+
             const jsonArray = JSON.parse(pick);
             for (const element of jsonArray) {
                 const contestId = new ObjectId(element.contestId);
@@ -263,7 +363,7 @@ const sixLegParlayBetting = async (req, res) => {
                     await contest.save();
                 }
             }
-            
+
             const myBet = new Bet({
                 userId,
                 entryFee,
@@ -271,18 +371,18 @@ const sixLegParlayBetting = async (req, res) => {
                 picks: jsonArray,
                 parlay: true,
                 palrayNumber
-            }); 
+            });
             if (checkBet(myBet)) {
                 res.status(403).json({ message: 'Sorry, you have to select different bet' });
-            }       
-            await myBet.save();     
-        
+            }
+            await myBet.save();
+
         }
         user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
         await user.save();
-    
+
         res.status(200).json("six leg parlay successed.");
-        
+
     } catch (error) {
         res.status(500).json(error.message);
     }
@@ -322,5 +422,6 @@ module.exports = {
     isAllowedSixLegParlay,
     getAllBets,
     getAllBetsByUserId,
-    cancelBet
+    getReferralPrize,
+	cancelBet
 }

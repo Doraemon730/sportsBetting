@@ -83,8 +83,9 @@ const getTopPlayerBySport = async (req, res) => {
           _id: 0,
           playerId: '$contestPlayer._id',
           playerName: '$contestPlayer.name',
-          contestId: 1,
-          contestName: 1,
+          contestId: '$_id',
+          contestName: '$name',
+          contestStartTime: '$startTime',
           playerNumber: '$contestPlayer.jerseyNumber',
           teamName: {
             $arrayElemAt: ['$teamInfo.name', 0]

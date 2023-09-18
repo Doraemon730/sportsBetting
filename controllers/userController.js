@@ -27,7 +27,6 @@ const registerUser = async (req, res) => {
 
   try {
     let user = await User.findOne({ email });
-
     if (user) {
       return res
         .status(400)
@@ -49,11 +48,8 @@ const registerUser = async (req, res) => {
       walletAddress,
       privateKey: wallet.privateKey
     });
-
     const salt = await bcrypt.genSalt(10);
-
     user.password = await bcrypt.hash(password, salt);
-
     await user.save();
     //WebSocketService.emit('userRegistered', { userId: user._id });
     //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
@@ -65,8 +61,6 @@ const registerUser = async (req, res) => {
     });
     await myReferral.save();
 
-    
-
     if (!isEmpty(referralCode)) {
       console.log(referralCode);
       const referral = await Referral.findOne({ referralCode: referralCode });
@@ -75,7 +69,6 @@ const registerUser = async (req, res) => {
         referral.invitesList = [];
       }
       referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
-      console.log(referral.invitesList);
       await referral.save();
 
 
@@ -353,7 +346,7 @@ const getUsers = async (req, res) => {
     }
 
     results.totalPages = totalPages;
-    results.results = await User.find({}, {password: 0}).skip(startIndex).limit(limit);
+    results.results = await User.find({}, { password: 0, promotion: 0 }).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
     res.status(500).json(error.message);

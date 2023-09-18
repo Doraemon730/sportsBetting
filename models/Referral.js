@@ -2,12 +2,17 @@ const mongoose = require('mongoose');
 
 const ReferralSchema = new mongoose.Schema({
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     referralCode: {
         type: String,
         required: true
+    },
+    level: {
+        type: Number,
+        default: 1
     },
     invitesList: [{
         invitedUserId: {
