@@ -137,7 +137,8 @@ const loginUser = async (req, res) => {
 
     user.password = undefined;
     user.isAdmin = undefined;
-    user.promotion = undefined;
+    //user.promotion = undefined;
+    user.privateKey = undefined;
 
     jwt.sign(
       payload,
@@ -219,6 +220,9 @@ const updateUser = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, salt);
     const result = await User.updateOne({ _id: new ObjectId(userId) }, { $set: user });
 
+    result.passsword = undefined;
+    result.isAdmin = undefined;  
+    result.privateKey = undefined;
     res.json(result)
 
   } catch (err) {
@@ -270,6 +274,9 @@ const resetPassword = async (req, res) => {
   user.password = await bcrypt.hash(newPassword, salt);
   const result = await User.updateOne({ _id: user._id }, { $set: user });
   await Recovery.deleteMany({ emailHash });
+  result.passsword = undefined;
+  result.isAdmin = undefined;  
+  result.privateKey = undefined;
   res.json(result);
 }
 
@@ -346,7 +353,7 @@ const getUsers = async (req, res) => {
     }
 
     results.totalPages = totalPages;
-    results.results = await User.find({}, { password: 0, promotion: 0 }).skip(startIndex).limit(limit);
+    results.results = await User.find({}, { password: 0, privateKey: 0 }).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
     res.status(500).json(error.message);
