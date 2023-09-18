@@ -25,4 +25,9 @@ const setReferralLevel = async (req, res) => {
     })
 }
 
-module.exports = { setReferralLevel };
+const getAllReferrals = async (req, res) => {
+    const referrals = await Referral.find();
+    res.status(200).json(referrals);
+}
+
+module.exports = { setReferralLevel, getAllReferrals };

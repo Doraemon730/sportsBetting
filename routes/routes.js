@@ -29,7 +29,7 @@ router.get(
     userController.getUserDetail);
 
 router.get(
-    '/users/getAllUsers',
+    '/admin/users/getAllUsers',
     admin,
     userController.getUsers);
 
@@ -78,7 +78,7 @@ router.post('/bet/sixLegParlay',
     checkWednesday,
     betController.sixLegParlayBetting);
 
-router.post('/bet/getAllBets',
+router.post('/admin/bet/getAllBets',
     admin,
     betController.getAllBets);
 
@@ -104,7 +104,7 @@ router.get(
 );
 
 router.post(
-    '/transaction/getAllTransactions',
+    '/admin/transaction/getAllTransactions',
     admin,
     transactionController.getAllTransactions
 );
@@ -112,77 +112,81 @@ router.post(
 // Contest routes
 router.post(
     '/contest/fetchAllNBAContest',
-    auth,
+    admin,
     contestController.addNBAContestsToDatabase
 );
 
 router.post('/contest/updateContest',
-    auth,
+    admin,
     contestController.updateBetfromContest);
 
 // Team routes
 router.post('/team/fetchAllNBATeams',
-    auth,
+    admin,
     teamController.addNBATeamsToDatabase);
 
 // Player routes
 router.post('/player/fetchAllNBAPlayers',
-    auth,
+    admin,
     playerController.addNBAPlayersToDatabase);
 
 router.post('/player/updateNBAPlayer',
-    auth,
+    admin,
     playerController.updateNBAPlayers);
 
 router.post('/player/props',
     auth,
     playerController.getPlayerProp);
 
-router.post('/player/setDiscount',
+router.post('/admin/player/setDiscount',
     admin,
     discountController.setDiscount);
 
 // Promotion routes
-router.post('/promotion/add',
+router.post('/admin/promotion/add',
     admin,
     promotionController.addPromotion);
 
-router.post('/promotion/fetchAll',
+router.post('/admin/promotion/fetchAll',
     admin,
     promotionController.getPromotions);
 
-router.post('/promotion/update',
+router.post('/admin/promotion/update',
     admin,
     promotionController.updatePromotion);
 
 // Props routes
-router.post('/props/add',
+router.post('/admin/props/add',
     admin,
     propController.addProp);
-router.post('/props/fetchAll',
+router.post('/admin/props/fetchAll',
     admin,
     propController.getProps);
 
-router.post('/revenue',
-    auth,
+router.post('/admin/revenue',
+    admin,
     capitalController.getCaptital);
 
 // Statistics routes
-router.post('/statistics',
-    auth,
+router.post('/admin/statistics',
+    admin,
     statisticsController.getStatistics);
 
-router.post('/statistics/getTotalBet',
+router.post('/admin/statistics/getTotalBet',
     admin,
     statisticsController.getTotalUserWithBet);
 
-router.post('/statistics/getDailyBet',
+router.post('/admin/statistics/getDailyBet',
     admin,
     statisticsController.getUserBetStats);
 
 // Referral routes
-router.post('/referral/setReferralLevel',
+router.post('/admin/referral/setReferralLevel',
     admin,
     referralController.setReferralLevel);
+
+router.post('/admin/referral/getAllReferrals',
+    admin,
+    referralController.getAllReferrals)
 
 module.exports = router;
