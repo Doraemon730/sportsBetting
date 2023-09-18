@@ -15,8 +15,8 @@ const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
 // const WebSocketService = require('../services/webSocketService'); // Import your WebSocket service
-const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
-const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+//const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
+//const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
 // const createWallet = () => {
 //   const newWallet = web3.eth.accounts.create();
