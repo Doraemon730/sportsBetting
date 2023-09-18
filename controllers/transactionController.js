@@ -12,7 +12,8 @@ const {
     ObjectId
 } = require('mongodb');
 const {
-    USD2Ether
+    USD2Ether,
+    Ether2USD
 } = require('../utils/util');
 const {
     ETHER_PRICE_API
@@ -28,6 +29,7 @@ const infura_project_id = process.env.INFURA_PROJECT_ID;
 
 const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+
 const depositBalance = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
@@ -64,7 +66,9 @@ const depositBalance = async (req, res) => {
                 transactionType: "deposit",
                 amount: etherAmount
             });
-
+            const usd = await Ether2USD(etherAmount);
+            if(usd >= 25 && user.freeSix == 0)
+                user.freeSix = 1;
             user.ETH_balance += etherAmount;
 
             await transaction.save();
@@ -222,6 +226,8 @@ const getAllTransactions = async (req, res) => {
         res.status(500).json(error.message);
     }
 }
+
+
 const makePayment = async (req, res) => {
     try {
         const id = req.user.id;
@@ -231,7 +237,7 @@ const makePayment = async (req, res) => {
         const user = await User.findById(id);
         if (!user)
             res.status(404).json("User not found");
-        const amount = 0.001;
+        const amount = 0.001; // the amount to send ETH
         const walletAddress = user.walletAddress;
         const privateKey = user.privateKey;
         const userBalance = await web3.eth.getBalance(web3.eth.accounts.privateKeyToAccount(privateKey).address);
@@ -245,25 +251,14 @@ const makePayment = async (req, res) => {
             });
         }
         // Create a transaction
-        const txObject = {
+        
+        const rpc = "https://rpc.notadegen.com/eth/sepolia"
+        var provider = new ethers.JsonRpcProvider(rpc);
+        const wallet = new ethers.Wallet(privateKey, provider);
+        txReceipt = await wallet.sendTransaction({
             to: toAddress,
-            value: amountWei,
-            gasPrice: web3.utils.toWei('31500', 'gwei'), // Adjust gas price as needed
-            gasLimit: web3.utils.toWei('31500', 'gwei'), // Adjust gas limit as needed
-        };
-
-        // Get the nonce for the sender's address
-        const senderAddress = web3.eth.accounts.privateKeyToAccount(privateKey).address;
-        const nonce = await web3.eth.getTransactionCount(senderAddress);
-
-        // Sign and send the transaction
-        const signedTx = await web3.eth.accounts.signTransaction({
-            ...txObject,
-            nonce,
-        }, privateKey);
-
-        const txReceipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
-
+            value: ethers.parseEther("0.0001")
+        })
         res.json({
             message: 'Payment successful',
             transactionHash: txReceipt.transactionHash

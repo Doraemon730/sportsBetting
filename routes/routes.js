@@ -75,8 +75,13 @@ router.post('/bet/start',
 );
 
 router.post('/bet/sixLegParlay',
+    auth,
     checkWednesday,
     betController.sixLegParlayBetting);
+
+router.post('/bet/firstSixLegParlay',
+    auth,
+    betController.firstSixLegParlayBetting);
 
 router.post('/admin/bet/getAllBets',
     admin,

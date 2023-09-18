@@ -64,6 +64,10 @@ const UserSchema = new mongoose.Schema({
   },
   lastlogin: {
     type: Date
+  },
+  freeSix: {
+    type: Number,
+    default : 0
   }
 });
 
