@@ -27,8 +27,6 @@ const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
 const infura_project_id = process.env.INFURA_PROJECT_ID;
 
-const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
-const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
 const depositBalance = async (req, res) => {
     try {
@@ -242,6 +240,9 @@ const makePayment = async (req, res) => {
         const user = await User.findById(id);
         if (!user)
             res.status(404).json("User not found");
+        const infuraWebSocket = "https://rpc.sepolia.org";
+        const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+
         const amount = 0.001; // the amount to send ETH
         const walletAddress = user.walletAddress;
         const privateKey = user.privateKey;
