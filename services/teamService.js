@@ -1,4 +1,4 @@
-const Team = require('../models/Team');
+
 const {ObjectId} = require('mongodb');
 const axios = require('axios');
 const apiKey = process.env.NBA_API_KEY;

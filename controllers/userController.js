@@ -6,15 +6,17 @@ const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
 const Recovery = require('../models/Recovery');
 
-const {Web3} =require('web3');
+const { Web3 } = require('web3');
+
 
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
-
-
-const web3 = new Web3(process.ETHEREUM_NODE_URL);
+const { isEmpty } = require('../utils/util');
+const WebSocketService = require('../services/webSocketService'); // Import your WebSocket service
+const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
+const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
 const createWallet = () => {
   const newWallet = web3.eth.accounts.create();
@@ -32,8 +34,7 @@ const registerUser = async (req, res) => {
         .json({ errors: [{ msg: 'User already exists' }] });
     }
 
-    const myReferralCode = generateReferralCode()
-    console.log(myReferralCode)
+    const myReferralCode = generateReferralCode();
     const wallet = createWallet();
     const walletAddress = wallet.address;
     console.log(walletAddress);
@@ -43,7 +44,10 @@ const registerUser = async (req, res) => {
       firstName,
       lastName,
       birthday,
-      referralCode: myReferralCode,
+      myReferralCode,
+      referralCode,
+      walletAddress,
+      privateKey: wallet.privateKey
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -51,19 +55,31 @@ const registerUser = async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
 
     await user.save();
+    //WebSocketService.emit('userRegistered', { userId: user._id });
+    //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
 
     const myReferral = new Referral({
-      referralcode: myReferralCode,
+    
+      referralCode: myReferralCode,
       userId: user.id
     });
     await myReferral.save();
 
-    if (referralCode) {
-      const referral = await Referral.findOne({ referralCode: myReferralCode });
-      referral.invitesList.push(user.id);
+    
+
+    if (!isEmpty(referralCode)) {
+      console.log(referralCode);
+      const referral = await Referral.findOne({ referralCode: referralCode });
+      // referral.invitesList.push(user.id);
+      if (referral.invitesList == null) {
+        referral.invitesList = [];
+      }
+      referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
+      console.log(referral.invitesList);
       await referral.save();
 
-      const referralUser = await User.findById(refferal.userId);
+
+      const referralUser = await User.findById(referral.userId);
       referralUser.credits += 100;
       await referralUser.save();
     }
@@ -308,7 +324,8 @@ const updateAllPromotion = async (approach) => {
   }
 }
 
-const getUsers = async (req, res) =>{
+
+const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.body.page) || 1;
     const limit = parseInt(req.body.limit) || 10;
@@ -336,12 +353,27 @@ const getUsers = async (req, res) =>{
     }
 
     results.totalPages = totalPages;
-    results.results = await User.find().skip(startIndex).limit(limit);
+    results.results = await User.find({}, {password: 0}).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
     res.status(500).json(error.message);
   }
 }
+
+const getWallentBalance = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const user = await User.findById(id);
+    if(!user)
+      res.status(404).json("User not found");
+    const walletAddress = user.walletAddress;
+    const balance = await web3.eth.getBalance(walletAddress);
+    res.json({balance: balance});
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
 
 
 
