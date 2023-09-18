@@ -107,7 +107,7 @@ const getETHPriceFromMarket = async () => {
     try {
         const response = await axios.get(ETHER_PRICE_API + etherApiKey);
         const price = parseFloat(response.data.result.ethusd);
-        const ether = await Ethereum.findOneAndUpdate({}, {price : price}, {new: true});
+        const ether = await Ethereum.findOneAndUpdate({}, { price: price }, { new: true });
         console.log("Etherium price:" + price);
 
     } catch (error) {
@@ -140,5 +140,41 @@ const addPrizeTransaction = async (userId, amount) => {
         console.error('Error on prize transaction', error);
     }
 }
-module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice, getETHPriceFromMarket }
+
+const getAllTransactions = async (req, res) => {
+    try {
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Transaction.countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Transaction.find().skip(startIndex).limit(limit);
+        res.json(results);
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+}
+
+module.exports = { depositBalance, withdrawBalance, addPrizeTransaction, getETHPrice, getETHPriceFromMarket, getAllTransactions }
 
