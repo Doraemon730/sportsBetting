@@ -1,5 +1,4 @@
-const Contest = require('../models/Contest');
-const Team = require('../models/Team');
+
 const teamService = require('./teamService');
 const { ObjectId } = require('mongodb');
 const axios = require('axios');

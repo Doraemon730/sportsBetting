@@ -6,12 +6,22 @@ const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
 const Recovery = require('../models/Recovery');
 
+const { Web3 } = require('web3');
+
+
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
+const WebSocketService = require('../services/webSocketService'); // Import your WebSocket service
+const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
+const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
+const createWallet = () => {
+  const newWallet = web3.eth.accounts.create();
+  return newWallet;
+}
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
 
@@ -24,19 +34,28 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode();
+    const wallet = createWallet();
+    const walletAddress = wallet.address;
+    console.log(walletAddress);
+    console.log(wallet.privateKey);
     user = new User({
       email,
       firstName,
       lastName,
       birthday,
       myReferralCode,
-      referralCode
+      referralCode,
+      walletAddress,
+      privateKey: wallet.privateKey
     });
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
     await user.save();
+    //WebSocketService.emit('userRegistered', { userId: user._id });
+    //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
 
     const myReferral = new Referral({
+    
       referralCode: myReferralCode,
       userId: user.id
     });
@@ -51,6 +70,7 @@ const registerUser = async (req, res) => {
       }
       referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
       await referral.save();
+
 
       const referralUser = await User.findById(referral.userId);
       referralUser.credits += 100;
@@ -117,7 +137,8 @@ const loginUser = async (req, res) => {
 
     user.password = undefined;
     user.isAdmin = undefined;
-    user.promotion = undefined;
+    //user.promotion = undefined;
+    user.privateKey = undefined;
 
     jwt.sign(
       payload,
@@ -199,6 +220,9 @@ const updateUser = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, salt);
     const result = await User.updateOne({ _id: new ObjectId(userId) }, { $set: user });
 
+    result.passsword = undefined;
+    result.isAdmin = undefined;  
+    result.privateKey = undefined;
     res.json(result)
 
   } catch (err) {
@@ -250,6 +274,9 @@ const resetPassword = async (req, res) => {
   user.password = await bcrypt.hash(newPassword, salt);
   const result = await User.updateOne({ _id: user._id }, { $set: user });
   await Recovery.deleteMany({ emailHash });
+  result.passsword = undefined;
+  result.isAdmin = undefined;  
+  result.privateKey = undefined;
   res.json(result);
 }
 
@@ -297,6 +324,7 @@ const updateAllPromotion = async (approach) => {
   }
 }
 
+
 const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.body.page) || 1;
@@ -325,12 +353,27 @@ const getUsers = async (req, res) => {
     }
 
     results.totalPages = totalPages;
-    results.results = await User.find({}, { password: 0, promotion: 0 }).skip(startIndex).limit(limit);
+    results.results = await User.find({}, { password: 0, privateKey: 0 }).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
     res.status(500).json(error.message);
   }
 }
+
+const getWallentBalance = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const user = await User.findById(id);
+    if(!user)
+      res.status(404).json("User not found");
+    const walletAddress = user.walletAddress;
+    const balance = await web3.eth.getBalance(walletAddress);
+    res.json({balance: balance});
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
 
 
 

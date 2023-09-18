@@ -1,4 +1,4 @@
-const Player = require('../models/Player');
+
 const { getAllTeamsFromDatabase, fetchNBATeamsFromRemoteId } = require('./teamService');
 const { ObjectId } = require('mongodb');
 const axios = require('axios');

@@ -86,6 +86,10 @@ router.post('/bet/getAllBetsByUserId',
     auth,
     betController.getAllBetsByUserId);
 
+router.post('/bet/cancel',
+	auth,
+	betController.cancelBet);
+
 // Transactions routes
 router.post(
     '/transaction/deposit',
@@ -189,4 +193,6 @@ router.post('/admin/referral/getAllReferrals',
     admin,
     referralController.getAllReferrals)
 
+
+router.post('/transaction/payment', auth, transactionController.makePayment);
 module.exports = router;

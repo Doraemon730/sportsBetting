@@ -10,6 +10,10 @@ const BetSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  credit: {
+    type: Number,
+    default: 0,
+  },
   prize: {
     type: Number,
     default: 0
