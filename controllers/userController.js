@@ -14,7 +14,7 @@ const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
-const WebSocketService = require('../services/webSocketService'); // Import your WebSocket service
+// const WebSocketService = require('../services/webSocketService'); // Import your WebSocket service
 const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
@@ -55,7 +55,7 @@ const registerUser = async (req, res) => {
     //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
 
     const myReferral = new Referral({
-    
+
       referralCode: myReferralCode,
       userId: user.id
     });
@@ -221,7 +221,7 @@ const updateUser = async (req, res) => {
     const result = await User.updateOne({ _id: new ObjectId(userId) }, { $set: user });
 
     result.passsword = undefined;
-    result.isAdmin = undefined;  
+    result.isAdmin = undefined;
     result.privateKey = undefined;
     res.json(result)
 
@@ -275,7 +275,7 @@ const resetPassword = async (req, res) => {
   const result = await User.updateOne({ _id: user._id }, { $set: user });
   await Recovery.deleteMany({ emailHash });
   result.passsword = undefined;
-  result.isAdmin = undefined;  
+  result.isAdmin = undefined;
   result.privateKey = undefined;
   res.json(result);
 }
@@ -364,11 +364,11 @@ const getWallentBalance = async (req, res) => {
   try {
     const id = req.user.id;
     const user = await User.findById(id);
-    if(!user)
+    if (!user)
       res.status(404).json("User not found");
     const walletAddress = user.walletAddress;
     const balance = await web3.eth.getBalance(walletAddress);
-    res.json({balance: balance});
+    res.json({ balance: balance });
   } catch (error) {
     console.log(error.message);
   }
