@@ -387,6 +387,63 @@ const sixLegParlayBetting = async (req, res) => {
         res.status(500).json(error.message);
     }
 }
+const firstSixLegParlayBetting = async (req, res) => {
+    try {
+        const userId = new ObjectId(req.user.id);
+        const user = await User.findOne({ _id: userId }).populate('promotion');
+        if (user.firstSix != 1)
+            res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
+        user.firstSix = -1;
+        const { picks} = req.body;
+        let palrayNumber = 0;
+        let entryFee = 10;
+        let betType = 'high';
+        for(const pick of picks){
+
+            palrayNumber ++;
+            if(palrayNumber != 1)
+                entryFee = 0;
+
+            const jsonArray = JSON.parse(pick);
+            for (const element of jsonArray) {
+                const contestId = new ObjectId(element.contestId);
+
+                const contest = await Contest.findById(contestId);
+                if (!contest) {
+                    continue;
+                }
+
+                let participants = contest.participants || [];
+                if (!participants.includes(contestId)) {
+                    participants.push(contestId);
+                    contest.participants = participants;
+                    await contest.save();
+                }
+            }
+
+            const myBet = new Bet({
+                userId,
+                entryFee,
+                betType,
+                picks: jsonArray,
+                parlay: true,
+                palrayNumber
+            });
+            if (checkBet(myBet)) {
+                res.status(403).json({ message: 'Sorry, you have to select different bet' });
+            }
+            await myBet.save();
+
+        }
+        user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
+        await user.save();
+
+        res.status(200).json("six leg parlay successed.");
+
+    } catch (error) {
+        res.status(500).json(error.message);
+    }
+}
 
 const cancelBet = async (req, res) => {
     try{
@@ -423,5 +480,6 @@ module.exports = {
     getAllBets,
     getAllBetsByUserId,
     getReferralPrize,
-	cancelBet
+	cancelBet,
+    firstSixLegParlayBetting
 }
