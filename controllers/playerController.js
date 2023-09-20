@@ -87,6 +87,7 @@ const getTopPlayerBySport = async (req, res) => {
           contestName: '$name',
           contestStartTime: '$startTime',
           playerNumber: '$contestPlayer.jerseyNumber',
+          playerPosition: '$contestPlayer.position',
           teamName: {
             $arrayElemAt: ['$teamInfo.name', 0]
           },
@@ -174,7 +175,7 @@ const getPlayersByProps = async (req, res) => {
     {
       $addFields: {
         contestId: '$_id',
-        
+
         seanson: '$season' // Add the contestName field from Contest collection
       },
     },
@@ -184,7 +185,7 @@ const getPlayersByProps = async (req, res) => {
         playerId: '$contestPlayer._id',
         playerName: '$contestPlayer.name',
         contestId: 1,
-        
+
         season: 1,
         playerNumber: '$contestPlayer.jerseyNumber',
         sportName: {
