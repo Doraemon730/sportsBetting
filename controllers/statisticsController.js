@@ -124,11 +124,16 @@ const getTotalUserWithBet = async (req, res) => {
                     _id: '$userId',
                     totalBets: { $sum: 1 },
                     totalEntryFee: { $sum: '$entryFee' },
-                    totalPrize: { $sum: '$prize' }
+                    totalPrize: { $sum: '$prize' },
+                    totalWins: {
+                        $sum: {
+                            $cond: [{ $eq: ['$status', 'win'] }, 1, 0]
+                        }
+                    }
                 }
             }
         ]);
-        const userBetStatsWithUserDetails = await User.populate(userBetStats, { path: '_id', select: 'firstName lastName' });
+        const userBetStatsWithUserDetails = await User.populate(userBetStats, { path: '_id', select: 'firstName lastName credits ETH_balance' });
         res.json(userBetStatsWithUserDetails);
     } catch (error) {
         console.log(error.message);
