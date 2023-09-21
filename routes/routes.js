@@ -31,7 +31,7 @@ router.get(
 router.post(
     '/admin/users/getAllUsers',
     admin,
-    userController.getUsers);
+    userController.getAllUsers);
 
 router.post('/users/login',
     checkLogin,
