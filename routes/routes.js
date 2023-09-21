@@ -198,6 +198,4 @@ router.post('/admin/referral/getAllReferrals',
     admin,
     referralController.getAllReferrals)
 
-
-router.post('/transaction/payment', auth, transactionController.makePayment);
 module.exports = router;
