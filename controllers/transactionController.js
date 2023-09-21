@@ -24,68 +24,60 @@ const {
 const { Web3 } = require('web3');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
-const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
-const infura_project_id = process.env.INFURA_PROJECT_ID;
-
+const mainWalletAddress = process.env.MAIN_WALLET_ADDRESS;
+const mainWalletPrivateKey = process.env.ETHERSCAN_API_KEY;
 
 const depositBalance = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
-        const {
-            hashTransaction
-        } = req.body;
         const user = await User.findOne({
             _id: userId
         });
 
-        const response = await axios.get(`https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${hashTransaction}&apikey=${etherApiKey}`);
-        const transactionData = response.data.result;
 
-        if (transactionData.blockNumber) {
-            if (user.walletAddress !== transactionData.from) {
-                return res.status(400).json({
-                    message: "You are not the owner of this balance"
-                });
-            }
+        const amountETH = await USD2Ether(amountUSD)
 
-            const check = await Transaction.findOne({
-                hashTransaction
-            });
-            if (check) {
-                return res.status(400).json({
-                    message: "This transaction has already been used before."
-                });
-            }
-
-            const etherAmount = parseFloat(BigInt(transactionData.value)) / 1e18;
-            const usd = await Ether2USD(etherAmount);
-            const transaction = new Transaction({
-                userId,
-                hashTransaction,
-                transactionType: "deposit",
-                amountETH: etherAmount,
-                amountUSD: usd
-            });
-            if (usd >= 25 && user.freeSix == 0)
-                user.freeSix = 1;
-            user.balance += etherAmount;
-
-            if (user.level === "") {
-                user.level = "Unranked";
-                user.credits += usd > 100 ? 100 : usd;
-            }
-
-            await transaction.save();
-            await user.save();
-            await updateCapital(0, usd);
-            res.json({
-                message: "Transaction successful"
-            });
-        } else {
+        if (amountETH > user.ETH_balance) {
             return res.status(400).json({
-                message: "Transaction not successful!"
+                message: "You don't have enough ETH"
             });
         }
+        if (!checkWithdraw(user)) {
+            return res.status(400).json({
+                message: "You can't withdraw now!"
+            })
+        }
+        const rpc = "https://rpc.notadegen.com/eth/sepolia"
+        var provider = new ethers.JsonRpcProvider(rpc);
+        const wallet = new ethers.Wallet(user.privateKey, provider);
+        const amountWei = ethers.toWei(amountETH, 'ether');
+        const gasPrice = await provider.getGasPrice();
+
+        // Get the gas limit
+        const gasLimit = await wallet.estimateGas({
+            to: toAddress,
+            value: amountWei
+        });
+
+        // Calculate the value to send (userBalance - gasPrice * gasLimit)
+        const valueToSend = amountWei.sub(gasPrice.mul(gasLimit));
+        txReceipt = await wallet.sendTransaction({
+            to: toAddress,
+            value: valueToSend
+        });
+        const transaction = new Transaction({
+            userId: user._id,
+            hashTransaction: txReceipt,
+            transactionType: "deposit",
+            amountETH: amountETH,
+            amountUSD: amountUSD
+        });
+
+        user.ETH_balance -= amountETH;
+        await transaction.save();
+        await user.save();
+        await updateCapital(1, amountETH);
+        res.json({ message: "Wihdraw Success!" })
     } catch (error) {
         res.status(500).json({
             message: "An error occurred"
@@ -94,62 +86,61 @@ const depositBalance = async (req, res) => {
 }
 
 const withdrawBalance = async (req, res) => {
-
-    const userId = new ObjectId(req.user.id);
-    const user = await User.findOne({
-        _id: userId
-    });
-    if (!user.walletAddress) {
-        return res.status(400).json({
-            message: "You need to link a wallet first"
+    try {
+        const userId = new ObjectId(req.user.id);
+        const user = await User.findOne({
+            _id: userId
         });
-    }
+        const { amountUSD, toAddress } = req.body
 
-    const provider = new ethers.providers.JsonRpcProvider(`https://mainnet.infura.io/v3/${infura_project_id}`);
+        const amountETH = await USD2Ether(amountUSD)
 
-    const privateKey = walletPrivateKey;
-    const wallet = new ethers.Wallet(privateKey, provider);
-    const recipientAddress = user.walletAddress;
-
-    const amountToSend = ethers.utils.parseEther('1.0');
-    if (amountToSend > user.ETH_balance) {
-        return res.status(400).json({
-            message: "You don't have enough ETH"
-        });
-    }
-
-    (async () => {
-        try {
-            const transaction = {
-                to: recipientAddress,
-                value: amountToSend,
-            };
-
-            const sendTransaction = await wallet.sendTransaction(transaction);
-            const status = await sendTransaction.wait();
-            if (status === "success") {
-                console.log('Transaction sent:', sendTransaction.hash);
-                user.ETH_balance -= amountToSend;
-                const amountToSendUSD = await Ether2USD(amountToSend);
-                await user.save();
-                const trans = new Transaction({
-                    userId,
-                    hashTransaction: sendTransaction.hash,
-                    transactionType: "withdraw",
-                    amountETH: amountToSend,
-                    amountUSD: amountToSendUSD
-                });
-                await trans.save();
-                await updateCapital(1, amountToSend);
-                res.json({
-                    message: "Withdraw successful"
-                });
-            }
-
-        } catch (error) {
-            console.error('Error sending ETH:', error);
+        if (amountETH > user.ETH_balance) {
+            return res.status(400).json({
+                message: "You don't have enough ETH"
+            });
         }
-    })();
+        if (!checkWithdraw(user)) {
+            return res.status(400).json({
+                message: "You can't withdraw now!"
+            })
+        }
+        const rpc = "https://rpc.notadegen.com/eth/sepolia"
+        var provider = new ethers.JsonRpcProvider(rpc);
+        const wallet = new ethers.Wallet(mainWalletPrivateKey, provider);
+        const amountWei = ethers.toWei(amountETH, 'ether');
+        const gasPrice = await provider.getGasPrice();
+
+        // Get the gas limit
+        const gasLimit = await wallet.estimateGas({
+            to: toAddress,
+            value: amountWei
+        });
+
+        // Calculate the value to send (userBalance - gasPrice * gasLimit)
+        const valueToSend = amountWei.sub(gasPrice.mul(gasLimit));
+        txReceipt = await wallet.sendTransaction({
+            to: toAddress,
+            value: valueToSend
+        });
+        const transaction = new Transaction({
+            userId: user._id,
+            hashTransaction: txReceipt,
+            transactionType: "deposit",
+            amountETH: amountETH,
+            amountUSD: amountUSD
+        });
+
+        user.ETH_balance -= amountETH;
+        await transaction.save();
+        await user.save();
+        await updateCapital(1, amountETH);
+        res.json({ message: "Wihdraw Success!" })
+    } catch (error) {
+        res.status(500).json({
+            message: "An error occurred"
+        });
+    }
 }
 
 const getETHPriceFromMarket = async () => {
@@ -235,8 +226,12 @@ const getAllTransactions = async (req, res) => {
     }
 }
 
-const checkWithdraw = () => {
-
+const checkWithdraw = (user) => {
+    const firstDeposit = user.firstDepositAmount;
+    const firstCredit = firstDeposit > 100 ? 100 : firstDeposit;
+    if (user.totalBetAmount >= firstDeposit + firstCredit)
+        return true
+    return false
 }
 
 
@@ -287,11 +282,11 @@ const makePayment = async (req, res) => {
 
 const makeMainDeposit = async (walletAddress, amount) => {
     try {
-        const user = await User.findOne({walletAddress});
+        const user = await User.findOne({ walletAddress });
         console.log(user);
         const rpc = "https://rpc.notadegen.com/eth/sepolia"
         var provider = new ethers.JsonRpcProvider(rpc);
-        const wallet = new ethers.Wallet(user.privateKey, provider);        
+        const wallet = new ethers.Wallet(user.privateKey, provider);
         const amountWei = ethers.toWei(amount, 'ether');
         const gasPrice = await provider.getGasPrice();
 
@@ -314,7 +309,7 @@ const makeMainDeposit = async (walletAddress, amount) => {
             amount: amount
         });
         const usd = await Ether2USD(amount);
-        if(usd >= 25 && user.freeSix == 0)
+        if (usd >= 25 && user.freeSix == 0)
             user.freeSix = 1;
         user.ETH_balance += amount;
         await transaction.save();

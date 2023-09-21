@@ -15,7 +15,7 @@ const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
 
-const {addUserWallet} = require('../services/webSocketService'); // Import your WebSocket service
+const { addUserWallet } = require('../services/webSocketService'); // Import your WebSocket service
 
 //const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 //const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
@@ -71,11 +71,6 @@ const registerUser = async (req, res) => {
       }
       referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
       await referral.save();
-
-
-      // const referralUser = await User.findById(referral.userId);
-      // referralUser.credits += 100;
-      // await referralUser.save();
     }
 
     const payload = {
@@ -95,7 +90,6 @@ const registerUser = async (req, res) => {
     );
 
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -137,8 +131,6 @@ const loginUser = async (req, res) => {
     await user.save();
 
     user.password = undefined;
-    user.isAdmin = undefined;
-    //user.promotion = undefined;
     user.privateKey = undefined;
 
     jwt.sign(
@@ -155,17 +147,15 @@ const loginUser = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
 
 const getUserDetail = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select('-password -privateKey');
     res.json(user);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server Error');
   }
 }
@@ -206,12 +196,10 @@ const updateUser = async (req, res) => {
     const result = await User.updateOne({ _id: new ObjectId(userId) }, { $set: user });
 
     result.passsword = undefined;
-    result.isAdmin = undefined;
     result.privateKey = undefined;
     res.json(result)
 
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }

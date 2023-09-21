@@ -45,6 +45,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  firstDepositAmount: {
+    type: Number,
+    default: 0
+  },
   wins: {
     type: Number,
     default: 0
