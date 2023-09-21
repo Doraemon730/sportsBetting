@@ -92,6 +92,5 @@ const cronWalletMonitor = () => {
 }
 }
 module.exports = {
-  addUserWallet,
-  walletMonitor: cron.schedule(cronWalletSchedule, cronWalletMonitor)
+  addUserWallet  
 };

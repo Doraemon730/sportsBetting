@@ -13,7 +13,7 @@ const {
   EtherJob
 } = require('./services/betService');
 
-const {walletMonitor} = require('./services/webSocketService');
+
 
 app.use(cors());
 
