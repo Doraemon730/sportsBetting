@@ -38,18 +38,28 @@ const updateBetWithNew = async (amount) => {
                 _id: -1
             }
         });
-        if (now.getDate() === statistic.date.getDate()) {
+        if (statistic && now.getDate() === statistic.date.getDate()) {
 
             statistic.daily_bet_users++;
+            statistic.total_bets++;
             statistic.total_bet_users++;
             statistic.total_bet_amount += amount;
             statistic.daily_bet_amount += amount;
             await statistic.save();
         } else {
+            let total_bets = 1;
+            let total_bet_users = 1;
+            let total_bet_amount = amount;
+            if (statistic) {
+                total_bets = statistic.total_bets + 1;
+                total_bet_users = statistic.total_bet_users + 1;
+                total_bet_amount = statistic.total_bet_amount + amount
+            }
             const newstatistic = new Statistics({
                 date: now,
-                total_bet_users: statistic.total_bet_users + 1,
-                total_bet_amount: statistic.total_bet_amount + amount,
+                total_bets,
+                total_bet_users,
+                total_bet_amount,
                 daily_bet_users: 1,
                 daily_bet_amount: amount,
             });
@@ -69,15 +79,17 @@ const updateBetWithDaily = async (isFirst, amount) => {
                 _id: -1
             }
         });
-        if (now.getDate() === statistic.date.getDate()) {
+        if (statistic && now.getDate() === statistic.date.getDate()) {
             if (isFirst)
                 statistic.daily_bet_users++;
+            statistic.total_bets += 1;
             statistic.total_bet_amount += amount;
             statistic.daily_bet_amount += amount;
             await statistic.save();
         } else {
             const newstatistic = new Statistics({
                 date: now,
+                total_bets: statistic.total_bets + 1,
                 total_bet_amount: statistic.total_bet_amount + amount,
                 daily_bet_users: 1,
                 daily_bet_amount: amount,
