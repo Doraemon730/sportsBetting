@@ -347,7 +347,7 @@ const getWallentBalance = async (req, res) => {
   }
 }
 
-const setUserLevel = async (user) => {
+const setUserLevel = user => {
   if (user.totalBetAmount >= 1000000000) {
     user.level = "Prestige";
   } else if (user.totalBetAmount >= 500000000) {
