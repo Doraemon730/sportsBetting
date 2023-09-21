@@ -6,6 +6,7 @@ const Ethereum = require("../models/Ethereum");
 const Referral = require("../models/Referral");
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
+const { setUserLevel } = require("../controllers/userController");
 
 const checkBet = async (newbet) => {
     try {
@@ -29,8 +30,6 @@ const startBetting = async (req, res) => {
         const userId = new ObjectId(req.user.id);
         let { entryFee, betType, picks, currencyType } = req.body;
 
-        // entryFee = parseFloat(entryFee)
-
         const jsonArray = JSON.parse(picks);
         if (jsonArray.length < 2 || jsonArray.length > 6) {
             return res.status(400).json({ message: "Invalid Betting." });
@@ -43,10 +42,10 @@ const startBetting = async (req, res) => {
         }
 
         const entryFeeEtherSave = await USD2Ether(entryFee);
-
+        const entryFeeSave = entryFee;
         let creditSave = 0;
         user.credits -= entryFee;
-        creditSave = user.credits > 0 ? entryFee: temp;
+        creditSave = user.credits > 0 ? entryFee : temp;
         user.credits = user.credits > 0 ? creditSave = entryFee : 0;
         entryFee = entryFee - temp;
         entryFee = entryFee > 0 ? entryFee : 0;
@@ -74,36 +73,39 @@ const startBetting = async (req, res) => {
             }
         }
         let isNew = false, isFirst = false;
-        const bet = await Bet.findOne({userId}).sort({createdAt: -1}).exec();
-        if(!bet){
+        const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
+        if (!bet) {
             isNew = true;
         } else {
             let now = new Date();
-            if(now.getDate() !== bet.createdAt.getDate()){
+            if (now.getDate() !== bet.createdAt.getDate()) {
                 isFirst = true;
             }
         }
 
         const myBet = new Bet({
             userId,
-            entryFee: entryFeeEtherSave,
+            entryFee: entryFeeSave,
+            entryFeeETH: entryFeeEtherSave,
             betType,
             picks: jsonArray,
             credit: creditSave,
         });
-        await myBet.save();
 
+        await myBet.save();
         user.ETH_balance -= entryFeeEther;
+        user.totalBetAmount += entryFeeSave;
+        user = setUserLevel(user);
         await user.save();
 
         const transaction = new Transaction({
             userId,
-            amount: entryFeeEtherSave,
+            amountETH: entryFeeEtherSave,
+            amountUSD: entryFeeSave,
             transactionType: "bet"
         });
         await transaction.save();
-        if(isNew)
-        {
+        if (isNew) {
             await updateBetWithNew(entryFeeEtherSave);
 
         } else {
@@ -337,15 +339,18 @@ const sixLegParlayBetting = async (req, res) => {
         if (!bet) {
             res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available. In order to proceed, you are required to place a minimum bet of $25.' });
         }
-        const { picks} = req.body;
-        let palrayNumber = 0;
+        const { picks } = req.body;
+        let parlayNumber = 0;
         let entryFee = 25;
+        let entryFeeETH = await USD2Ether(entryFee);
         let betType = 'high';
-        for(const pick of picks){
+        for (const pick of picks) {
 
-            palrayNumber ++;
-            if(palrayNumber != 1)
+            parlayNumber++;
+            if (parlayNumber != 1) {
                 entryFee = 0;
+                entryFeeETH = 0;
+            }
 
             const jsonArray = JSON.parse(pick);
             for (const element of jsonArray) {
@@ -366,11 +371,12 @@ const sixLegParlayBetting = async (req, res) => {
 
             const myBet = new Bet({
                 userId,
+                entryFeeETH,
                 entryFee,
                 betType,
                 picks: jsonArray,
                 parlay: true,
-                palrayNumber
+                parlayIndex: parlayNumber
             });
             if (checkBet(myBet)) {
                 res.status(403).json({ message: 'Sorry, you have to select different bet' });
@@ -394,16 +400,17 @@ const firstSixLegParlayBetting = async (req, res) => {
         if (user.firstSix != 1)
             res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
         user.firstSix = -1;
-        const { picks} = req.body;
-        let palrayNumber = 0;
+        const { picks } = req.body;
+        let parlayNumber = 0;
         let entryFee = 10;
+        let entryFeeETH = await USD2Ether(entryFee);
         let betType = 'high';
-        for(const pick of picks){
-
-            palrayNumber ++;
-            if(palrayNumber != 1)
+        for (const pick of picks) {
+            parlayNumber++;
+            if (parlayNumber != 1) {
                 entryFee = 0;
-
+                entryFeeETH = 0;
+            }
             const jsonArray = JSON.parse(pick);
             for (const element of jsonArray) {
                 const contestId = new ObjectId(element.contestId);
@@ -423,11 +430,12 @@ const firstSixLegParlayBetting = async (req, res) => {
 
             const myBet = new Bet({
                 userId,
+                entryFeeETH,
                 entryFee,
                 betType,
                 picks: jsonArray,
                 parlay: true,
-                palrayNumber
+                parlayIndex: parlayNumber
             });
             if (checkBet(myBet)) {
                 res.status(403).json({ message: 'Sorry, you have to select different bet' });
@@ -446,21 +454,19 @@ const firstSixLegParlayBetting = async (req, res) => {
 }
 
 const cancelBet = async (req, res) => {
-    try{
+    try {
         const { betId } = req.body;
-        console.log(req.body);
         if (!betId)
             res.status(404).json("Bet is not exist");
-        const bet = await Bet.findOne({_id: new ObjectId(betId)});
-        if(!bet){
+        const bet = await Bet.findOne({ _id: new ObjectId(betId) });
+        if (!bet) {
             res.status(404).json("Bet is not exist");
         }
-        console.log(bet);
         const now = new Date();
         const diff = Math.abs(now - bet.createdAt) / (1000 * 60);
-        if(diff < 5) {
-            const user = await User.findOne({_id: bet.userId});
-            if(bet.credit > 0)
+        if (diff < 5) {
+            const user = await User.findOne({ _id: bet.userId });
+            if (bet.credit > 0)
                 user.credits += bet.credit;
             user.ETH_balance += USD2Ether(Ether2USD(bet.entryFee) - bet.credit);
             await user.save();
@@ -469,7 +475,6 @@ const cancelBet = async (req, res) => {
         } else
             res.status(400).json("Bet cannot be removed as it is older than 5 minutes");
     } catch (error) {
-        console.log(error.message);
         res.status(500).json(error.message);
     }
 }
@@ -480,6 +485,6 @@ module.exports = {
     getAllBets,
     getAllBetsByUserId,
     getReferralPrize,
-	cancelBet,
+    cancelBet,
     firstSixLegParlayBetting
 }

@@ -18,7 +18,6 @@ module.exports = function (req, res, next) {
         return res.status(401).json({ msg: 'Token is not valid' });
       } else {
         const user = await User.findById(decoded.user.id);
-        console.log(user)
         if (!user.isAdmin) {
           return res.status(401).json({ msg: 'Unauthorized' });
         }

@@ -57,7 +57,6 @@ const Ether2USD = async amount => {
             const convertedAmount = amount * etherPrice[0].price;
             resolve(convertedAmount);
         } catch (error) {
-            console.log(error)
             reject(error);
         }
     });
