@@ -168,22 +168,6 @@ const getUserDetail = async (req, res) => {
   }
 }
 
-const getAllUsers = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user.isAdmin) {
-      return res
-        .status(400)
-        .json({ errors: [{ msg: 'You are not an admin!' }] });
-    }
-    const users = await User.find();
-    res.json(users);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-}
-
 const updateUser = async (req, res) => {
   const userId = req.user.id;
 
@@ -324,7 +308,7 @@ const updateAllPromotion = async (approach) => {
 }
 
 
-const getUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.body.page) || 1;
     const limit = parseInt(req.body.limit) || 10;
@@ -422,6 +406,5 @@ module.exports = {
   updateAllPromotion,
   sendResetPasswordEmail,
   resetPassword,
-  getUsers,
   setUserLevel
 };

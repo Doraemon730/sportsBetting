@@ -1,4 +1,5 @@
 const Referral = require('../models/Referral');
+const User = require('../models/User');
 
 const setReferralLevel = async (req, res) => {
     const { referralCode, teir } = req.body;
@@ -81,4 +82,52 @@ const getAllReferrals = async (req, res) => {
     res.status(200).json(results);
 }
 
-module.exports = { setReferralLevel, getAllReferrals };
+const getReferralPrize = async (referralCode, invitedUserId, betAmount) => {
+    const referral = await Referral.findOne({ referralCode });
+    if (!referral) {
+        return;
+    }
+    const user = await User.findOne({ _id: referral.userId });
+
+    const checkUserLevel = () => {
+        const bettingUsers = referral.invitesList.filter((i) => i.betAmount > 0);
+        if (bettingUsers.length > 100) {
+            if (referral.level == 1) {
+                referral.level = 2;
+                const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
+                user.ETH_balance += sum * 0.003;
+            }
+            if (bettingUsers.length > 250) {
+                if (referral.level == 2) {
+                    referral.level = 3;
+                    const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
+                    user.ETH_balance += sum * 0.0035;
+                }
+            }
+        }
+    }
+    const updatedList = referral.invitesList.map((i) => {
+        if (i.invitedUserId.toString() === invitedUserId.toString()) {
+            i.betAmount += parseFloat(betAmount);
+        }
+        return i;
+    });
+    referral.invitesList = updatedList;
+    switch (referral.level) {
+        case 1:
+            user.ETH_balance += betAmount * 0.007;
+            checkUserLevel();
+            break;
+        case 2:
+            user.ETH_balance += betAmount * 0.01;
+            checkUserLevel();
+            break;
+        case 3:
+            user.ETH_balance += betAmount * 0.0135;
+            break;
+    }
+    await referral.save();
+    await user.save();
+}
+
+module.exports = { setReferralLevel, getAllReferrals, getReferralPrize };
