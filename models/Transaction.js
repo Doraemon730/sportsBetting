@@ -14,10 +14,20 @@ const TransactionSchema = new mongoose.Schema({
     enum: ['deposit', 'withdraw', 'bet', 'prize'],
     required: true
   },
-  amount: {
+  amountETH: {
     type: Number,
     required: true
-  }  
-}, {timestamps: { createdAt: true, updatedAt: false }});
+  },
+  amountUSD: {
+    type: Number,
+    required: true
+  }
+},
+  {
+    timestamps: {
+      createdAt: true,
+      updatedAt: false
+    }
+  });
 
 module.exports = mongoose.model('transaction', TransactionSchema);

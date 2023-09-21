@@ -31,7 +31,6 @@ const getAllReferrals = async (req, res) => {
     const limit = parseInt(req.body.limit) || 10;
 
     const count = await Referral.countDocuments();
-    console.log(count);
     const totalPages = Math.ceil(count / limit);
 
     const startIndex = (page - 1) * limit;

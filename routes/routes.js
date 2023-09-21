@@ -28,7 +28,7 @@ router.get(
     auth,
     userController.getUserDetail);
 
-router.get(
+router.post(
     '/admin/users/getAllUsers',
     admin,
     userController.getUsers);
@@ -92,8 +92,8 @@ router.post('/bet/getAllBetsByUserId',
     betController.getAllBetsByUserId);
 
 router.post('/bet/cancel',
-	auth,
-	betController.cancelBet);
+    auth,
+    betController.cancelBet);
 
 // Transactions routes
 router.post(

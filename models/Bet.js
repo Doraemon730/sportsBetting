@@ -6,6 +6,10 @@ const BetSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  entryFeeETH: {
+    type: Number,
+    required: true
+  },
   entryFee: {
     type: Number,
     required: true
@@ -52,7 +56,7 @@ const BetSchema = new mongoose.Schema({
     result: {
       type: Number
     },
-    
+
   }],
   status: {
     type: String,
@@ -64,7 +68,7 @@ const BetSchema = new mongoose.Schema({
     default: Date.now
   },
   finishedAt: {
-    type: Date,    
+    type: Date,
   },
   promotion: {
     type: mongoose.Schema.Types.ObjectId,

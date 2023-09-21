@@ -42,10 +42,14 @@ const UserSchema = new mongoose.Schema({
     default: false
   },
   level: {
+    type: String,
+    default: ""
+  },
+  wins: {
     type: Number,
     default: 0
   },
-  wins: {
+  totalBetAmount: {
     type: Number,
     default: 0
   },

@@ -58,25 +58,26 @@ const depositBalance = async (req, res) => {
             }
 
             const etherAmount = parseFloat(BigInt(transactionData.value)) / 1e18;
+            const usd = await Ether2USD(etherAmount);
             const transaction = new Transaction({
                 userId,
                 hashTransaction,
                 transactionType: "deposit",
-                amount: etherAmount
+                amountETH: etherAmount,
+                amountUSD: usd
             });
-            const usd = await Ether2USD(etherAmount);
             if (usd >= 25 && user.freeSix == 0)
                 user.freeSix = 1;
-            user.ETH_balance += etherAmount;
+            user.balance += etherAmount;
 
-            if (user.level === 0) {
-                user.level = 1;
+            if (user.level === "") {
+                user.level = "Unranked";
                 user.credits += usd > 100 ? 100 : usd;
             }
 
             await transaction.save();
             await user.save();
-            await updateCapital(0, etherAmount);
+            await updateCapital(0, usd);
             res.json({
                 message: "Transaction successful"
             });
@@ -113,7 +114,7 @@ const withdrawBalance = async (req, res) => {
     const amountToSend = ethers.utils.parseEther('1.0');
     if (amountToSend > user.ETH_balance) {
         return res.status(400).json({
-            message: "You don't have that much ETH"
+            message: "You don't have enough ETH"
         });
     }
 
@@ -129,12 +130,14 @@ const withdrawBalance = async (req, res) => {
             if (status === "success") {
                 console.log('Transaction sent:', sendTransaction.hash);
                 user.ETH_balance -= amountToSend;
+                const amountToSendUSD = await Ether2USD(amountToSend);
                 await user.save();
                 const trans = new Transaction({
                     userId,
                     hashTransaction: sendTransaction.hash,
                     transactionType: "withdraw",
-                    amount: amountToSend
+                    amountETH: amountToSend,
+                    amountUSD: amountToSendUSD
                 });
                 await trans.save();
                 await updateCapital(1, amountToSend);
@@ -177,16 +180,17 @@ const getETHPrice = async (req, res) => {
 }
 const addPrizeTransaction = async (userId, amount) => {
     try {
-        amount = await USD2Ether(amount);
+        const amountETH = await USD2Ether(amount);
         const user = await User.findOne({
             _id: userId
         });
-        user.ETH_balance += amount;
+        user.ETH_balance += amountETH;
         await user.save();
         const trans = new Transaction({
             userId,
             transactionType: 'prize',
-            amount
+            amountUSD: amount,
+            amountETH: amountETH
         })
         await trans.save();
 

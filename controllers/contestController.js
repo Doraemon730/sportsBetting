@@ -39,13 +39,11 @@ const addNBAContestsToDatabase = async (req, res) => {
 
     const contestData = await fetchNBAContest("2023/REG");
 
-    //console.log(contestData);
     // Loop through the fetched data and add contests to the database
     for (const contestInfo of contestData) {
       const homeID = await teamController.getIdfromRemoteId(contestInfo.home.id);
       const awayID = await teamController.getIdfromRemoteId(contestInfo.away.id);
 
-      /////////console.log(homeID, awayID);
       const contest = new Contest({
         name: contestInfo.home.alias + " vs " + contestInfo.away.alias,
         season: "2023/REG",
@@ -68,7 +66,6 @@ const preprocessPlayers = async (players) => {
   const playerList = [];
   for (let play of players) {
     const t = play;
-    //console.log(play);
     const p = await Player.findOne({
       remoteId: play.id
     });
@@ -424,23 +421,22 @@ const updateBetfromContest = async (gameId) => {
               await addPrizeTransaction(pending.userId, pending.prize);
           }
           if (pending.status == 'win') {
-            // const user = await User.findById(pending.userId);
-            // if (user) {
-            //   user.wins += 1;
-            //   if (user.level < 99) {
-            //     if (user.level <= 33)
-            //       user.level++;
-            //     else if (user.level <= 66) {
-            //       if (user.wins % 2 == 0)
-            //         user.level++;
-            //     } else {
+            const user = await User.findById(pending.userId);
+            if (user) {
+              user.wins += 1;
+              //   if (user.level < 99) {
+              //     if (user.level <= 33)
+              //       user.level++;
+              //     else if (user.level <= 66) {
+              //       if (user.wins % 2 == 0)
+              //         user.level++;
+              //     } else {
 
-            //       if (user.wins % 3 == 0)
-            //         user.level++;
-            //     }
-            //   }
-            //   await user.save();
-            // }
+              //       if (user.wins % 3 == 0)
+              //         user.level++;
+              //     }
+            }
+            await user.save();
             await updateCapital(3, await USD2Ether(pending.prize - pending.entryFee));
           } else {
             await updateCapital(2, await USD2Ether(pending.entryFee));
@@ -450,9 +446,6 @@ const updateBetfromContest = async (gameId) => {
         await pending.save();
 
       };
-
-      console.log("ends");
-
     }
   } catch (error) {
     console.log(error.message);

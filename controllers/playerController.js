@@ -102,7 +102,6 @@ const getTopPlayerBySport = async (req, res) => {
     }
     res.status(200).json(result);
   } catch (error) {
-    console.log(error.message);
     res.status(500).json(error.message);
   }
 }
@@ -267,7 +266,6 @@ const addNBAPlayersToDatabase = async (req, res) => {
       const remoteteam = await fetchNBATeamsFromRemoteId(team.remoteId);
       for (const player of remoteteam.players) {
         const playerProfile = await fetchPlayerProfile(player.id);
-        console.log(playerProfile);
         if (playerProfile) {
           const newPlayer = new Player({
             name: player.full_name,
@@ -294,7 +292,6 @@ const getPlayerProp = async (req, res) => {
     let {
       id
     } = req.body;
-    console.log(id);
     const player = await Player.findById(new ObjectId(id));
     if (player)
       res.json(player.statistics);

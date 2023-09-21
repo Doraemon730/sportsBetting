@@ -23,7 +23,7 @@ const { isEmpty } = require('../utils/util');
 //   return newWallet;
 // }
 const registerUser = async (req, res) => {
-  const { email, firstName, lastName, password, birthday, referralCode } = req.body;
+  const { email, firstName, lastName, password, referralCode } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -44,7 +44,6 @@ const registerUser = async (req, res) => {
       email,
       firstName,
       lastName,
-      birthday,
       myReferralCode,
       referralCode,
       walletAddress,
@@ -64,9 +63,7 @@ const registerUser = async (req, res) => {
     await myReferral.save();
 
     if (!isEmpty(referralCode)) {
-      console.log(referralCode);
-      const referral = await Referral.findOne({ referralCode: referralCode });
-      // referral.invitesList.push(user.id);
+      const referral = await Referral.findOne({ referralCode });
       if (referral.invitesList == null) {
         referral.invitesList = [];
       }
@@ -74,9 +71,9 @@ const registerUser = async (req, res) => {
       await referral.save();
 
 
-      const referralUser = await User.findById(referral.userId);
-      referralUser.credits += 100;
-      await referralUser.save();
+      // const referralUser = await User.findById(referral.userId);
+      // referralUser.credits += 100;
+      // await referralUser.save();
     }
 
     const payload = {
@@ -376,12 +373,55 @@ const getWallentBalance = async (req, res) => {
   }
 }
 
+const setUserLevel = async (user) => {
+  if (user.totalBetAmount >= 1000000000) {
+    user.level = "Prestige";
+  } else if (user.totalBetAmount >= 500000000) {
+    user.level = "Predator III";
+  } else if (user.totalBetAmount >= 250000000) {
+    user.level = "Predator II";
+  } else if (user.totalBetAmount >= 100000000) {
+    user.level = "Predator";
+  } else if (user.totalBetAmount >= 50000000) {
+    user.level = "Diamond I";
+  } else if (user.totalBetAmount >= 25000000) {
+    user.level = "Diamond II";
+  } else if (user.totalBetAmount >= 10000000) {
+    user.level = "Diamond";
+  } else if (user.totalBetAmount >= 5000000) {
+    user.level = "Plantium III";
+  } else if (user.totalBetAmount >= 2500000) {
+    user.level = "Plantium II";
+  } else if (user.totalBetAmount >= 1000000) {
+    user.level = "Plantium";
+  } else if (user.totalBetAmount >= 500000) {
+    user.level = "Gold II";
+  } else if (user.totalBetAmount >= 250000) {
+    user.level = "Gold";
+  } else if (user.totalBetAmount >= 100000) {
+    user.level = "Silver";
+  } else if (user.totalBetAmount >= 50000) {
+    user.level = "Bronze";
+  } else if (user.totalBetAmount >= 10000) {
+    user.level = "Rookie";
+  }
+  return user
+}
 
 
 
 
 module.exports = {
-  registerUser, loginUser, getUserDetail, getAllUsers, updateUser, verifyEmail,
-  updatePromotion, updateAllPromotion, sendResetPasswordEmail, resetPassword,
-  getUsers
+  registerUser,
+  loginUser,
+  getUserDetail,
+  getAllUsers,
+  updateUser,
+  verifyEmail,
+  updatePromotion,
+  updateAllPromotion,
+  sendResetPasswordEmail,
+  resetPassword,
+  getUsers,
+  setUserLevel
 };
