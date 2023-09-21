@@ -12,6 +12,9 @@ const {
   ThursdayJob,
   EtherJob
 } = require('./services/betService');
+
+const {walletMonitor} = require('./services/webSocketService');
+
 app.use(cors());
 
 // Connect Database
@@ -58,4 +61,5 @@ app.listen(PORT, () => {
   WednesdayJob.start();
   ThursdayJob.start();
   EtherJob.start();
+  //walletMonitor.start();
 });

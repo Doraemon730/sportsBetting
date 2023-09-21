@@ -284,6 +284,49 @@ const makePayment = async (req, res) => {
         res.status(500).send(error.message);
     }
 }
+
+const makeMainDeposit = async (walletAddress, amount) => {
+    try {
+        const user = await User.findOne({walletAddress});
+        console.log(user);
+        const rpc = "https://rpc.notadegen.com/eth/sepolia"
+        var provider = new ethers.JsonRpcProvider(rpc);
+        const wallet = new ethers.Wallet(user.privateKey, provider);        
+        const amountWei = ethers.toWei(amount, 'ether');
+        const gasPrice = await provider.getGasPrice();
+
+        // Get the gas limit
+        const gasLimit = await wallet.estimateGas({
+            to: toAddress,
+            value: amountWei
+        });
+
+        // Calculate the value to send (userBalance - gasPrice * gasLimit)
+        const valueToSend = amountWei.sub(gasPrice.mul(gasLimit));
+        txReceipt = await wallet.sendTransaction({
+            to: toAddress,
+            value: valueToSend
+        });
+        const transaction = new Transaction({
+            userId: user._id,
+            hashTransaction: txReceipt,
+            transactionType: "deposit",
+            amount: amount
+        });
+        const usd = await Ether2USD(amount);
+        if(usd >= 25 && user.freeSix == 0)
+            user.freeSix = 1;
+        user.ETH_balance += amount;
+        await transaction.save();
+        await user.save();
+        await updateCapital(0, amount);
+
+        console.log("Desposit successfully");
+        return txReceipt;
+    } catch (error) {
+        console.log(error.message);
+    }
+}
 module.exports = {
     depositBalance,
     withdrawBalance,
@@ -291,5 +334,6 @@ module.exports = {
     getETHPrice,
     getETHPriceFromMarket,
     getAllTransactions,
-    makePayment
+    makePayment,
+    makeMainDeposit
 }
