@@ -14,7 +14,7 @@ const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
-// const WebSocketService = require('../services/webSocketService'); // Import your WebSocket service
+const {addUserWallet} = require('../services/webSocketService'); // Import your WebSocket service
 //const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 //const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
@@ -54,7 +54,7 @@ const registerUser = async (req, res) => {
     await user.save();
     //WebSocketService.emit('userRegistered', { userId: user._id });
     //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
-    WebSocketService.addUserWallet(walletAddress);
+    await addUserWallet(walletAddress);
     const myReferral = new Referral({
 
       referralCode: myReferralCode,
