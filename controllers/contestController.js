@@ -14,7 +14,7 @@ const Bet = require('../models/Bet');
 const {
   addPrizeTransaction
 } = require('../controllers/transactionController');
-const { updateCapital} = require('../controllers/capitalController');
+const { updateCapital } = require('../controllers/capitalController');
 
 const { USD2Ether } = require('../utils/util');
 const {
@@ -39,13 +39,11 @@ const addNBAContestsToDatabase = async (req, res) => {
 
     const contestData = await fetchNBAContest("2023/REG");
 
-    //console.log(contestData);
     // Loop through the fetched data and add contests to the database
     for (const contestInfo of contestData) {
       const homeID = await teamController.getIdfromRemoteId(contestInfo.home.id);
       const awayID = await teamController.getIdfromRemoteId(contestInfo.away.id);
 
-      /////////console.log(homeID, awayID);
       const contest = new Contest({
         name: contestInfo.home.alias + " vs " + contestInfo.away.alias,
         season: "2023/REG",
@@ -68,7 +66,6 @@ const preprocessPlayers = async (players) => {
   const playerList = [];
   for (let play of players) {
     const t = play;
-    //console.log(play);
     const p = await Player.findOne({
       remoteId: play.id
     });
@@ -198,7 +195,7 @@ const updateBetfromContest = async (gameId) => {
                         pending.status = "win"
                         break;
                         defaut:
-                          pending.prize = 0;
+                        pending.prize = 0;
                         pending.status = "lost";
                         break;
                     }
@@ -218,7 +215,7 @@ const updateBetfromContest = async (gameId) => {
                         pending.status = "win"
                         break;
                         defaut:
-                          pending.prize = 0;
+                        pending.prize = 0;
                         pending.status = "lost"
                         break;
                     }
@@ -293,7 +290,7 @@ const updateBetfromContest = async (gameId) => {
                         pending.status = "win"
                         break;
                         defaut:
-                          pending.prize = 0;
+                        pending.prize = 0;
                         pending.status = "lost";
                         break;
                     }
@@ -313,7 +310,7 @@ const updateBetfromContest = async (gameId) => {
                         pending.status = "win"
                         break;
                         defaut:
-                          pending.prize = 0;
+                        pending.prize = 0;
                         pending.status = "lost"
                         break;
                     }
@@ -321,12 +318,11 @@ const updateBetfromContest = async (gameId) => {
                   default:
                     break;
                 }
-                if (pending.status == "win")
-                {
-                  
+                if (pending.status == "win") {
+
                   await addPrizeTransaction(pending.userId, pending.prize);
 
-                }  
+                }
                 break;
             }
           } else {
@@ -393,7 +389,7 @@ const updateBetfromContest = async (gameId) => {
                     pending.status = "win"
                     break;
                     defaut:
-                      pending.prize = 0;
+                    pending.prize = 0;
                     pending.status = "lost";
                     break;
                 }
@@ -413,7 +409,7 @@ const updateBetfromContest = async (gameId) => {
                     pending.status = "win"
                     break;
                     defaut:
-                      pending.prize = 0;
+                    pending.prize = 0;
                     pending.status = "lost"
                     break;
                 }
@@ -428,32 +424,28 @@ const updateBetfromContest = async (gameId) => {
             const user = await User.findById(pending.userId);
             if (user) {
               user.wins += 1;
-              if (user.level < 99) {
-                if (user.level <= 33)
-                  user.level++;
-                else if (user.level <= 66) {
-                  if (user.wins % 2 == 0)
-                    user.level++;
-                } else {
+              //   if (user.level < 99) {
+              //     if (user.level <= 33)
+              //       user.level++;
+              //     else if (user.level <= 66) {
+              //       if (user.wins % 2 == 0)
+              //         user.level++;
+              //     } else {
 
-                  if (user.wins % 3 == 0)
-                    user.level++;
-                }
-              }
-              await user.save();
+              //       if (user.wins % 3 == 0)
+              //         user.level++;
+              //     }
             }
-            await updateCapital(3, USD2Ether(pending.prize - pending.entryFee));
+            await user.save();
+            await updateCapital(3, await USD2Ether(pending.prize - pending.entryFee));
           } else {
-            await updateCapital(2, USD2Ether(pending.entryFee));
+            await updateCapital(2, await USD2Ether(pending.entryFee));
           }
         }
 
         await pending.save();
 
       };
-
-      console.log("ends");
-
     }
   } catch (error) {
     console.log(error.message);

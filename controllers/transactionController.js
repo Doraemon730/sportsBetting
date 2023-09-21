@@ -27,8 +27,6 @@ const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const walletPrivateKey = process.env.ETHERSCAN_API_KEY;
 const infura_project_id = process.env.INFURA_PROJECT_ID;
 
-const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
-const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
 const depositBalance = async (req, res) => {
     try {
@@ -60,20 +58,26 @@ const depositBalance = async (req, res) => {
             }
 
             const etherAmount = parseFloat(BigInt(transactionData.value)) / 1e18;
+            const usd = await Ether2USD(etherAmount);
             const transaction = new Transaction({
                 userId,
                 hashTransaction,
                 transactionType: "deposit",
-                amount: etherAmount
+                amountETH: etherAmount,
+                amountUSD: usd
             });
-            const usd = await Ether2USD(etherAmount);
-            if(usd >= 25 && user.freeSix == 0)
+            if (usd >= 25 && user.freeSix == 0)
                 user.freeSix = 1;
-            user.ETH_balance += etherAmount;
+            user.balance += etherAmount;
+
+            if (user.level === "") {
+                user.level = "Unranked";
+                user.credits += usd > 100 ? 100 : usd;
+            }
 
             await transaction.save();
             await user.save();
-            await updateCapital(0, etherAmount);
+            await updateCapital(0, usd);
             res.json({
                 message: "Transaction successful"
             });
@@ -110,7 +114,7 @@ const withdrawBalance = async (req, res) => {
     const amountToSend = ethers.utils.parseEther('1.0');
     if (amountToSend > user.ETH_balance) {
         return res.status(400).json({
-            message: "You don't have that much ETH"
+            message: "You don't have enough ETH"
         });
     }
 
@@ -126,12 +130,14 @@ const withdrawBalance = async (req, res) => {
             if (status === "success") {
                 console.log('Transaction sent:', sendTransaction.hash);
                 user.ETH_balance -= amountToSend;
+                const amountToSendUSD = await Ether2USD(amountToSend);
                 await user.save();
                 const trans = new Transaction({
                     userId,
                     hashTransaction: sendTransaction.hash,
                     transactionType: "withdraw",
-                    amount: amountToSend
+                    amountETH: amountToSend,
+                    amountUSD: amountToSendUSD
                 });
                 await trans.save();
                 await updateCapital(1, amountToSend);
@@ -174,16 +180,17 @@ const getETHPrice = async (req, res) => {
 }
 const addPrizeTransaction = async (userId, amount) => {
     try {
-        amount = await USD2Ether(amount);
+        const amountETH = await USD2Ether(amount);
         const user = await User.findOne({
             _id: userId
         });
-        user.ETH_balance += amount;
+        user.ETH_balance += amountETH;
         await user.save();
         const trans = new Transaction({
             userId,
             transactionType: 'prize',
-            amount
+            amountUSD: amount,
+            amountETH: amountETH
         })
         await trans.save();
 
@@ -237,11 +244,14 @@ const makePayment = async (req, res) => {
         const user = await User.findById(id);
         if (!user)
             res.status(404).json("User not found");
+        const infuraWebSocket = "https://rpc.sepolia.org";
+        const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+
         const amount = 0.001; // the amount to send ETH
         const walletAddress = user.walletAddress;
         const privateKey = user.privateKey;
         const userBalance = await web3.eth.getBalance(web3.eth.accounts.privateKeyToAccount(privateKey).address);
-        
+
         const amountWei = web3.utils.toWei(amount, 'ether');
         console.log(userBalance);
         console.log(amountWei);
@@ -251,7 +261,7 @@ const makePayment = async (req, res) => {
             });
         }
         // Create a transaction
-        
+
         const rpc = "https://rpc.notadegen.com/eth/sepolia"
         var provider = new ethers.JsonRpcProvider(rpc);
         const wallet = new ethers.Wallet(privateKey, provider);
@@ -318,7 +328,7 @@ module.exports = {
     addPrizeTransaction,
     getETHPrice,
     getETHPriceFromMarket,
-	getAllTransactions,
+    getAllTransactions,
     makePayment,
     makeMainDeposit
 }

@@ -87,6 +87,7 @@ const getTopPlayerBySport = async (req, res) => {
           contestName: '$name',
           contestStartTime: '$startTime',
           playerNumber: '$contestPlayer.jerseyNumber',
+          playerPosition: '$contestPlayer.position',
           teamName: {
             $arrayElemAt: ['$teamInfo.name', 0]
           },
@@ -101,7 +102,6 @@ const getTopPlayerBySport = async (req, res) => {
     }
     res.status(200).json(result);
   } catch (error) {
-    console.log(error.message);
     res.status(500).json(error.message);
   }
 }
@@ -174,7 +174,7 @@ const getPlayersByProps = async (req, res) => {
     {
       $addFields: {
         contestId: '$_id',
-        
+
         seanson: '$season' // Add the contestName field from Contest collection
       },
     },
@@ -184,7 +184,7 @@ const getPlayersByProps = async (req, res) => {
         playerId: '$contestPlayer._id',
         playerName: '$contestPlayer.name',
         contestId: 1,
-        
+
         season: 1,
         playerNumber: '$contestPlayer.jerseyNumber',
         sportName: {
@@ -266,7 +266,6 @@ const addNBAPlayersToDatabase = async (req, res) => {
       const remoteteam = await fetchNBATeamsFromRemoteId(team.remoteId);
       for (const player of remoteteam.players) {
         const playerProfile = await fetchPlayerProfile(player.id);
-        console.log(playerProfile);
         if (playerProfile) {
           const newPlayer = new Player({
             name: player.full_name,
@@ -293,7 +292,6 @@ const getPlayerProp = async (req, res) => {
     let {
       id
     } = req.body;
-    console.log(id);
     const player = await Player.findById(new ObjectId(id));
     if (player)
       res.json(player.statistics);
