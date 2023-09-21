@@ -114,7 +114,7 @@ const startBetting = async (req, res) => {
         } else {
             await updateBetWithDaily(isFirst, entryFeeEtherSave);
         }
-        getReferralPrize(user.referralCode, user._id, entryFeeEtherSave);
+        getReferralPrize(user._id, entryFeeEtherSave);
         res.json(myBet);
     } catch (error) {
         res.status(500).json(error.message);
@@ -439,7 +439,6 @@ module.exports = {
     isAllowedSixLegParlay,
     getAllBets,
     getAllBetsByUserId,
-    getReferralPrize,
     cancelBet,
     firstSixLegParlayBetting
 }

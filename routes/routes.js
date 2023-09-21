@@ -190,9 +190,9 @@ router.post('/admin/statistics/getDailyBet',
     statisticsController.getUserBetStats);
 
 // Referral routes
-router.post('/admin/referral/setReferralLevel',
+router.post('/admin/referral/setReferral',
     admin,
-    referralController.setReferralLevel);
+    referralController.setReferral);
 
 router.post('/admin/referral/getAllReferrals',
     admin,
