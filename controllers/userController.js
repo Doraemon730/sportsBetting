@@ -23,6 +23,7 @@ const createWallet = () => {
   return newWallet;
 }
 const registerUser = async (req, res) => {
+  console.log(infuraWebSocket);
   const { email, firstName, lastName, password, birthday, referralCode } = req.body;
 
   try {
@@ -53,7 +54,7 @@ const registerUser = async (req, res) => {
     await user.save();
     //WebSocketService.emit('userRegistered', { userId: user._id });
     //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
-
+    WebSocketService.addUserWallet(walletAddress);
     const myReferral = new Referral({
     
       referralCode: myReferralCode,
