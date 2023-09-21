@@ -54,7 +54,7 @@ const registerUser = async (req, res) => {
     await user.save();
     //WebSocketService.emit('userRegistered', { userId: user._id });
     //const balanceEventEmitter = WebSocketService.connectToEthereumNode(walletAddress);
-
+    WebSocketService.addUserWallet(walletAddress);
     const myReferral = new Referral({
 
       referralCode: myReferralCode,
