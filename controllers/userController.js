@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode();
-    const infuraWebSocket = "https://sepolia.infura.io/v3/7bb47d850a2f4695834c80aeb781dd01";
+    const infuraWebSocket = "https://eth.llamarpc.com";
     const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
     const wallet = web3.eth.accounts.create();
     const walletAddress = wallet.address;
@@ -153,6 +153,7 @@ const loginUser = async (req, res) => {
 
 const getUserDetail = async (req, res) => {
   try {
+    console.log("ASdfasdfasdf")
     const user = await User.findById(req.user.id).select('-password -privateKey');
     res.json(user);
   } catch (err) {

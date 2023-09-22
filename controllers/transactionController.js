@@ -34,29 +34,47 @@ const depositBalance = async (req, res) => {
             _id: userId
         });
 
-        const rpc = "https://rpc.notadegen.com/eth/sepolia"
-        var provider = new ethers.JsonRpcProvider(rpc);
-        const wallet = new ethers.Wallet(mainWalletPrivateKey, provider);
-        const amountETH = await web3.eth.getBalance(web3.eth.accounts.privateKeyToAccount(privateKey).address);
+        const infuraWebSocket = "https://eth.llamarpc.com"
+        var provider = new ethers.JsonRpcProvider(infuraWebSocket);
+        const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+        console.log("wallet")
+        const wallet = new ethers.Wallet(user.privateKey, provider);
+        console.log(wallet)
+        const amountWei = await web3.eth.getBalance(web3.eth.accounts.privateKeyToAccount(user.privateKey).address);
+        const amountETH = web3.utils.fromWei(amountWei, 'ether');
+        console.log(amountETH)
         const amountUSD = await Ether2USD(amountETH)
-        const amountWei = ethers.toWei(amountETH, 'ether');
-        const gasPrice = await provider.getGasPrice();
+        // const amountWei = ethers.toWei(amountETH, 'ether');
+        console.log("*********amountETH, amountUSD, amountWei********")
+        console.log(amountETH, amountUSD, amountWei)
+        const gasPrice = await web3.eth.getGasPrice();
+        console.log(gasPrice)
+
 
         // Get the gas limit
         const gasLimit = await wallet.estimateGas({
             to: mainWalletAddress,
             value: amountWei
         });
+        console.log(gasLimit)
 
         // Calculate the value to send (userBalance - gasPrice * gasLimit)
-        const valueToSend = amountWei.sub(gasPrice.mul(gasLimit));
+        const gasFee = (BigInt(gasPrice) * BigInt(gasLimit));
+        const valueToSend = BigInt(amountWei) - (BigInt(gasFee));
         txReceipt = await wallet.sendTransaction({
             to: mainWalletAddress,
+            gasPrice: gasPrice,
+            gasLimit: gasLimit,
             value: valueToSend
         });
+
+        const confirmedTx = await txReceipt.wait();
+
+        console.log("*********TxReceipt**********")
+        console.log(confirmedTx)
         const transaction = new Transaction({
             userId: user._id,
-            hashTransaction: txReceipt,
+            hashTransaction: confirmedTx,
             transactionType: "deposit",
             amountETH: amountETH,
             amountUSD: amountUSD
@@ -68,6 +86,7 @@ const depositBalance = async (req, res) => {
         await updateCapital(0, amountETH);
         res.json({ message: "Deposit Success!" })
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             message: "An error occurred"
         });

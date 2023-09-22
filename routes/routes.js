@@ -23,7 +23,7 @@ router.post(
     checkRegister,
     userController.registerUser);
 
-router.get(
+router.post(
     '/users/getUserDetail',
     auth,
     userController.getUserDetail);
@@ -107,7 +107,7 @@ router.post(
     transactionController.withdrawBalance
 );
 
-router.get(
+router.post(
     '/transaction/getEtherPrice',
     transactionController.getETHPrice
 );
