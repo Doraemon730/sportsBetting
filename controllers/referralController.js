@@ -3,33 +3,38 @@ const User = require('../models/User');
 const { ObjectId } = require("mongodb");
 
 const setReferral = async (req, res) => {
-    const { userId, referralCode, commission } = req.body;
-    if (!userId || (!referralCode && !commission)) {
-        return res.status(400).json({
-            message: 'Bad Request'
+    try {
+        const { userId, referralCode, commission } = req.body;
+        if (!userId || (!referralCode && !commission)) {
+            return res.status(400).json({
+                message: 'Bad Request'
+            })
+        }
+
+        const referral = await Referral.findOne({ userId: new ObjectId(userId) });
+        const user = await User.findOne({ _id: new ObjectId(userId) })
+
+        if (referralCode) {
+            user.myReferralCode = referralCode;
+            referral.referralCode = referralCode
+        }
+
+        if (commission) {
+            if (commission <= referral.commission)
+                return res.status(400).json({ message: "Invalid Commission." });
+            else
+                referral.commission = commission;
+        }
+
+        await referral.save();
+        await user.save();
+        res.status(200).json({
+            message: 'Referral updated'
         })
     }
-
-    const referral = await Referral.findOne({ userId: new ObjectId(userId) });
-    const user = await User.findOne({ _id: new ObjectId(userId) })
-
-    if (referralCode) {
-        user.myReferralCode = referralCode;
-        referral.referralCode = referralCode
+    catch (error) {
+        res.status(500).json({ msg: "Internal Server Error" })
     }
-
-    if (commission) {
-        if (commission <= referral.commission)
-            res.status(400).json({ message: "Invalid Commission." });
-        else
-            referral.commission = commission;
-    }
-
-    await referral.save();
-    await user.save();
-    res.status(200).json({
-        message: 'Referral updated'
-    })
 }
 
 const getAllReferrals = async (req, res) => {
