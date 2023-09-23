@@ -178,6 +178,7 @@ const getETHPrice = async (req, res) => {
         });
     }
 }
+
 const addPrizeTransaction = async (userId, amount) => {
     try {
         const amountETH = await USD2Ether(amount);
@@ -232,6 +233,10 @@ const getAllTransactions = async (req, res) => {
     } catch (error) {
         res.status(500).json(error.message);
     }
+}
+
+const checkWithdraw = () => {
+
 }
 
 

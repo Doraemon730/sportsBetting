@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const Ethereum = require("../models/Ethereum");
 const Referral = require("../models/Referral");
+const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
@@ -116,54 +117,6 @@ const startBetting = async (req, res) => {
     } catch (error) {
         res.status(500).json(error.message);
     }
-}
-
-const getReferralPrize = async (referralCode, invitedUserId, betAmount) => {
-    const referral = await Referral.findOne({ referralCode });
-    if (!referral) {
-        return;
-    }
-    const user = await User.findOne({ _id: referral.userId });
-
-    const checkUserLevel = () => {
-        const bettingUsers = referral.invitesList.filter((i) => i.betAmount > 0);
-        if (bettingUsers.length > 1) {
-            if (referral.level == 1) {
-                referral.level = 2;
-                const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
-                user.ETH_balance += sum * 0.003;
-            }
-            if (bettingUsers.length > 250) {
-                if (referral.level == 2) {
-                    referral.level = 3;
-                    const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
-                    user.ETH_balance += sum * 0.0035;
-                }
-            }
-        }
-    }
-    const updatedList = referral.invitesList.map((i) => {
-        if (i.invitedUserId.toString() === invitedUserId.toString()) {
-            i.betAmount += parseFloat(betAmount);
-        }
-        return i;
-    });
-    referral.invitesList = updatedList;
-    switch (referral.level) {
-        case 1:
-            user.ETH_balance += betAmount * 0.007;
-            checkUserLevel();
-            break;
-        case 2:
-            user.ETH_balance += betAmount * 0.01;
-            checkUserLevel();
-            break;
-        case 3:
-            user.ETH_balance += betAmount * 0.0135;
-            break;
-    }
-    await referral.save();
-    await user.save();
 }
 
 const getAllBetsByUserId = async (req, res) => {

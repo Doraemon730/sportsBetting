@@ -14,7 +14,9 @@ const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
+
 const {addUserWallet} = require('../services/webSocketService'); // Import your WebSocket service
+
 //const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 //const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
 
@@ -168,22 +170,6 @@ const getUserDetail = async (req, res) => {
   }
 }
 
-const getAllUsers = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user.isAdmin) {
-      return res
-        .status(400)
-        .json({ errors: [{ msg: 'You are not an admin!' }] });
-    }
-    const users = await User.find();
-    res.json(users);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-}
-
 const updateUser = async (req, res) => {
   const userId = req.user.id;
 
@@ -324,7 +310,7 @@ const updateAllPromotion = async (approach) => {
 }
 
 
-const getUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.body.page) || 1;
     const limit = parseInt(req.body.limit) || 10;
@@ -424,7 +410,6 @@ module.exports = {
   updateAllPromotion,
   sendResetPasswordEmail,
   resetPassword,
-  getUsers,
   setUserLevel,
   getWalletBalance
 };
