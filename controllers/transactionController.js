@@ -83,12 +83,11 @@ const depositBalance = async (req, res) => {
         await transaction.save();
         await user.save();
         await updateCapital(0, parseFloat(amountETH));
-        res.json({ message: "Deposit Success!" })
+        user.password = undefined;
+        user.privateKey = undefined;
+        res.json({ message: "Deposit Success!", user })
     } catch (error) {
-        console.log(error)
-        res.status(500).json({
-            message: "An error occurred"
-        });
+        res.status(500).send('Server error');
     }
 }
 
@@ -152,10 +151,7 @@ const withdrawBalance = async (req, res) => {
         await updateCapital(1, parseFloat(amountETH));
         res.json({ message: "Wihdraw Success!" })
     } catch (error) {
-        console.log(error)
-        res.status(500).json({
-            message: "An error occurred"
-        });
+        res.status(500).send('Server error');
     }
 }
 
@@ -180,9 +176,7 @@ const getETHPrice = async (req, res) => {
         const ether = await Ethereum.find();
         res.json(ether[0].price);
     } catch (error) {
-        res.status(500).json({
-            message: error.message
-        });
+        res.status(500).send('Server error');
     }
 }
 
@@ -238,7 +232,7 @@ const getAllTransactions = async (req, res) => {
         results.results = await Transaction.find().skip(startIndex).limit(limit);
         res.json(results);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
