@@ -25,7 +25,7 @@ const { Web3 } = require('web3');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const mainWalletAddress = process.env.MAIN_WALLET_ADDRESS;
-const mainWalletPrivateKey = process.env.ETHERSCAN_API_KEY;
+const mainWalletPrivateKey = process.env.MAIN_WALLET_PRIVATE_KEY;
 
 const depositBalance = async (req, res) => {
     try {
@@ -37,26 +37,17 @@ const depositBalance = async (req, res) => {
         const infuraWebSocket = "https://eth.llamarpc.com"
         var provider = new ethers.JsonRpcProvider(infuraWebSocket);
         const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
-        console.log("wallet")
         const wallet = new ethers.Wallet(user.privateKey, provider);
-        console.log(wallet)
         const amountWei = await web3.eth.getBalance(web3.eth.accounts.privateKeyToAccount(user.privateKey).address);
         const amountETH = web3.utils.fromWei(amountWei, 'ether');
-        console.log(amountETH)
         const amountUSD = await Ether2USD(amountETH)
-        // const amountWei = ethers.toWei(amountETH, 'ether');
-        console.log("*********amountETH, amountUSD, amountWei********")
-        console.log(amountETH, amountUSD, amountWei)
         const gasPrice = await web3.eth.getGasPrice();
-        console.log(gasPrice)
-
 
         // Get the gas limit
         const gasLimit = await wallet.estimateGas({
             to: mainWalletAddress,
             value: amountWei
         });
-        console.log(gasLimit)
 
         // Calculate the value to send (userBalance - gasPrice * gasLimit)
         const gasFee = (BigInt(gasPrice) * BigInt(gasLimit));
@@ -70,20 +61,28 @@ const depositBalance = async (req, res) => {
 
         const confirmedTx = await txReceipt.wait();
 
-        console.log("*********TxReceipt**********")
-        console.log(confirmedTx)
         const transaction = new Transaction({
             userId: user._id,
-            hashTransaction: confirmedTx,
+            hashTransaction: confirmedTx.hash,
             transactionType: "deposit",
             amountETH: amountETH,
             amountUSD: amountUSD
         });
 
-        user.ETH_balance += amountETH;
+        user.ETH_balance += parseFloat(amountETH);
+
+        if (amountUSD >= 25 && user.freeSix == 0)
+            user.freeSix = 1;
+
+        if (user.level === "") {
+            user.level = "Unranked";
+            user.credits += parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
+            user.firstDepositAmount = parseFloat(amountUSD);
+        }
+
         await transaction.save();
         await user.save();
-        await updateCapital(0, amountETH);
+        await updateCapital(0, parseFloat(amountETH));
         res.json({ message: "Deposit Success!" })
     } catch (error) {
         console.log(error)
@@ -105,7 +104,7 @@ const withdrawBalance = async (req, res) => {
 
         if (amountETH > user.ETH_balance) {
             return res.status(400).json({
-                message: "You don't have enough ETH"
+                message: "You don't have enough balance"
             });
         }
         if (!checkWithdraw(user)) {
@@ -113,11 +112,13 @@ const withdrawBalance = async (req, res) => {
                 message: "You can't withdraw now!"
             })
         }
-        const rpc = "https://rpc.notadegen.com/eth/sepolia"
-        var provider = new ethers.JsonRpcProvider(rpc);
-        const wallet = new ethers.Wallet(user.privateKey, provider);
-        const amountWei = ethers.toWei(amountETH, 'ether');
-        const gasPrice = await provider.getGasPrice();
+        const infuraWebSocket = "https://eth.llamarpc.com"
+        var provider = new ethers.JsonRpcProvider(infuraWebSocket);
+        const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+        const wallet = new ethers.Wallet(mainWalletPrivateKey, provider);
+        // const amountWei = await web3.utils.toWei(parseFloat(amountETH), 'ether')
+        const amountWei = BigInt(Math.floor(parseFloat(amountETH) * 1e18))
+        const gasPrice = await web3.eth.getGasPrice();
 
         // Get the gas limit
         const gasLimit = await wallet.estimateGas({
@@ -126,25 +127,32 @@ const withdrawBalance = async (req, res) => {
         });
 
         // Calculate the value to send (userBalance - gasPrice * gasLimit)
-        const valueToSend = amountWei.sub(gasPrice.mul(gasLimit));
+        const gasFee = (BigInt(gasPrice) * BigInt(gasLimit));
+        const valueToSend = BigInt(amountWei) - (BigInt(gasFee));
         txReceipt = await wallet.sendTransaction({
             to: toAddress,
+            gasPrice: gasPrice,
+            gasLimit: gasLimit,
             value: valueToSend
         });
+
+        const confirmedTx = await txReceipt.wait();
+
         const transaction = new Transaction({
             userId: user._id,
-            hashTransaction: txReceipt,
+            hashTransaction: confirmedTx.hash,
             transactionType: "withdraw",
             amountETH: amountETH,
             amountUSD: amountUSD
         });
 
-        user.ETH_balance -= amountETH;
+        user.ETH_balance -= parseFloat(amountETH);
         await transaction.save();
         await user.save();
-        await updateCapital(1, amountETH);
+        await updateCapital(1, parseFloat(amountETH));
         res.json({ message: "Wihdraw Success!" })
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             message: "An error occurred"
         });
