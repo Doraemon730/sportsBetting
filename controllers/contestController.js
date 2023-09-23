@@ -6,7 +6,8 @@ const {
 const {
   fetchNBAContest,
   fetchGameSummary,
-  FinalizeBet
+  FinalizeBet,
+  fetchNFLContest
 } = require('../services/contestService');
 const teamController = require('../controllers/teamController')
 const Player = require('../models/Player');
@@ -61,6 +62,37 @@ const addNBAContestsToDatabase = async (req, res) => {
     throw new Error(`Error adding NBA contests to the database: ${error.message}`);
   }
 };
+
+const addNFLContestsToDatabase = async (req, res) => {
+  try {
+    const weeks = await fetchNFLContest("2023/REG");
+    
+    // Loop through the fetched data and add contests to the database
+    for(const week of weeks) {
+      for (const contestInfo of week.games) {
+        const homeID = await teamController.getIdfromRemoteId(contestInfo.home.id);
+        const awayID = await teamController.getIdfromRemoteId(contestInfo.away.id);
+
+        const contest = new Contest({
+          name: contestInfo.home.alias + " vs " + contestInfo.away.alias,
+          season: "2023/REG",
+          startTime: new Date(contestInfo.scheduled),
+          sportId: new ObjectId("650e0b6fb80ab879d1c142c8"),
+          remoteId: contestInfo.id,
+          teams: [homeID, awayID]
+        });
+        await contest.save();
+      }
+    }
+    res.json({
+      message: 'NFL contests added to the database.'
+    });
+    //res.json(weeks);
+  } catch (error) {
+    throw new Error(`Error adding NFL contests to the database: ${error.message}`);
+  }
+}
+
 
 const preprocessPlayers = async (players) => {
   const playerList = [];
@@ -453,5 +485,6 @@ const updateBetfromContest = async (gameId) => {
 }
 module.exports = {
   addNBAContestsToDatabase,
-  updateBetfromContest
+  updateBetfromContest,
+  addNFLContestsToDatabase
 };

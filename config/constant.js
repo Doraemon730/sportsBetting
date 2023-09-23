@@ -13,7 +13,11 @@ const BET_4_6_LOW = 0.4
 const BET_5_6_LOW = 2
 const BET_6_6_LOW = 25
 const NBA_API_BASEURL = "https://api.sportradar.us/nba/trial/v8"
+const NFL_API_BASEURL = "https://api.sportradar.us/nfl/official/trial/v7"
 const LOCALE = "en"
+const ODDS_API_BASEURL = "https://api.sportradar.us/oddscomparison-player-props/trial/v2"
+const AMERICAN_URN_SPORT = "sr:sport:16"
+const NFL_COMPETITION_ID = "sr:competition:31"
 module.exports = {
     ETHER_PRICE_API,
     BET_2_2_HIGH,
@@ -30,5 +34,9 @@ module.exports = {
     BET_5_6_LOW,
     BET_6_6_LOW,
     NBA_API_BASEURL,    
+    NFL_API_BASEURL,
     LOCALE,    
+    ODDS_API_BASEURL,
+    AMERICAN_URN_SPORT,
+    NFL_COMPETITION_ID
 }

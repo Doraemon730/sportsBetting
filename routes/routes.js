@@ -13,6 +13,7 @@ const capitalController = require('../controllers/capitalController');
 const statisticsController = require('../controllers/statisticsController');
 const sportsController = require('../controllers/sportsController');
 const referralController = require('../controllers/referralController');
+const eventController = require('../controllers/eventController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -57,7 +58,7 @@ router.post('/bet/getPlayersBySports',
     //     body('prop').notEmpty().isString(),
     //     body('value').notEmpty().isString()
     //   ],
-    playerController.getTopPlayerBySport
+    playerController.getTopPlayerBy
 );
 
 router.post('/bet/getAllSports',
@@ -197,7 +198,12 @@ router.post('/admin/referral/setReferralLevel',
 router.post('/admin/referral/getAllReferrals',
     admin,
     referralController.getAllReferrals)
-
+router.post('/user/getbalance', auth, userController.getWalletBalance);
 
 router.post('/transaction/payment', auth, transactionController.makePayment);
+
+router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
+router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
+router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
+router.post('/admin/getWeeklySchedule', eventController.getWeeklyEvents);
 module.exports = router;

@@ -359,13 +359,15 @@ const getUsers = async (req, res) => {
   }
 }
 
-const getWallentBalance = async (req, res) => {
+const getWalletBalance = async (req, res) => {
   try {
     const id = req.user.id;
     const user = await User.findById(id);
     if (!user)
       res.status(404).json("User not found");
     const walletAddress = user.walletAddress;
+    const infuraWebSocket = "https://sepolia.infura.io/v3/7bb47d850a2f4695834c80aeb781dd01";
+    const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));    
     const balance = await web3.eth.getBalance(walletAddress);
     res.json({ balance: balance });
   } catch (error) {
@@ -423,5 +425,6 @@ module.exports = {
   sendResetPasswordEmail,
   resetPassword,
   getUsers,
-  setUserLevel
+  setUserLevel,
+  getWalletBalance
 };

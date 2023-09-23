@@ -1,5 +1,5 @@
 const Team = require('../models/Team');
-const { fetchNBATeams } = require('../services/teamService');
+const { fetchNBATeams, fetchNFLTeams } = require('../services/teamService');
 const { ObjectId } = require('mongodb');
 
 const getIdfromRemoteId = async (remoteId) => {
@@ -10,8 +10,8 @@ const getIdfromRemoteId = async (remoteId) => {
         throw new Error(`Error retrieving Get ID: ${error.message}`);
     }
 }
-const getAllTeamsFromDatabase = async () => {
-    const teams = await Team.find({});
+const getAllTeamsFromDatabase = async (id) => {
+    const teams = await Team.find({sportId: id});
     return teams;
 }
 const addNBATeamsToDatabase = async (req, res) => {
@@ -33,12 +33,36 @@ const addNBATeamsToDatabase = async (req, res) => {
                     await team.save();
                 }
             }
-
         }
         res.json({ message: 'NBA Teams added to the database.' });
     } catch (error) {
         throw new Error(`Error adding NBA contests to the database: ${error.message}`);
     }
 };
+const addNFLTeamsToDatabase = async (req, res) => {
+    try {
+        const conferences = await fetchNFLTeams();
 
-module.exports = { addNBATeamsToDatabase, getIdfromRemoteId, getAllTeamsFromDatabase }
+        // Loop through the fetched data and add contests to the database
+        for (const conference of conferences) {
+            for (const divisionInfo of conference.divisions) {
+                for (const teamInfo of divisionInfo.teams) {
+
+                    const team = new Team({
+                        name: teamInfo.name,
+                        sportId: new ObjectId("650e0b6fb80ab879d1c142c8"),
+                        remoteId: teamInfo.id,
+                        alias: teamInfo.alias,
+                        srId: teamInfo.sr_id
+                    });
+                    await team.save();
+                }
+            }
+        }
+        res.json({ message: 'NFL Teams added to the database.' });
+    } catch (error) {
+        throw new Error(`Error adding NBA contests to the database: ${error.message}`);
+    }
+}
+
+module.exports = { addNBATeamsToDatabase, getIdfromRemoteId, getAllTeamsFromDatabase, addNFLTeamsToDatabase}

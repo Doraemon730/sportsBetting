@@ -14,7 +14,12 @@ const TeamSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  logo: String
+  alias: {
+    type: String,    
+  },
+  srId: {
+    type: String,
+  }
 });
 
 module.exports = mongoose.model('team', TeamSchema);

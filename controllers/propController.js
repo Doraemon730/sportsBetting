@@ -6,12 +6,14 @@ const addProp = async (req, res) => {
         const {
             sportId,
             name,
-            displayName
+            displayName,
+            srId
         } = req.body;
         const prop = new Prop({
             name,
             sportId: new ObjectId(sportId),
-            displayName
+            displayName,
+            srId
         });
         await prop.save();
         res.status(200).json(prop);

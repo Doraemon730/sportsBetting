@@ -11,7 +11,11 @@ const PropSchema = new mongoose.Schema({
     required: true
   },
   displayName: {
-    type:String,
+    type: String,
+  },
+  srId: {
+    type: String,
+    required:true
   },
   available: {
     type: Boolean,
