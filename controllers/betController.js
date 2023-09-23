@@ -117,7 +117,7 @@ const startBetting = async (req, res) => {
         getReferralPrize(user._id, entryFeeEtherSave);
         res.json(myBet);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -153,7 +153,7 @@ const getAllBetsByUserId = async (req, res) => {
         results.results = await Bet.find({ userId }).skip(startIndex).limit(limit);
         res.json(results);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -188,7 +188,7 @@ const getAllBets = async (req, res) => {
         results.results = await Bet.find().skip(startIndex).limit(limit);
         res.json(results);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -430,7 +430,7 @@ const cancelBet = async (req, res) => {
         } else
             res.status(400).json("Bet cannot be removed as it is older than 5 minutes");
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 module.exports = {

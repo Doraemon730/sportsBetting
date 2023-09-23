@@ -157,7 +157,7 @@ const getUserDetail = async (req, res) => {
     const user = await User.findById(req.user.id).select('-password -privateKey');
     res.json(user);
   } catch (err) {
-    res.status(500).send('Server Error');
+    res.status(500).send('Server error');
   }
 }
 
@@ -226,7 +226,6 @@ const sendResetPasswordEmail = async (req, res) => {
     await recovery.save();
     res.json(result);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -265,7 +264,6 @@ const verifyEmail = async (req, res) => {
     result = sendEmail(email, subject, text);
     res.json(result);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -278,7 +276,7 @@ const updatePromotion = async (userId, promotion) => {
       user.save();
     }
   } catch (err) {
-    console.error(err.message);
+    res.status(500).send('Server error');
   }
 }
 
@@ -330,7 +328,7 @@ const getAllUsers = async (req, res) => {
     results.results = await User.find({}, { password: 0, privateKey: 0 }).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
-    res.status(500).json(error.message);
+    res.status(500).send('Server error');
   }
 }
 
@@ -344,7 +342,7 @@ const getWallentBalance = async (req, res) => {
     const balance = await web3.eth.getBalance(walletAddress);
     res.json({ balance: balance });
   } catch (error) {
-    console.log(error.message);
+    res.status(500).send('Server error');
   }
 }
 

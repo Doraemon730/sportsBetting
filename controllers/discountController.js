@@ -18,7 +18,7 @@ const setDiscount = async (req, res) => {
         await data.save();
         res.json(data);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 

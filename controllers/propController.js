@@ -44,33 +44,33 @@ const getProp = async (req, res) => {
         const promotion = await Promotion.findById(req.params.id);
         res.json(promotion);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 const getProps = async (req, res) => {
     try {
         const props = await Prop.aggregate([{
-                $lookup: {
-                    from: 'sports', // The name of the Sport model collection
-                    localField: 'sportId',
-                    foreignField: '_id',
-                    as: 'sport'
-                }
-            },
-            {
-                $unwind: '$sport'
-            },
-            {
-                $group: {
-                    _id: '$sportId',
-                    sportName: {
-                        $first: '$sport.name'
-                    },
-                    props: {
-                        $push: '$$ROOT'
-                    }
+            $lookup: {
+                from: 'sports', // The name of the Sport model collection
+                localField: 'sportId',
+                foreignField: '_id',
+                as: 'sport'
+            }
+        },
+        {
+            $unwind: '$sport'
+        },
+        {
+            $group: {
+                _id: '$sportId',
+                sportName: {
+                    $first: '$sport.name'
+                },
+                props: {
+                    $push: '$$ROOT'
                 }
             }
+        }
         ]);
         res.status(200).json(props);
     } catch (error) {

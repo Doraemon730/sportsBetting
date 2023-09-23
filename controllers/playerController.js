@@ -34,7 +34,7 @@ const getTopPlayerBySport = async (req, res) => {
       sportId: sportId
     }).select('name');
     if (props.length == 0)
-      res.status(404).json("There is not props");
+      return res.status(404).json("There is not props");
     const result = {};
     result.props = props;
     const now = new Date();
@@ -217,9 +217,7 @@ const getPlayersByProps = async (req, res) => {
 
     res.json(results);
   } catch (err) {
-    res.status(500).json({
-      message: err.message
-    })
+    res.status(500).send('Server error');
   }
 }
 
@@ -298,7 +296,7 @@ const getPlayerProp = async (req, res) => {
     else
       res.status(404).json("Player not found");
   } catch (error) {
-    res.status(500).json(error.message);
+    res.status(500).send('Server error');
   }
 }
 

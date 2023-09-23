@@ -106,7 +106,7 @@ const updateLost = async (amount) => {
         now.setMinutes(0, 0, 0);
         const created = capital.createdAt;
         created.setMinutes(0, 0, 0);
-        if (now.getDate() === created.getDate() && now.getHours() === created.getHours()) {            
+        if (now.getDate() === created.getDate() && now.getHours() === created.getHours()) {
             capital.lost += amount;
             capital.createdAt = now;
             await capital.save();
@@ -127,7 +127,7 @@ const updateLost = async (amount) => {
 }
 const updateCapital = async (type, amount) => {
     try {
-        switch(type) {
+        switch (type) {
             case 0:
                 await updateDeposit(amount);
                 break;
@@ -151,21 +151,21 @@ const addCapital = async (req, res) => {
         const now = new Date();
         now.setMinutes(0, 0, 0);
         const capital = new Capital({
-            total:10,
-            deposit:0,
-            withdraw:0,
-            profit:0,
-            lost:0,
-            createdAt:now
+            total: 10,
+            deposit: 0,
+            withdraw: 0,
+            profit: 0,
+            lost: 0,
+            createdAt: now
         });
         await capital.save();
         res.json(capital);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 const getCaptital = async (req, res) => {
-    try{
+    try {
         const capital = await Capital.findOne({}, {}, {
             sort: {
                 _id: -1
@@ -173,7 +173,7 @@ const getCaptital = async (req, res) => {
         });
         res.json(capital);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 module.exports = {

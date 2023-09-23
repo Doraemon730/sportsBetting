@@ -123,8 +123,7 @@ const getStatistics = async (req, res) => {
         const statistics = await getStatisticsByDate(date);
         res.json(statistics);
     } catch (error) {
-        console.log(error.message);
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -148,8 +147,7 @@ const getTotalUserWithBet = async (req, res) => {
         const userBetStatsWithUserDetails = await User.populate(userBetStats, { path: '_id', select: 'firstName lastName credits ETH_balance' });
         res.json(userBetStatsWithUserDetails);
     } catch (error) {
-        console.log(error.message);
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -179,8 +177,7 @@ const getUserBetStats = async (req, res) => {
         res.json(userBetStatsWithUserDetails);
 
     } catch (error) {
-        console.log(error.message);
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
