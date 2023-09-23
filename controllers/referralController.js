@@ -78,6 +78,7 @@ const getAllReferrals = async (req, res) => {
         $project: {
             _id: 1,
             referralCode: 1,
+            commission: 1,
             level: 1,
             invitesList: 1,
             userId: 1,
