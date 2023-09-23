@@ -1,29 +1,40 @@
 const Referral = require('../models/Referral');
 const User = require('../models/User');
+const { ObjectId } = require("mongodb");
 
-const setReferralLevel = async (req, res) => {
-    const { referralCode, teir } = req.body;
-    if (!referralCode || !teir) {
-        return res.status(400).json({
-            message: 'Bad Request'
+const setReferral = async (req, res) => {
+    try {
+        const { userId, referralCode, commission } = req.body;
+        if (!userId || (!referralCode && !commission)) {
+            return res.status(400).json({
+                message: 'Bad Request'
+            })
+        }
+
+        const referral = await Referral.findOne({ userId: new ObjectId(userId) });
+        const user = await User.findOne({ _id: new ObjectId(userId) })
+
+        if (referralCode) {
+            user.myReferralCode = referralCode;
+            referral.referralCode = referralCode
+        }
+
+        if (commission) {
+            if (commission <= referral.commission)
+                return res.status(400).json({ message: "Invalid Commission." });
+            else
+                referral.commission = commission;
+        }
+
+        await referral.save();
+        await user.save();
+        res.status(200).json({
+            message: 'Referral updated'
         })
     }
-    if (teir < 0 || teir > 3) {
-        return res.status(400).json({
-            message: 'Teir must be between 1 and 3'
-        })
+    catch (error) {
+        res.status(500).json({ msg: "Internal Server Error" })
     }
-    const referral = await Referral.findOne({ referralCode });
-    if (teir < referral.level) {
-        return res.status(400).json({
-            message: 'Teir cannot be less than current level'
-        })
-    }
-    referral.level = teir;
-    await referral.save();
-    res.status(200).json({
-        message: 'Referral level updated'
-    })
 }
 
 const getAllReferrals = async (req, res) => {
@@ -67,6 +78,7 @@ const getAllReferrals = async (req, res) => {
         $project: {
             _id: 1,
             referralCode: 1,
+            commission: 1,
             level: 1,
             invitesList: 1,
             userId: 1,
@@ -82,26 +94,38 @@ const getAllReferrals = async (req, res) => {
     res.status(200).json(results);
 }
 
-const getReferralPrize = async (referralCode, invitedUserId, betAmount) => {
-    const referral = await Referral.findOne({ referralCode });
+const getReferralPrize = async (invitedUserId, betAmount) => {
+    const referral = await Referral.findOne({ "invitesList.invitedUserId": invitedUserId });
     if (!referral) {
         return;
     }
     const user = await User.findOne({ _id: referral.userId });
+    await User.updateOne({ _id: invitedUserId }, { $set: { referralCode: referral.referralCode } })
 
     const checkUserLevel = () => {
         const bettingUsers = referral.invitesList.filter((i) => i.betAmount > 0);
+
+        if (bettingUsers.length > 500) {
+            if (referral.level == 3) {
+                referral.level = 4;
+                if (referral.commission <= 1.35) {
+                    referral.commission = 1.35
+                }
+            }
+        }
+        if (bettingUsers.length > 250) {
+            if (referral.level == 2) {
+                referral.level = 3;
+                if (referral.commission <= 1.0) {
+                    referral.commission = 1.0
+                }
+            }
+        }
         if (bettingUsers.length > 100) {
             if (referral.level == 1) {
                 referral.level = 2;
-                const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
-                user.ETH_balance += sum * 0.003;
-            }
-            if (bettingUsers.length > 250) {
-                if (referral.level == 2) {
-                    referral.level = 3;
-                    const sum = bettingUsers.reduce((a, b) => a + b.betAmount, 0);
-                    user.ETH_balance += sum * 0.0035;
+                if (referral.commission <= 0.75) {
+                    referral.commission = 0.75
                 }
             }
         }
@@ -113,21 +137,10 @@ const getReferralPrize = async (referralCode, invitedUserId, betAmount) => {
         return i;
     });
     referral.invitesList = updatedList;
-    switch (referral.level) {
-        case 1:
-            user.ETH_balance += betAmount * 0.007;
-            checkUserLevel();
-            break;
-        case 2:
-            user.ETH_balance += betAmount * 0.01;
-            checkUserLevel();
-            break;
-        case 3:
-            user.ETH_balance += betAmount * 0.0135;
-            break;
-    }
+    checkUserLevel();
+    user.ETH_balance += betAmount * referral.commission * 0.01;
     await referral.save();
     await user.save();
 }
 
-module.exports = { setReferralLevel, getAllReferrals, getReferralPrize };
+module.exports = { setReferral, getAllReferrals, getReferralPrize };

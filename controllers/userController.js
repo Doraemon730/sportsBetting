@@ -15,7 +15,7 @@ const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty } = require('../utils/util');
 
-const {addUserWallet} = require('../services/webSocketService'); // Import your WebSocket service
+const { addUserWallet } = require('../services/webSocketService'); // Import your WebSocket service
 
 //const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
 //const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
@@ -36,7 +36,7 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode();
-    const infuraWebSocket = "https://sepolia.infura.io/v3/7bb47d850a2f4695834c80aeb781dd01";
+    const infuraWebSocket = "https://eth.llamarpc.com";
     const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
     const wallet = web3.eth.accounts.create();
     const walletAddress = wallet.address;
@@ -71,11 +71,6 @@ const registerUser = async (req, res) => {
       }
       referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
       await referral.save();
-
-
-      // const referralUser = await User.findById(referral.userId);
-      // referralUser.credits += 100;
-      // await referralUser.save();
     }
 
     const payload = {
@@ -95,7 +90,6 @@ const registerUser = async (req, res) => {
     );
 
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -137,8 +131,6 @@ const loginUser = async (req, res) => {
     await user.save();
 
     user.password = undefined;
-    user.isAdmin = undefined;
-    //user.promotion = undefined;
     user.privateKey = undefined;
 
     jwt.sign(
@@ -155,18 +147,17 @@ const loginUser = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
 
 const getUserDetail = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    console.log("ASdfasdfasdf")
+    const user = await User.findById(req.user.id).select('-password -privateKey');
     res.json(user);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send('Server error');
   }
 }
 
@@ -206,12 +197,10 @@ const updateUser = async (req, res) => {
     const result = await User.updateOne({ _id: new ObjectId(userId) }, { $set: user });
 
     result.passsword = undefined;
-    result.isAdmin = undefined;
     result.privateKey = undefined;
     res.json(result)
 
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -237,7 +226,6 @@ const sendResetPasswordEmail = async (req, res) => {
     await recovery.save();
     res.json(result);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -276,7 +264,6 @@ const verifyEmail = async (req, res) => {
     result = sendEmail(email, subject, text);
     res.json(result);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Server error');
   }
 }
@@ -289,7 +276,7 @@ const updatePromotion = async (userId, promotion) => {
       user.save();
     }
   } catch (err) {
-    console.error(err.message);
+    res.status(500).send('Server error');
   }
 }
 
@@ -341,7 +328,7 @@ const getAllUsers = async (req, res) => {
     results.results = await User.find({}, { password: 0, privateKey: 0 }).skip(startIndex).limit(limit);
     res.json(results);
   } catch (error) {
-    res.status(500).json(error.message);
+    res.status(500).send('Server error');
   }
 }
 
@@ -357,11 +344,11 @@ const getWalletBalance = async (req, res) => {
     const balance = await web3.eth.getBalance(walletAddress);
     res.json({ balance: balance });
   } catch (error) {
-    console.log(error.message);
+    res.status(500).send('Server error');
   }
 }
 
-const setUserLevel = async (user) => {
+const setUserLevel = user => {
   if (user.totalBetAmount >= 1000000000) {
     user.level = "Prestige";
   } else if (user.totalBetAmount >= 500000000) {

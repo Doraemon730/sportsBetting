@@ -24,7 +24,7 @@ router.post(
     checkRegister,
     userController.registerUser);
 
-router.get(
+router.post(
     '/users/getUserDetail',
     auth,
     userController.getUserDetail);
@@ -108,7 +108,7 @@ router.post(
     transactionController.withdrawBalance
 );
 
-router.get(
+router.post(
     '/transaction/getEtherPrice',
     transactionController.getETHPrice
 );
@@ -191,13 +191,14 @@ router.post('/admin/statistics/getDailyBet',
     statisticsController.getUserBetStats);
 
 // Referral routes
-router.post('/admin/referral/setReferralLevel',
+router.post('/admin/referral/setReferral',
     admin,
-    referralController.setReferralLevel);
+    referralController.setReferral);
 
 router.post('/admin/referral/getAllReferrals',
     admin,
     referralController.getAllReferrals)
+
 router.post('/user/getbalance', auth, userController.getWalletBalance);
 
 router.post('/transaction/payment', auth, transactionController.makePayment);
@@ -206,4 +207,5 @@ router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
 router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
 router.post('/admin/getWeeklySchedule', eventController.getWeeklyEvents);
+
 module.exports = router;

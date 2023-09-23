@@ -28,7 +28,6 @@
     "nodemon": "^3.0.1",
     "normalize-url": "^8.0.0",
     "socket.io": "^4.7.2",
-    "sportradar-node": "^1.0.4",
-    "web3": "^4.1.1"
+    "web3": "^4.1.2"
   }
 }

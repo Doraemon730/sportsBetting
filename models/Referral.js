@@ -14,6 +14,10 @@ const ReferralSchema = new mongoose.Schema({
         type: Number,
         default: 1
     },
+    commission: {
+        type: Number,
+        default: 0.5
+    },
     invitesList: [{
         invitedUserId: {
             type: mongoose.Schema.Types.ObjectId,

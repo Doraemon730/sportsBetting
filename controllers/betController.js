@@ -8,6 +8,7 @@ const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
+const { updateBetWithNew, updateBetWithDaily } = require("../controllers/statisticsController")
 
 const checkBet = async (newbet) => {
     try {
@@ -36,7 +37,7 @@ const startBetting = async (req, res) => {
             return res.status(400).json({ message: "Invalid Betting." });
         }
 
-        const user = await User.findOne({ _id: userId });
+        let user = await User.findOne({ _id: userId });
 
         if (currencyType === "ETH") {
             entryFee = await Ether2USD(entryFee);
@@ -44,6 +45,7 @@ const startBetting = async (req, res) => {
 
         const entryFeeEtherSave = await USD2Ether(entryFee);
         const entryFeeSave = entryFee;
+        let temp = user.credits;
         let creditSave = 0;
         user.credits -= entryFee;
         creditSave = user.credits > 0 ? entryFee : temp;
@@ -95,7 +97,7 @@ const startBetting = async (req, res) => {
 
         await myBet.save();
         user.ETH_balance -= entryFeeEther;
-        user.totalBetAmount += entryFeeSave;
+        user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
         await user.save();
 
@@ -112,10 +114,10 @@ const startBetting = async (req, res) => {
         } else {
             await updateBetWithDaily(isFirst, entryFeeEtherSave);
         }
-        getReferralPrize(user.referralCode, user._id, entryFeeEtherSave);
+        getReferralPrize(user._id, entryFeeEtherSave);
         res.json(myBet);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -151,7 +153,7 @@ const getAllBetsByUserId = async (req, res) => {
         results.results = await Bet.find({ userId }).skip(startIndex).limit(limit);
         res.json(results);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -186,7 +188,7 @@ const getAllBets = async (req, res) => {
         results.results = await Bet.find().skip(startIndex).limit(limit);
         res.json(results);
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 
@@ -428,7 +430,7 @@ const cancelBet = async (req, res) => {
         } else
             res.status(400).json("Bet cannot be removed as it is older than 5 minutes");
     } catch (error) {
-        res.status(500).json(error.message);
+        res.status(500).send('Server error');
     }
 }
 module.exports = {
@@ -437,7 +439,6 @@ module.exports = {
     isAllowedSixLegParlay,
     getAllBets,
     getAllBetsByUserId,
-    getReferralPrize,
     cancelBet,
     firstSixLegParlayBetting
 }
