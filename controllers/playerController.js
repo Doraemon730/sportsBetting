@@ -103,6 +103,7 @@ const getTopPlayerBy = async (req, res) => {
               teamName: '$team.alias',
               contestName: '$event.name',
               contestStartTime: '$event.startTime',
+              overUnder: "odd"
             }
           }
         }

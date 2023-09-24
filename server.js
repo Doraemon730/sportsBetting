@@ -29,7 +29,11 @@ app.use(bodyParser.urlencoded({
 // Define Routes
 const apiRoutes = require('./routes/routes');
 app.use('/api', apiRoutes);
-
+app.get('/api/image/:imageName', (req, res) => {
+  const imageName = req.params.imageName;
+  const imagePath = path.join(__dirname, 'public/images', imageName);
+  res.sendFile(imagePath);
+});
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
   // Set static folder
