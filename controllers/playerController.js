@@ -89,6 +89,13 @@ const getTopPlayerBy = async (req, res) => {
         $unwind: '$event'
       },
       {
+        $match: {
+          'event.startTime': {
+            $gte: new Date(),
+          }
+        }
+      },
+      {
         $group: {
           _id: '$odds.id', // Group by odds.id
           players: {
