@@ -103,7 +103,8 @@ const getTopPlayerBy = async (req, res) => {
               teamName: '$team.alias',
               contestName: '$event.name',
               contestStartTime: '$event.startTime',
-              overUnder: "odd"
+              overUnder: "over",
+              propName: '$prop.displayName'
             }
           }
         }
@@ -118,14 +119,11 @@ const getTopPlayerBy = async (req, res) => {
       }
       ]);
     for (const prop of props) {
-
       result[prop.displayName] = players.filter(player => String(player._id) === String(prop._id))[0].topPlayers;
       console.log(prop.displayName, result[prop.displayName].length);
     }
-
     res.status(200).json(result);
   } catch (error) {
-    console.log(error);
     res.status(500).send('Server error');
   }
 }
