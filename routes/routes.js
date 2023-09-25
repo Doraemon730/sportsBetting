@@ -201,8 +201,6 @@ router.post('/admin/referral/getAllReferrals',
 
 router.post('/user/getbalance', auth, userController.getWalletBalance);
 
-router.post('/transaction/payment', auth, transactionController.makePayment);
-
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
 router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
