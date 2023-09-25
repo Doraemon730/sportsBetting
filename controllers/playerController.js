@@ -35,22 +35,22 @@ const getTopPlayerBy = async (req, res) => {
         message: "sportId is required"
       });
     }
-   
+
     sportId = new ObjectId(sportId);
     const props = await Prop.find({
       sportId: sportId
     }).select('_id displayName');
     if (props.length == 0)
-      res.status(404).json("There is not props");
+      return res.status(404).json("There is not props");
     const result = {};
-    result.props = props.map((prop)=> prop.displayName);
-    
-    
+    result.props = props.map((prop) => prop.displayName);
+
+
 
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-    
-    
+
+
     const players = await Player.aggregate(
       [{
         $unwind: '$odds' // Unwind the odds array to work with individual odds documents
@@ -87,12 +87,12 @@ const getTopPlayerBy = async (req, res) => {
         $unwind: '$team' // Unwind the 'prop' array created by the lookup
       },
       {
-          $lookup:{
-            from: 'events',
-            localField: 'odds.event',
-            foreignField: '_id',
-            as: 'event'
-          }
+        $lookup: {
+          from: 'events',
+          localField: 'odds.event',
+          foreignField: '_id',
+          as: 'event'
+        }
       },
       {
         $unwind: '$event'
@@ -100,7 +100,7 @@ const getTopPlayerBy = async (req, res) => {
       {
         $match: {
           'event.startTime': {
-            $gte: new Date(),            
+            $gte: new Date(),
           }
         }
       },
@@ -112,13 +112,15 @@ const getTopPlayerBy = async (req, res) => {
               playerId: '$_id',
               playerName: '$name',
               playerPosition: '$position',
-              contestId: '$odds.event',              
-              playerNumber: '$jerseyNumber',              
+              contestId: '$odds.event',
+              playerNumber: '$jerseyNumber',
               headshot: '$headshot',
               odds: '$odds.value',
               teamName: '$team.alias',
-              contestName:'$event.name',             
-              contestStartTime:'$event.startTime',
+              contestName: '$event.name',
+              contestStartTime: '$event.startTime',
+              overUnder: "over",
+              propName: '$prop.displayName'
             }
           }
         }
@@ -131,16 +133,16 @@ const getTopPlayerBy = async (req, res) => {
           // }
         }
       }
-    ]);
-    for(const prop of props) {
+      ]);
 
-      result[prop.displayName] = players.filter(player => String(player._id) === String(prop._id))[0].topPlayers;
-      console.log(prop.displayName, result[prop.displayName].length);
+    // return res.json(players)
+
+    for (const prop of props) {
+      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0]
+      result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
     }
-    
     res.status(200).json(result);
   } catch (error) {
-    console.log(error);
     res.status(500).send('Server error');
   }
 }
@@ -161,16 +163,13 @@ const getTopPlayerBySport = async (req, res) => {
       sportId: sportId
     });
     if (props.length == 0)
-      res.status(404).json("There is not props");
+      return res.status(404).json("There is not props");
     const result = {};
     result.props = props;
 
-    
-      
-    
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-    
+
     const results = await Contest.aggregate([
       {
         $match: {
@@ -348,9 +347,7 @@ const getPlayersByProps = async (req, res) => {
 
     res.json(results);
   } catch (err) {
-    res.status(500).json({
-      message: err.message
-    })
+    res.status(500).send('Server error');
   }
 }
 
@@ -384,22 +381,22 @@ const updateNBAPlayers = async () => {
   }
 }
 const addNFLPlayersToDatabase = async (req, res) => {
-  try{
+  try {
     const teams = await getAllTeamsFromDatabase(new ObjectId("650e0b6fb80ab879d1c142c8"));
     for (const team of teams) {
 
       const remoteteam = await fetchNFLTeamsFromRemoteId(team.remoteId);
-      for (const player of remoteteam.players) {        
-          const newPlayer = new Player({
-            name: player.name,
-            sportId: new ObjectId("650e0b6fb80ab879d1c142c8"),
-            remoteId: player.id,
-            teamId: team._id,
-            position: player.position,
-            jerseyNumber: player.jersey,            
-            srId: player.sr_id
-          });
-          await newPlayer.save();        
+      for (const player of remoteteam.players) {
+        const newPlayer = new Player({
+          name: player.name,
+          sportId: new ObjectId("650e0b6fb80ab879d1c142c8"),
+          remoteId: player.id,
+          teamId: team._id,
+          position: player.position,
+          jerseyNumber: player.jersey,
+          srId: player.sr_id
+        });
+        await newPlayer.save();
       }
     }
     res.status(200).json({
@@ -513,7 +510,7 @@ const getPlayerProp = async (req, res) => {
     else
       res.status(404).json("Player not found");
   } catch (error) {
-    res.status(500).json(error.message);
+    res.status(500).send('Server error');
   }
 }
 
@@ -539,7 +536,53 @@ const remove = async (req, res) => {
   await Player.deleteMany({sportId: new ObjectId("65108faf4fa2698548371fbd")});
   res.json("Success");
 }
+const getLiveDataByPlayers = async (req, res) => {
 
+  const axios = require('axios');
+
+  const apiKey = '2uea7w9xs2h2mmupfh7avwbx'
+
+  const request = require('request')
+  url = 'https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key=2uea7w9xs2h2mmupfh7avwbx&match=sd:match:8c138263-1dc1-4e28-96ee-21158684cd55'
+
+  const stream = request(url);
+  stream.on('data', (chunk) => {
+    // Process the incoming data chunk here
+    console.log(chunk.toString()); // You can replace this with your own logic
+  });
+
+  // Handle errors
+  stream.on('error', (error) => {
+    console.error('Error:', error);
+  });
+
+  // Handle the end of the stream
+  stream.on('end', () => {
+    console.log('Stream ended');
+  });
+  // fetch('https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key=2uea7w9xs2h2mmupfh7avwbx')
+  //   .then(response => {
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let data = '';
+  //     reader.read().then(chunk => {
+  //       data += decoder.decode(chunk.value);
+  //       console.log(data);
+  //     });
+  //   })
+  //   .catch(error => {
+  //     console.error(error);
+  //   });
+
+  // return axios.get(`https://api.sportradar.us/nfl/official/trial/v7/en/games/9e665e5b-0ab8-4ccd-a6ac-2a4d13afba63/boxscore.json?api_key=${apiKey}`)
+  //   .then(response => {
+  //     return res.json(response.data)
+  //   })
+  //   .catch(error => {
+  //     console.log(error.message);
+  //   });
+
+};
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -551,5 +594,6 @@ module.exports = {
   getPlayerManifest,
   addNHLPlayersToDatabase,
   addMLBPlayersToDatabase,
+  getLiveDataByPlayers,
   remove
 };

@@ -18,6 +18,8 @@ const LOCALE = "en"
 const ODDS_API_BASEURL = "https://api.sportradar.us/oddscomparison-player-props/trial/v2"
 const AMERICAN_URN_SPORT = "sr:sport:16"
 const NFL_COMPETITION_ID = "sr:competition:31"
+
+const NFL_LIVEDATA_BASEURL = "https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key"
 const MLB_COMPETITION_ID = "sr:competition:109"
 const NHL_COMPETITION_ID = "sr:competition:234";
 const NFL_IMAGE_BASEURL = "https://api.sportradar.us/nfl-images-t3"
@@ -42,9 +44,9 @@ module.exports = {
     BET_4_6_LOW,
     BET_5_6_LOW,
     BET_6_6_LOW,
-    NBA_API_BASEURL,    
+    NBA_API_BASEURL,
     NFL_API_BASEURL,
-    LOCALE,    
+    LOCALE,
     ODDS_API_BASEURL,
     AMERICAN_URN_SPORT,
     NFL_COMPETITION_ID,
@@ -55,5 +57,6 @@ module.exports = {
     NHL_API_BASEURL,
     MLB_API_BASEURL,
     MLB_COMPETITION_ID,
-    NHL_COMPETITION_ID
+    NHL_COMPETITION_ID,
+	NFL_LIVEDATA_BASEURL
 }
