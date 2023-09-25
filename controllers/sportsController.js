@@ -14,8 +14,21 @@ const getAllSports = async (req, res) => {
             },]);
         res.status(200).json(sports);
     } catch (error) {
-        res.status(500).json(error);
+        res.status(500).send("Server Error");
     }
 }
 
-module.exports = { getAllSports };
+const addSport = async(req, res) => {
+    try {
+        const {name} = req.body;
+        const sport = new Sport({
+            name:name
+        });
+        await sport.save();
+        res.json(sport);
+    } catch (error) {
+        res.status(500).send("Server Error");
+    }
+}
+
+module.exports = { getAllSports, addSport};
