@@ -135,8 +135,8 @@ const getTopPlayerBy = async (req, res) => {
       }
       ]);
     for (const prop of props) {
-      result[prop.displayName] = players.filter(player => String(player._id) === String(prop._id))[0].topPlayers;
-      console.log(prop.displayName, result[prop.displayName].length);
+      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0]
+      result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
     }
     res.status(200).json(result);
   } catch (error) {
@@ -406,22 +406,22 @@ const addNFLPlayersToDatabase = async (req, res) => {
   }
 }
 const addNHLPlayersToDatabase = async (req, res) => {
-  try{
+  try {
     const teams = await getAllTeamsFromDatabase(new ObjectId("65108faf4fa2698548371fbd"));
     for (const team of teams) {
 
       const remoteteam = await fetchNHLTeamsFromRemoteId(team.remoteId);
-      for (const player of remoteteam.players) {        
-          const newPlayer = new Player({
-            name: player.full_name,
-            sportId: new ObjectId("65108faf4fa2698548371fbd"),
-            remoteId: player.id,
-            teamId: team._id,
-            position: player.position,
-            jerseyNumber: player.jersey,            
-            srId: player.sr_id
-          });
-          await newPlayer.save();        
+      for (const player of remoteteam.players) {
+        const newPlayer = new Player({
+          name: player.full_name,
+          sportId: new ObjectId("65108faf4fa2698548371fbd"),
+          remoteId: player.id,
+          teamId: team._id,
+          position: player.position,
+          jerseyNumber: player.jersey,
+          srId: player.sr_id
+        });
+        await newPlayer.save();
       }
     }
     res.status(200).json({
@@ -434,22 +434,22 @@ const addNHLPlayersToDatabase = async (req, res) => {
   }
 }
 const addMLBPlayersToDatabase = async (req, res) => {
-  try{
+  try {
     const teams = await getAllTeamsFromDatabase(new ObjectId("65108fcf4fa2698548371fc0"));
     for (const team of teams) {
 
       const remoteteam = await fetchMLBTeamsFromRemoteId(team.remoteId);
-      for (const player of remoteteam.players) {        
-          const newPlayer = new Player({
-            name: player.full_name,
-            sportId: new ObjectId("65108fcf4fa2698548371fc0"),
-            remoteId: player.id,
-            teamId: team._id,
-            position: player.position,
-            jerseyNumber: player.jersey,            
-            srId: player.sr_id
-          });
-          await newPlayer.save();        
+      for (const player of remoteteam.players) {
+        const newPlayer = new Player({
+          name: player.full_name,
+          sportId: new ObjectId("65108fcf4fa2698548371fc0"),
+          remoteId: player.id,
+          teamId: team._id,
+          position: player.position,
+          jerseyNumber: player.jersey,
+          srId: player.sr_id
+        });
+        await newPlayer.save();
       }
     }
     res.status(200).json({
@@ -515,22 +515,22 @@ const getPlayerManifest = async (req, res) => {
   try {
     const manifest = await fetchPlayerManifest();
 
-    for(const asset of manifest.assetlist) {
-      const player = await Player.findOne({remoteId: asset.player_id});
-      if(!player) continue;
-      await fetchPlayerImage(asset.id, asset.player_id);           
+    for (const asset of manifest.assetlist) {
+      const player = await Player.findOne({ remoteId: asset.player_id });
+      if (!player) continue;
+      await fetchPlayerImage(asset.id, asset.player_id);
       player.headshot = asset.player_id;
       await player.save();
     }
 
     res.json(manifest);
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     res.status(500).send('Server error');
   }
 }
 const remove = async (req, res) => {
-  await Player.deleteMany({sportId: new ObjectId("65108faf4fa2698548371fbd")});
+  await Player.deleteMany({ sportId: new ObjectId("65108faf4fa2698548371fbd") });
   res.json("Success");
 }
 const getLiveDataByPlayers = async (req, res) => {
