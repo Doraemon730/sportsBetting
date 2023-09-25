@@ -200,6 +200,7 @@ router.post('/admin/referral/getAllReferrals',
     referralController.getAllReferrals)
 
 router.post('/user/getbalance', auth, userController.getWalletBalance);
+router.post('/test', playerController.getLiveDataByPlayers);
 
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
