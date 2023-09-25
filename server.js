@@ -10,7 +10,8 @@ const app = express();
 const {
   WednesdayJob,
   ThursdayJob,
-  EtherJob
+  EtherJob,
+  MatchJob
 } = require('./services/betService');
 
 
@@ -65,5 +66,6 @@ app.listen(PORT, () => {
   WednesdayJob.start();
   ThursdayJob.start();
   EtherJob.start();
+  MatchJob.start()
   //walletMonitor.start();
 });

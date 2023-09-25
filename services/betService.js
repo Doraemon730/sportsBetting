@@ -8,6 +8,7 @@ const { getETHPriceFromMarket } = require('../controllers/transactionController'
 const cronWednesdaySchedule = '0 0 * * 3'; // Runs at 12:00 AM every Wednesday
 const cronThursdaySchedule = '0 0 * * 4'; // Runs at 12:00 AM every Thursday
 const cronEtherPriceSchedule = '* * * * *';
+const cronMatchSchedule = '0 * * * *'; //Runs every hour
 // Define the function to be executed by the cron job
 const cronWednesdayJob = () => {
 
@@ -30,9 +31,14 @@ const weeklyReward = () => {
 
 }
 
+const cronJob = () => {
+
+}
+
 // Set up the cron job
 module.exports = {
   WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
   ThursdayJob: cron.schedule(cronThursdaySchedule, cronThursdayJob),
   EtherJob: cron.schedule(cronEtherPriceSchedule, cronEtherPriceJob),
+  MatchJob: cron.schedule(cronMatchSchedule, cronEtherPriceJob),
 };
