@@ -17,7 +17,18 @@ const fetchEventMapping = async () => {
         return mappings;
     })
     .catch(error => {
-        console.log('Error retrieving NFL Events:' + error);
+        console.log('Error retrieving Event Mapping:' + error);
+    });
+}
+
+const fetchPlayerMapping = async () => {
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/players/mappings.json?api_key=${apiOddsKey}`)
+    .then(response => {
+        const mappings = response.data.mappings;
+        return mappings;
+    })
+    .catch(error => {
+        console.log('Error retrieving Player Mapping' + error);
     });
 }
 const fetchWeeklyEventsNFL = async () => {
@@ -58,6 +69,7 @@ module.exports = {
     fetchWeeklyEventsNFL,
     fetchEventPlayerProps,
     fetchEventMapping,
-    fetchWeeklyEventsMLB
+    fetchWeeklyEventsMLB,
+    fetchPlayerMapping
 };
 

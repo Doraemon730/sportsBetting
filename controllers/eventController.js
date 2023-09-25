@@ -4,7 +4,7 @@ const Prop = require('../models/Prop');
 const Team = require('../models/Team');
 const request = require('request')
 const { ObjectId } = require("mongodb");
-const {fetchWeeklyEventsNFL, fetchEventPlayerProps, fetchEventMapping, fetchWeeklyEventsMLB} = require('../services/eventService');
+const {fetchWeeklyEventsNFL, fetchEventPlayerProps, fetchEventMapping, fetchWeeklyEventsMLB, fetchPlayerMapping} = require('../services/eventService');
 const { NFL_LIVEDATA_BASEURL } = require('../config/constant');
 const NFL_API_KEY = process.env.NFL_API_KEY;
 
@@ -13,7 +13,6 @@ const getWeeklyEventsNFL = async (req, res) =>
     try {
         const mappings = await fetchEventMapping();
         if (!mappings || !Array.isArray(mappings)) return res.status(400).send({message: 'No events found'});
-        //console.log(mappings);
         const events = await fetchWeeklyEventsNFL();
         for (const event of events) {
 
@@ -75,9 +74,12 @@ const getWeeklyEventsNFL = async (req, res) =>
 const getWeeklyEventsMLB = async (req, res) =>
 {
     try {
-        const mappings = await fetchEventMapping();
+        const mappings = await fetchEventMapping();        
         if (!mappings || !Array.isArray(mappings)) return res.status(400).send({message: 'No events found'});
-        //console.log(mappings);
+        //console.log(mappings);        
+        const players = await fetchPlayerMapping();
+        if (!players || !Array.isArray(players)) return res.status(400).send({message: 'No players found'});
+        
         const events = await fetchWeeklyEventsMLB();
         for(const event of events){
             
@@ -106,8 +108,11 @@ const getWeeklyEventsMLB = async (req, res) =>
             
             for(const playerProp of playerProps) {
                 console.log(playerProp.player.id);
-                console.log(playerProp.name);
-                const player = await Player.findOne({srId: playerProp.player.id});
+                console.log(playerProp.player.name);
+                const play = players.find(item => item.id === playerProp.player.id);
+                if(!play)
+                    continue;
+                const player = await Player.findOne({remoteId: play.external_id});
                 if(!player)
                     continue;
                 console.log(player);
