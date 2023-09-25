@@ -137,6 +137,7 @@ const getTopPlayerBy = async (req, res) => {
     for (const prop of props) {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0]
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
+      result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
     }
     res.status(200).json(result);
   } catch (error) {
