@@ -125,9 +125,12 @@ const getTopPlayerBy = async (req, res) => {
         }
       }
       ]);
+
+    // return res.json(players)
+
     for (const prop of props) {
-      result[prop.displayName] = players.filter(player => String(player._id) === String(prop._id))[0].topPlayers;
-      console.log(prop.displayName, result[prop.displayName].length);
+      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0]
+      result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
     }
     res.status(200).json(result);
   } catch (error) {
@@ -154,9 +157,6 @@ const getTopPlayerBySport = async (req, res) => {
       return res.status(404).json("There is not props");
     const result = {};
     result.props = props;
-
-
-
 
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
@@ -449,6 +449,56 @@ const getPlayerProp = async (req, res) => {
   }
 }
 
+
+
+const getLiveDataByPlayers = async (req, res) => {
+
+  const axios = require('axios');
+
+  const apiKey = '2uea7w9xs2h2mmupfh7avwbx'
+
+  const request = require('request')
+  url = 'https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key=2uea7w9xs2h2mmupfh7avwbx&match=sd:match:8c138263-1dc1-4e28-96ee-21158684cd55'
+
+  const stream = request(url);
+  stream.on('data', (chunk) => {
+    // Process the incoming data chunk here
+    console.log(chunk.toString()); // You can replace this with your own logic
+  });
+
+  // Handle errors
+  stream.on('error', (error) => {
+    console.error('Error:', error);
+  });
+
+  // Handle the end of the stream
+  stream.on('end', () => {
+    console.log('Stream ended');
+  });
+  // fetch('https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key=2uea7w9xs2h2mmupfh7avwbx')
+  //   .then(response => {
+  //     const reader = response.body.getReader();
+  //     const decoder = new TextDecoder();
+  //     let data = '';
+  //     reader.read().then(chunk => {
+  //       data += decoder.decode(chunk.value);
+  //       console.log(data);
+  //     });
+  //   })
+  //   .catch(error => {
+  //     console.error(error);
+  //   });
+
+  // return axios.get(`https://api.sportradar.us/nfl/official/trial/v7/en/games/9e665e5b-0ab8-4ccd-a6ac-2a4d13afba63/boxscore.json?api_key=${apiKey}`)
+  //   .then(response => {
+  //     return res.json(response.data)
+  //   })
+  //   .catch(error => {
+  //     console.log(error.message);
+  //   });
+
+}
+
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -456,5 +506,6 @@ module.exports = {
   getPlayerProp,
   getTopPlayerBySport,
   addNFLPlayersToDatabase,
-  getTopPlayerBy
+  getTopPlayerBy,
+  getLiveDataByPlayers
 };
