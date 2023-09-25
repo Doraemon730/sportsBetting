@@ -167,7 +167,7 @@ router.post('/admin/promotion/update',
 
 // Props routes
 router.post('/admin/props/add',
-    admin,
+    //admin,
     propController.addProp);
 router.post('/admin/props/fetchAll',
     admin,
@@ -205,5 +205,15 @@ router.post('/transaction/payment', auth, transactionController.makePayment);
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
 router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
-router.post('/admin/getWeeklySchedule', eventController.getWeeklyEvents);
+router.post('/admin/getWeeklyScheduleNFL', eventController.getWeeklyEventsNFL);
+router.post('/admin/getWeeklyScheduleMLB', eventController.getWeeklyEventsMLB);
+router.post('/admin/player', playerController.getPlayerManifest);
+router.post('/admin/addSport', sportsController.addSport);
+router.post('/admin/getNHLTeams', teamController.addNHLTeamsToDatabase);
+router.post('/admin/getNHLPlayers', playerController.addNHLPlayersToDatabase);
+router.post('/admin/getMLBTeams', teamController.addMLBTeamsToDatabase);
+router.post('/admin/removeNHLTeams', teamController.remove);
+router.post('/admin/getMLBPlayers', playerController.addMLBPlayersToDatabase);
+router.post('/admin/remoevNHLPlayers', playerController.remove);
+router.post('/admin/removeWeekSchedueMLB', eventController.remove);
 module.exports = router;

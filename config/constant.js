@@ -18,6 +18,15 @@ const LOCALE = "en"
 const ODDS_API_BASEURL = "https://api.sportradar.us/oddscomparison-player-props/trial/v2"
 const AMERICAN_URN_SPORT = "sr:sport:16"
 const NFL_COMPETITION_ID = "sr:competition:31"
+const MLB_COMPETITION_ID = "sr:competition:109"
+const NHL_COMPETITION_ID = "sr:competition:234";
+const NFL_IMAGE_BASEURL = "https://api.sportradar.us/nfl-images-t3"
+const NFL_IMAGE_PROVIDER = "ap_premium"
+const NFL_IMAGE_TYPE = "headshots"
+const NHL_API_BASEURL = "https://api.sportradar.us/nhl/trial/v7";
+const MLB_API_BASEURL = "https://api.sportradar.com/mlb/trial/v7";
+
+const YEAR = 2023
 module.exports = {
     ETHER_PRICE_API,
     BET_2_2_HIGH,
@@ -38,5 +47,13 @@ module.exports = {
     LOCALE,    
     ODDS_API_BASEURL,
     AMERICAN_URN_SPORT,
-    NFL_COMPETITION_ID
+    NFL_COMPETITION_ID,
+    NFL_IMAGE_BASEURL,
+    NFL_IMAGE_PROVIDER,
+    NFL_IMAGE_TYPE,
+    YEAR,
+    NHL_API_BASEURL,
+    MLB_API_BASEURL,
+    MLB_COMPETITION_ID,
+    NHL_COMPETITION_ID
 }

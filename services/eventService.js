@@ -4,18 +4,43 @@ const axios = require('axios');
 const apiOddsKey = process.env.ODDS_API_KEY;
 const { ODDS_API_BASEURL,    
     LOCALE,
-    NFL_COMPETITION_ID } = require('../config/constant')
+    NFL_COMPETITION_ID,
+    MLB_COMPETITION_ID,
+    NHL_COMPETITION_ID,
+ } = require('../config/constant')
 
-const fetchWeeklyEvents = async () => {
+const fetchEventMapping = async () => {
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/sport_events/mappings.json?api_key=${apiOddsKey}`)
+    .then(response => {
+
+        const mappings = response.data.mappings;        
+        return mappings;
+    })
+    .catch(error => {
+        console.log('Error retrieving NFL Events:' + error);
+    });
+}
+const fetchWeeklyEventsNFL = async () => {
     return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${NFL_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=16&start=0`)
-  .then(response => {
-    const events = response.data.schedules;
-    
-    return events;
-  })
-  .catch(error => {
-    console.log('Error retrieving NFL Events:' + error);
-  });
+    .then(response => {
+        const events = response.data.schedules;
+        
+        return events;
+    })
+    .catch(error => {
+        console.log('Error retrieving NFL Events:' + error);
+    });
+}
+const fetchWeeklyEventsMLB = async () => {
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${MLB_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    .then(response => {
+        const events = response.data.schedules;
+        
+        return events;
+    })
+    .catch(error => {
+        console.log('Error retrieving MLB Events:' + error);
+    });
 }
 
 const fetchEventPlayerProps = async (event) => {
@@ -30,7 +55,9 @@ const fetchEventPlayerProps = async (event) => {
   });
 }
 module.exports = {
-    fetchWeeklyEvents,
-    fetchEventPlayerProps
+    fetchWeeklyEventsNFL,
+    fetchEventPlayerProps,
+    fetchEventMapping,
+    fetchWeeklyEventsMLB
 };
 

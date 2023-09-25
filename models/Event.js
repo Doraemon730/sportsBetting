@@ -6,6 +6,10 @@ const EventSchema = new mongoose.Schema({
         type: String,
         index: true        
     },
+    sportId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Sport'
+    },
     startTime: {
         type: Date,
         requried: true,
@@ -33,6 +37,9 @@ const EventSchema = new mongoose.Schema({
     state: {
         type: Number,
         default: 0 // 0 - not started; 1- in progress ;2 finished
+    },
+    matchId: {
+        type: String
     }    
     
 }, { timestamps: true });    

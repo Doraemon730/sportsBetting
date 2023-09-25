@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const Ethereum = require("../models/Ethereum");
 const Referral = require("../models/Referral");
+const Event = require('../models/Event');
 const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
@@ -58,21 +59,7 @@ const startBetting = async (req, res) => {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
-        for (const element of jsonArray) {
-            const contestId = new ObjectId(element.contestId);
-
-            const contest = await Contest.findById(contestId);
-            if (!contest) {
-                return res.status(400).json({ message: "Invalid Contest." });
-            }
-
-            let participants = contest.participants || [];
-            if (!participants.includes(contestId)) {
-                participants.push(contestId);
-                contest.participants = participants;
-                await contest.save();
-            }
-        }
+        
         let isNew = false, isFirst = false;
         const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
         if (!bet) {
@@ -94,6 +81,18 @@ const startBetting = async (req, res) => {
         });
 
         await myBet.save();
+
+        for (const element of jsonArray) {
+            const eventId = new ObjectId(element.contestId);
+
+            const event = await Event.findById(eventId);
+            if (!event) {
+                return res.status(400).send({ message: "Invalid Contest." });
+            }
+            
+            event.participants.push(myBet._id);
+            await event.save();
+        }
         user.ETH_balance -= entryFeeEther;
         user.totalBetAmount += entryFeeSave;
         user = setUserLevel(user);
@@ -235,22 +234,7 @@ const sixLegParlayBettingByStep = async (req, res) => {
         }
         const entryFee = 25;
         const jsonArray = JSON.parse(picks);
-        for (const element of jsonArray) {
-            const contestId = new ObjectId(element.contestId);
-
-            const contest = await Contest.findById(contestId);
-            if (!contest) {
-                continue;
-            }
-
-            let participants = contest.participants || [];
-            if (!participants.includes(contestId)) {
-                participants.push(contestId);
-                contest.participants = participants;
-                await contest.save();
-            }
-        }
-
+        
         const myBet = new Bet({
             userId,
             entryFee,
@@ -263,6 +247,17 @@ const sixLegParlayBettingByStep = async (req, res) => {
             res.status(403).json({ message: 'Sorry, you have to select different bet' });
         }
         await myBet.save();
+        for (const element of jsonArray) {
+            const eventId = new ObjectId(element.contestId);
+
+            const event = await Event.findById(eventId);
+            if (!event) {
+                return res.status(400).send({ message: "Invalid Contest." });
+            }
+            
+            event.participants.push(myBet._id);
+            await event.save();
+        }
         if (palrayNumber == 6) {
             user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
             await user.save();
@@ -306,21 +301,7 @@ const sixLegParlayBetting = async (req, res) => {
             }
 
             const jsonArray = JSON.parse(pick);
-            for (const element of jsonArray) {
-                const contestId = new ObjectId(element.contestId);
-
-                const contest = await Contest.findById(contestId);
-                if (!contest) {
-                    continue;
-                }
-
-                let participants = contest.participants || [];
-                if (!participants.includes(contestId)) {
-                    participants.push(contestId);
-                    contest.participants = participants;
-                    await contest.save();
-                }
-            }
+            
 
             const myBet = new Bet({
                 userId,
@@ -335,6 +316,17 @@ const sixLegParlayBetting = async (req, res) => {
                 res.status(403).json({ message: 'Sorry, you have to select different bet' });
             }
             await myBet.save();
+            for (const element of jsonArray) {
+                const eventId = new ObjectId(element.contestId);
+    
+                const event = await Event.findById(eventId);
+                if (!event) {
+                    return res.status(400).send({ message: "Invalid Contest." });
+                }
+                
+                event.participants.push(myBet._id);
+                await event.save();
+            }
 
         }
         user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
@@ -365,21 +357,7 @@ const firstSixLegParlayBetting = async (req, res) => {
                 entryFeeETH = 0;
             }
             const jsonArray = JSON.parse(pick);
-            for (const element of jsonArray) {
-                const contestId = new ObjectId(element.contestId);
-
-                const contest = await Contest.findById(contestId);
-                if (!contest) {
-                    continue;
-                }
-
-                let participants = contest.participants || [];
-                if (!participants.includes(contestId)) {
-                    participants.push(contestId);
-                    contest.participants = participants;
-                    await contest.save();
-                }
-            }
+            
 
             const myBet = new Bet({
                 userId,
@@ -394,6 +372,16 @@ const firstSixLegParlayBetting = async (req, res) => {
                 res.status(403).json({ message: 'Sorry, you have to select different bet' });
             }
             await myBet.save();
+            for (const element of jsonArray) {
+                const eventId = new ObjectId(element.contestId);
+    
+                const event = await Event.findById(eventId);
+                if (!event) {
+                    return res.status(400).send({ message: "Invalid Contest." });
+                }                
+                event.participants.push(myBet._id);
+                await event.save();
+            }
 
         }
         user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');

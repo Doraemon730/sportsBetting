@@ -3,17 +3,22 @@ const Player = require("../models/Player");
 const Discount = require("../models/Discount");
 const Event = require('../models/Event');
 const Prop = require('../models/Prop');
+const fs = require('fs');
 const {
   ObjectId
 } = require("mongodb");
 // const Sport = require("../models/Sport");
 const {
   fetchPlayerNumber,
-  fetchPlayerProfile
+  fetchPlayerProfile,
+  fetchPlayerManifest,
+  fetchPlayerImage
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
-  fetchNFLTeamsFromRemoteId
+  fetchNFLTeamsFromRemoteId,
+  fetchNHLTeamsFromRemoteId,
+  fetchMLBTeamsFromRemoteId
 } = require("../services/teamService");
 const {
   getAllTeamsFromDatabase,
@@ -49,6 +54,7 @@ const getTopPlayerBy = async (req, res) => {
     const players = await Player.aggregate(
       [{
         $unwind: '$odds' // Unwind the odds array to work with individual odds documents
+
       },
       {
         $sort: {
@@ -64,7 +70,10 @@ const getTopPlayerBy = async (req, res) => {
         }
       },
       {
-        $unwind: '$prop' // Unwind the 'prop' array created by the lookup
+        $unwind: {
+          path: '$prop',
+          preserveNullAndEmptyArrays: true
+        } // Unwind the 'prop' array created by the lookup
       },
       {
         $lookup: {
@@ -87,6 +96,13 @@ const getTopPlayerBy = async (req, res) => {
       },
       {
         $unwind: '$event'
+      },
+      {
+        $match: {
+          'event.startTime': {
+            $gte: new Date(),            
+          }
+        }
       },
       {
         $group: {
@@ -395,6 +411,62 @@ const addNFLPlayersToDatabase = async (req, res) => {
 
   }
 }
+const addNHLPlayersToDatabase = async (req, res) => {
+  try{
+    const teams = await getAllTeamsFromDatabase(new ObjectId("65108faf4fa2698548371fbd"));
+    for (const team of teams) {
+
+      const remoteteam = await fetchNHLTeamsFromRemoteId(team.remoteId);
+      for (const player of remoteteam.players) {        
+          const newPlayer = new Player({
+            name: player.full_name,
+            sportId: new ObjectId("65108faf4fa2698548371fbd"),
+            remoteId: player.id,
+            teamId: team._id,
+            position: player.position,
+            jerseyNumber: player.jersey,            
+            srId: player.sr_id
+          });
+          await newPlayer.save();        
+      }
+    }
+    res.status(200).json({
+      message: 'NHL players added to the database.'
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Server Error");
+  }
+}
+const addMLBPlayersToDatabase = async (req, res) => {
+  try{
+    const teams = await getAllTeamsFromDatabase(new ObjectId("65108fcf4fa2698548371fc0"));
+    for (const team of teams) {
+
+      const remoteteam = await fetchMLBTeamsFromRemoteId(team.remoteId);
+      for (const player of remoteteam.players) {        
+          const newPlayer = new Player({
+            name: player.full_name,
+            sportId: new ObjectId("65108fcf4fa2698548371fc0"),
+            remoteId: player.id,
+            teamId: team._id,
+            position: player.position,
+            jerseyNumber: player.jersey,            
+            srId: player.sr_id
+          });
+          await newPlayer.save();        
+      }
+    }
+    res.status(200).json({
+      message: 'MLB players added to the database.'
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Server Error");
+  }
+}
 const addNBAPlayersToDatabase = async (req, res) => {
   try {
     // Fetch contest data from the Sportradar NBA API
@@ -445,6 +517,29 @@ const getPlayerProp = async (req, res) => {
   }
 }
 
+const getPlayerManifest = async (req, res) => {
+  try {
+    const manifest = await fetchPlayerManifest();
+
+    for(const asset of manifest.assetlist) {
+      const player = await Player.findOne({remoteId: asset.player_id});
+      if(!player) continue;
+      await fetchPlayerImage(asset.id, asset.player_id);           
+      player.headshot = asset.player_id;
+      await player.save();
+    }
+
+    res.json(manifest);
+  } catch(error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+const remove = async (req, res) => {
+  await Player.deleteMany({sportId: new ObjectId("65108faf4fa2698548371fbd")});
+  res.json("Success");
+}
+
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -452,5 +547,9 @@ module.exports = {
   getPlayerProp,
   getTopPlayerBySport,
   addNFLPlayersToDatabase,
-  getTopPlayerBy
+  getTopPlayerBy,
+  getPlayerManifest,
+  addNHLPlayersToDatabase,
+  addMLBPlayersToDatabase,
+  remove
 };
