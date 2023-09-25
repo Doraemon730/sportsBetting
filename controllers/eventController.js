@@ -4,8 +4,10 @@ const Prop = require('../models/Prop');
 const Team = require('../models/Team');
 const request = require('request')
 const { fetchWeeklyEvents, fetchEventPlayerProps } = require('../services/eventService');
-const { NFL_LIVEDATA_BASEURL } = require('../config/constant');
+const { NFL_LIVEDATA_BASEURL, MLB_LIVEDATA_BASEURL, NHL_LIVEDATA_BASEURL } = require('../config/constant');
 const NFL_API_KEY = process.env.NFL_API_KEY;
+const MLB_API_KEY = process.env.MLB_API_KEY;
+const NHL_API_KEY = process.env.NHL_API_KEY;
 
 const getWeeklyEvents = async (req, res) => {
     try {
@@ -70,42 +72,50 @@ const getLiveDataByEvent = async () => {
         for (const event of events) {
             if (event.status == 0 && event.startTime <= new Date().now()) {
                 url = ""
-                if (event.sportId == '650e0b6fb80ab879d1c142c8')
+                let sportType = ""
+                if (event.sportId == '650e0b6fb80ab879d1c142c8') {
                     url = `${NFL_LIVEDATA_BASEURL}=${NFL_API_KEY}&match=sd:match:${event.matchId}`
+                    sportType = "NFL"
+                }
+                if (event.sportId == '65108faf4fa2698548371fbd') {
+                    url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
+                    sportType = "NHL"
+                }
+                if (event.sportId == '65108fcf4fa2698548371fc0') {
+                    url = `${MLB_LIVEDATA_BASEURL}=${MLB_API_KEY}&match=sd:match:${event.matchId}`
+                    sportType = "MLB"
+                }
                 Event.updateOne({ _id: event._id }, { $set: { state: 1 } })
                 let broadcastingData = { eventId: event._id }
                 const stream = request(url);
+                const isCompleted = false;
                 stream.on('data', (chunk) => {
                     // Process the incoming data chunk here
                     const jsonData = JSON.parse(chunk.toString());
                     if (jsonData.hasOwnProperty('payload')) {
-                        const detailData = jsonData.payload;
+                        const detailData = jsonData['payload'];
                         if (detailData.hasOwnProperty('player')) {
-                            const player = { id: detailData.player.id, name: detailData.player.name }
-                            if (detailData.hasOwnProperty('rushing')) {
-                                player['Rush Yards'] = detailData.rushing.yards;
+                            if (sportType == "NFL") {
+                                broadcastingData.player = getNFLData(detailData);
                             }
-                            if (detailData.hasOwnProperty('passing')) {
-                                player['Pass Yards'] = detailData.passing.yards;
-                                player['Pass Attempts'] = detailData.passing.attempts;
-                                player['Pass Completions'] = detailData.passing.completions;
-                                player['Pass TDs'] = detailData.passing.touchdowns;
-                                player['INT'] = detailData.passing.interceptions;
+                            if (sportType == "NHL") {
+                                broadcastingData.player = getNHLData(detailData);
                             }
-                            if (detailData.hasOwnProperty('receiving')) {
-                                player['Receving Yards'] = detailData.receiving.yards;
-                                player['Receptions'] = detailData.receiving.receptions;
-                            }
-                            if (detailData.hasOwnProperty('field-goals')) {
-                                player['FG Made'] = detailData.field_goals.made;
-                            }
-                            if (detailData.hasOwnProperty('defense')) {
-                                player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
+                            if (sportType == "MLB") {
+                                broadcastingData.player = getMLBData(detailData);
                             }
                         }
                     }
-
-                    console.log(chunk.toString()); // You can replace this with your own logic
+                    if (jsonData.hasOwnProperty('metadata')) {
+                        const metadata = jsonData['metadata'];
+                        if (metadata['status'] == 'complete') {
+                            isCompleted = true;
+                        }
+                    }
+                    if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                        Event.updateOne({ _id: event._id }, { $set: { state: 2 } })
+                        stream.abort();
+                    }
                 });
                 // Handle errors
                 stream.on('error', (error) => {
@@ -124,6 +134,82 @@ const getLiveDataByEvent = async () => {
     }
 }
 
+const getNFLData = (detailData) => {
+    const player = { id: detailData.player.id, name: detailData.player.name }
+    if (detailData.hasOwnProperty('rushing')) {
+        player['Rush Yards'] = detailData.rushing.yards;
+    }
+    if (detailData.hasOwnProperty('passing')) {
+        player['Pass Yards'] = detailData.passing.yards;
+        player['Pass Attempts'] = detailData.passing.attempts;
+        player['Pass Completions'] = detailData.passing.completions;
+        player['Pass TDs'] = detailData.passing.touchdowns;
+        player['INT'] = detailData.passing.interceptions;
+    }
+    if (detailData.hasOwnProperty('receiving')) {
+        player['Receving Yards'] = detailData.receiving.yards;
+        player['Receptions'] = detailData.receiving.receptions;
+    }
+    if (detailData.hasOwnProperty('field-goals')) {
+        player['FG Made'] = detailData.field_goals.made;
+    }
+    if (detailData.hasOwnProperty('defense')) {
+        player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
+    }
+    return player;
+}
+
+const getNHLData = (detailData) => {
+    const player = { id: detailData.player.id, name: detailData.player.name }
+    if (detailData.hasOwnProperty('rushing')) {
+        player['Rush Yards'] = detailData.rushing.yards;
+    }
+    if (detailData.hasOwnProperty('passing')) {
+        player['Pass Yards'] = detailData.passing.yards;
+        player['Pass Attempts'] = detailData.passing.attempts;
+        player['Pass Completions'] = detailData.passing.completions;
+        player['Pass TDs'] = detailData.passing.touchdowns;
+        player['INT'] = detailData.passing.interceptions;
+    }
+    if (detailData.hasOwnProperty('receiving')) {
+        player['Receving Yards'] = detailData.receiving.yards;
+        player['Receptions'] = detailData.receiving.receptions;
+    }
+    if (detailData.hasOwnProperty('field-goals')) {
+        player['FG Made'] = detailData.field_goals.made;
+    }
+    if (detailData.hasOwnProperty('defense')) {
+        player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
+    }
+    return player;
+}
+
+const getMLBData = (detailData) => {
+    const player = { id: detailData.player.id, name: detailData.player.name }
+    if (detailData.hasOwnProperty('rushing')) {
+        player['Rush Yards'] = detailData.rushing.yards;
+    }
+    if (detailData.hasOwnProperty('passing')) {
+        player['Pass Yards'] = detailData.passing.yards;
+        player['Pass Attempts'] = detailData.passing.attempts;
+        player['Pass Completions'] = detailData.passing.completions;
+        player['Pass TDs'] = detailData.passing.touchdowns;
+        player['INT'] = detailData.passing.interceptions;
+    }
+    if (detailData.hasOwnProperty('receiving')) {
+        player['Receving Yards'] = detailData.receiving.yards;
+        player['Receptions'] = detailData.receiving.receptions;
+    }
+    if (detailData.hasOwnProperty('field-goals')) {
+        player['FG Made'] = detailData.field_goals.made;
+    }
+    if (detailData.hasOwnProperty('defense')) {
+        player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
+    }
+    return player;
+}
+
 module.exports = {
     getWeeklyEvents,
+    getLiveDataByEvent
 }

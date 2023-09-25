@@ -19,6 +19,8 @@ const ODDS_API_BASEURL = "https://api.sportradar.us/oddscomparison-player-props/
 const AMERICAN_URN_SPORT = "sr:sport:16"
 const NFL_COMPETITION_ID = "sr:competition:31"
 const NFL_LIVEDATA_BASEURL = "https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key"
+const MLB_LIVEDATA_BASEURL = "https://api.sportradar.com/mlb/trial/stream/en/statistics/subscribe?api_key"
+const NHL_LIVEDATA_BASEURL = "https://api.sportradar.us/nhl/trial/stream/en/statistics/subscribe?api_key"
 module.exports = {
     ETHER_PRICE_API,
     BET_2_2_HIGH,
@@ -40,5 +42,7 @@ module.exports = {
     ODDS_API_BASEURL,
     AMERICAN_URN_SPORT,
     NFL_COMPETITION_ID,
-    NFL_LIVEDATA_BASEURL
+    NFL_LIVEDATA_BASEURL,
+    MLB_LIVEDATA_BASEURL,
+    NHL_LIVEDATA_BASEURL
 }
