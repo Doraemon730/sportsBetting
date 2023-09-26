@@ -32,6 +32,7 @@ const checkBet = async (newbet) => {
 const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
+        console.log(req.body);
         let { entryFee, betType, picks, currencyType } = req.body;
 
         const jsonArray = JSON.parse(picks);
