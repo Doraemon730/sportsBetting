@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ReferralSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'user',
         required: true
     },
     referralCode: {
@@ -21,7 +21,7 @@ const ReferralSchema = new mongoose.Schema({
     invitesList: [{
         invitedUserId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Player'
+            ref: 'player'
         },
         betAmount: {
             type: Number,

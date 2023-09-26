@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const PlayerSchema = new mongoose.Schema({
   sportId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Sport',
+    ref: 'sport',
     required: true
   },
   teamId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
+    ref: 'team'
   },
   remoteId: {
     type: String,
@@ -20,25 +20,25 @@ const PlayerSchema = new mongoose.Schema({
   },
   position: String,
   age: Number,
-  jerseyNumber: Number,    
+  jerseyNumber: Number,
   srId: {
     type: String
   },
   headshot: {
     type: String
   },
-  odds:[
+  odds: [
     {
       id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Prop'
+        ref: 'prop'
       },
       value: {
         type: Number
       },
-      event:{
+      event: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Event'
+        ref: 'event'
       }
     }
   ]

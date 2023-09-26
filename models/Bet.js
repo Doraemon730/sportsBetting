@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const BetSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'user',
     required: true
   },
   entryFeeETH: {
@@ -30,12 +30,12 @@ const BetSchema = new mongoose.Schema({
   picks: [{
     playerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Player',
+      ref: 'player',
       required: true
     },
     contestId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Contest',
+      ref: 'contest',
       required: true
     },
     prop: {
@@ -60,7 +60,7 @@ const BetSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['pending', 'win', 'lost'],
+    enum: ['pending', 'win', 'lost', 'refund', 'canceled'],
     default: 'pending'
   },
   createdAt: {
@@ -72,7 +72,7 @@ const BetSchema = new mongoose.Schema({
   },
   promotion: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Promotion',
+    ref: 'promotion',
     default: function () {
       return new mongoose.Types.ObjectId('64fbe8cd009753bb7aa7a4fb');
     }
