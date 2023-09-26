@@ -34,6 +34,7 @@ const startBetting = async (req, res) => {
         const userId = new ObjectId(req.user.id);
         console.log(req.body);
         let { entryFee, betType, picks, currencyType } = req.body;
+        console.log(entryFee, betType, picks, currencyType);
 
         const jsonArray = JSON.parse(picks);
         if (jsonArray.length < 2 || jsonArray.length > 6) {
