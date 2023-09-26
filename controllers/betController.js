@@ -28,6 +28,7 @@ const checkBet = async (newbet) => {
         console.log(error);
     }
 }
+
 const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
@@ -457,6 +458,89 @@ const cancelBet = async (req, res) => {
         res.status(500).send('Server error');
     }
 }
+
+const getRewards = async (days) => {
+    const daysAgo = new Date();
+    daysAgo.setDate(sevenDaysAgo.getDate() - days);
+    const weeklyBets = await Bet.aggregate([
+        {
+            $match: {
+                createdAt: {
+                    $gte: daysAgo
+                },
+                status: 'lost'
+            }
+        },
+        {
+            $group: {
+                _id: '$userId',
+                totalLost: { $sum: '$entryFee' }
+            }
+        }
+    ]);
+
+    for (const weeklyBet of weeklyBets) {
+        const user = await User.findOne({ _id: new ObjectId(weeklyBet._id) });
+        if (!user)
+            continue;
+        const percentage = getRewardsPercentage(user.level);
+        user.credits += weeklyBet.totalLost * percentage * 0.01;
+        await user.save();
+    }
+}
+
+const getRewardsPercentage = (level) => {
+    percentage = 0;
+    switch (level) {
+        case "Rookie":
+            percentage = 0.002;
+            break;
+        case "Bronze":
+            percentage = 0.004;
+            break;
+        case "Silver":
+            percentage = 0.006;
+            break;
+        case "Gold":
+            percentage = 0.008;
+            break;
+        case "Gold II":
+            percentage = 0.010;
+            break;
+        case "Plantium":
+            percentage = 0.012;
+            break;
+        case "Plantium II":
+            percentage = 0.014;
+            break;
+        case "Plantium III":
+            percentage = 0.016;
+            break;
+        case "Diamond":
+            percentage = 0.018;
+            break;
+        case "Diamond II":
+            percentage = 0.020;
+            break;
+        case "Diamond III":
+            percentage = 0.022;
+            break;
+        case "Predator":
+            percentage = 0.024;
+            break;
+        case "Predator II":
+            percentage = 0.026;
+            break;
+        case "Predator III":
+            percentage = 0.028;
+            break;
+        case "Prestige":
+            percentage = 0.030;
+            break;
+    }
+    return percentage;
+}
+
 module.exports = {
     startBetting,
     sixLegParlayBetting,
@@ -465,5 +549,6 @@ module.exports = {
     getAllBetsByUserId,
     getAllBetsByUserIdAdmin,
     cancelBet,
-    firstSixLegParlayBetting
+    firstSixLegParlayBetting,
+    getRewards
 }

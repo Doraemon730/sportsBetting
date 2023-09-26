@@ -340,7 +340,7 @@ const getWalletBalance = async (req, res) => {
       res.status(404).json("User not found");
     const walletAddress = user.walletAddress;
     const infuraWebSocket = "https://sepolia.infura.io/v3/7bb47d850a2f4695834c80aeb781dd01";
-    const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));    
+    const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
     const balance = await web3.eth.getBalance(walletAddress);
     res.json({ balance: balance });
   } catch (error) {
@@ -358,7 +358,7 @@ const setUserLevel = user => {
   } else if (user.totalBetAmount >= 100000000) {
     user.level = "Predator";
   } else if (user.totalBetAmount >= 50000000) {
-    user.level = "Diamond I";
+    user.level = "Diamond III";
   } else if (user.totalBetAmount >= 25000000) {
     user.level = "Diamond II";
   } else if (user.totalBetAmount >= 10000000) {

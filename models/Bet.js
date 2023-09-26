@@ -60,7 +60,7 @@ const BetSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['pending', 'win', 'lost'],
+    enum: ['pending', 'win', 'lost', 'refund', 'canceled'],
     default: 'pending'
   },
   createdAt: {
