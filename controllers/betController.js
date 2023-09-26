@@ -61,7 +61,7 @@ const startBetting = async (req, res) => {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
-        
+
         let isNew = false, isFirst = false;
         const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
         if (!bet) {
@@ -91,7 +91,7 @@ const startBetting = async (req, res) => {
             if (!event) {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
-            
+
             event.participants.push(myBet._id);
             await event.save();
         }
@@ -123,6 +123,42 @@ const startBetting = async (req, res) => {
 const getAllBetsByUserId = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Bet.find({ userId }).countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Bet.find({ userId }).skip(startIndex).limit(limit);
+        res.json(results);
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
+}
+
+const getAllBetsByUserIdAdmin = async (req, res) => {
+    try {
+        const { userId } = req.body;
         const page = parseInt(req.body.page) || 1;
         const limit = parseInt(req.body.limit) || 10;
 
@@ -236,7 +272,7 @@ const sixLegParlayBettingByStep = async (req, res) => {
         }
         const entryFee = 25;
         const jsonArray = JSON.parse(picks);
-        
+
         const myBet = new Bet({
             userId,
             entryFee,
@@ -256,7 +292,7 @@ const sixLegParlayBettingByStep = async (req, res) => {
             if (!event) {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
-            
+
             event.participants.push(myBet._id);
             await event.save();
         }
@@ -303,7 +339,7 @@ const sixLegParlayBetting = async (req, res) => {
             }
 
             const jsonArray = JSON.parse(pick);
-            
+
 
             const myBet = new Bet({
                 userId,
@@ -320,12 +356,12 @@ const sixLegParlayBetting = async (req, res) => {
             await myBet.save();
             for (const element of jsonArray) {
                 const eventId = new ObjectId(element.contestId);
-    
+
                 const event = await Event.findById(eventId);
                 if (!event) {
                     return res.status(400).send({ message: "Invalid Contest." });
                 }
-                
+
                 event.participants.push(myBet._id);
                 await event.save();
             }
@@ -359,7 +395,7 @@ const firstSixLegParlayBetting = async (req, res) => {
                 entryFeeETH = 0;
             }
             const jsonArray = JSON.parse(pick);
-            
+
 
             const myBet = new Bet({
                 userId,
@@ -376,11 +412,11 @@ const firstSixLegParlayBetting = async (req, res) => {
             await myBet.save();
             for (const element of jsonArray) {
                 const eventId = new ObjectId(element.contestId);
-    
+
                 const event = await Event.findById(eventId);
                 if (!event) {
                     return res.status(400).send({ message: "Invalid Contest." });
-                }                
+                }
                 event.participants.push(myBet._id);
                 await event.save();
             }
@@ -427,6 +463,7 @@ module.exports = {
     isAllowedSixLegParlay,
     getAllBets,
     getAllBetsByUserId,
+    getAllBetsByUserIdAdmin,
     cancelBet,
     firstSixLegParlayBetting
 }

@@ -89,6 +89,10 @@ router.post('/admin/bet/getAllBets',
     admin,
     betController.getAllBets);
 
+router.post('/admin/bet/getAllBetsByUserId',
+    admin,
+    betController.getAllBetsByUserIdAdmin);
+
 router.post('/bet/getAllBetsByUserId',
     auth,
     betController.getAllBetsByUserId);
