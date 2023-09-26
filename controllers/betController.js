@@ -117,6 +117,7 @@ const startBetting = async (req, res) => {
         getReferralPrize(user._id, entryFeeEtherSave);
         res.json(myBet);
     } catch (error) {
+        console.log(error);
         res.status(500).send('Server error');
     }
 }
