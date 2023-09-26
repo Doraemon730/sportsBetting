@@ -7,7 +7,7 @@ const PropSchema = new mongoose.Schema({
   },
   sportId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Sport',
+    ref: 'sport',
     required: true
   },
   displayName: {
@@ -15,7 +15,7 @@ const PropSchema = new mongoose.Schema({
   },
   srId: {
     type: String,
-    required:true
+    required: true
   },
   available: {
     type: Boolean,

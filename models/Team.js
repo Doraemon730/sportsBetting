@@ -7,7 +7,7 @@ const TeamSchema = new mongoose.Schema({
   },
   sportId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Sport',
+    ref: 'sport',
     required: true
   },
   remoteId: {
@@ -15,7 +15,7 @@ const TeamSchema = new mongoose.Schema({
     required: true
   },
   alias: {
-    type: String,    
+    type: String,
   },
   srId: {
     type: String,

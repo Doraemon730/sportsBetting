@@ -65,7 +65,7 @@ const UserSchema = new mongoose.Schema({
   },
   promotion: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Promotion',
+    ref: 'promotion',
     default: function () {
       return new mongoose.Types.ObjectId('64fbe8cd009753bb7aa7a4fb');
     }
