@@ -161,10 +161,10 @@ const getLiveDataByEvent = async () => {
                     url = `${NFL_LIVEDATA_BASEURL}=${NFL_API_KEY}&match=sd:match:${event.matchId}`
                     sportType = "NFL"
                 }
-                if (event.sportId == '65108faf4fa2698548371fbd') {
-                    url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
-                    sportType = "NHL"
-                }
+                // if (event.sportId == '65108faf4fa2698548371fbd') {
+                //     url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
+                //     sportType = "NHL"
+                // }
                 if (event.sportId == '65108fcf4fa2698548371fc0') {
                     url = `${MLB_LIVEDATA_BASEURL}=${MLB_API_KEY}&match=sd:match:${event.matchId}`
                     sportType = "MLB"
@@ -182,9 +182,9 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "NFL") {
                                 broadcastingData.player = getNFLData(detailData);
                             }
-                            if (sportType == "NHL") {
-                                broadcastingData.player = getNHLData(detailData);
-                            }
+                            // if (sportType == "NHL") {
+                            //     broadcastingData.player = getNHLData(detailData);
+                            // }
                             if (sportType == "MLB") {
                                 broadcastingData.player = getMLBData(detailData);
                             }
@@ -243,58 +243,62 @@ const getNFLData = (detailData) => {
     return player;
 }
 
-const getNHLData = (detailData) => {
-    const player = { id: detailData.player.id, name: detailData.player.name }
-    if (detailData.hasOwnProperty('rushing')) {
-        player['Rush Yards'] = detailData.rushing.yards;
-    }
-    if (detailData.hasOwnProperty('passing')) {
-        player['Pass Yards'] = detailData.passing.yards;
-        player['Pass Attempts'] = detailData.passing.attempts;
-        player['Pass Completions'] = detailData.passing.completions;
-        player['Pass TDs'] = detailData.passing.touchdowns;
-        player['INT'] = detailData.passing.interceptions;
-    }
-    if (detailData.hasOwnProperty('receiving')) {
-        player['Receving Yards'] = detailData.receiving.yards;
-        player['Receptions'] = detailData.receiving.receptions;
-    }
-    if (detailData.hasOwnProperty('field-goals')) {
-        player['FG Made'] = detailData.field_goals.made;
-    }
-    if (detailData.hasOwnProperty('defense')) {
-        player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
-    }
-    return player;
-}
+// const getNHLData = (detailData) => {
+//     const player = { id: detailData.player.id, name: detailData.player.name }
+//     if (detailData.hasOwnProperty('rushing')) {
+//         player['Rush Yards'] = detailData.rushing.yards;
+//     }
+//     if (detailData.hasOwnProperty('passing')) {
+//         player['Pass Yards'] = detailData.passing.yards;
+//         player['Pass Attempts'] = detailData.passing.attempts;
+//         player['Pass Completions'] = detailData.passing.completions;
+//         player['Pass TDs'] = detailData.passing.touchdowns;
+//         player['INT'] = detailData.passing.interceptions;
+//     }
+//     if (detailData.hasOwnProperty('receiving')) {
+//         player['Receving Yards'] = detailData.receiving.yards;
+//         player['Receptions'] = detailData.receiving.receptions;
+//     }
+//     if (detailData.hasOwnProperty('field-goals')) {
+//         player['FG Made'] = detailData.field_goals.made;
+//     }
+//     if (detailData.hasOwnProperty('defense')) {
+//         player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
+//     }
+//     return player;
+// }
 
 const getMLBData = (detailData) => {
-    const player = { id: detailData.player.id, name: detailData.player.name }
-    if (detailData.hasOwnProperty('rushing')) {
-        player['Rush Yards'] = detailData.rushing.yards;
+    const player = { id: detailData.player.id, name: detailData.player.first_name + " " + detailData.player.last_name }
+    if (detailData.statistics.hasOwnProperty('hitting')) {
+        player['Pitcher Strikeouts'] = detailData.statistics.hitting.overall.outs.ktotal ?
+            detailData.statistics.hitting.overall.outs.ktotal : 0;
+        player['Total Bases'] = detailData.statistics.hitting.overall.onbase.tb ?
+            detailData.statistics.hitting.overall.onbase.tb : 0;
+        player['Earned Runs'] = detailData.statistics.hitting.overall.runs.earned ?
+            detailData.statistics.hitting.overall.runs.earned : 0;
+        player['Total Runs'] = detailData.statistics.hitting.overall.runs.total ?
+            detailData.statistics.hitting.overall.runs.total : 0;
     }
-    if (detailData.hasOwnProperty('passing')) {
-        player['Pass Yards'] = detailData.passing.yards;
-        player['Pass Attempts'] = detailData.passing.attempts;
-        player['Pass Completions'] = detailData.passing.completions;
-        player['Pass TDs'] = detailData.passing.touchdowns;
-        player['INT'] = detailData.passing.interceptions;
+    if (detailData.statistics.hasOwnProperty('pitching')) {
+        player['Pitcher Strikeouts'] = detailData.statistics.pitching.overall.outs.ktotal ?
+            detailData.statistics.pitching.overall.outs.ktotal : 0;
+        player['Total Bases'] = detailData.statistics.pitching.overall.onbase.tb ?
+            detailData.statistics.pitching.overall.onbase.tb : 0;
+        player['Earned Runs'] = detailData.statistics.pitching.overall.runs.earned ?
+            detailData.statistics.pitching.overall.runs.earned : 0;
+        player['Total Hits'] = detailData.statistics.pitching.overall.onbase.h ?
+            detailData.statistics.pitching.overall.onbase.h : 0;
+        player['Total Runs'] = detailData.statistics.pitching.overall.runs.total ?
+            detailData.statistics.pitching.overall.runs.total : 0;
     }
-    if (detailData.hasOwnProperty('receiving')) {
-        player['Receving Yards'] = detailData.receiving.yards;
-        player['Receptions'] = detailData.receiving.receptions;
-    }
-    if (detailData.hasOwnProperty('field-goals')) {
-        player['FG Made'] = detailData.field_goals.made;
-    }
-    if (detailData.hasOwnProperty('defense')) {
-        player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
-    }
+
     return player;
 }
 
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,
+    getLiveDataByEvent,
     remove
 }
