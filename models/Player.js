@@ -12,7 +12,6 @@ const PlayerSchema = new mongoose.Schema({
   },
   remoteId: {
     type: String,
-    required: true
   },
   name: {
     type: String,
@@ -25,6 +24,9 @@ const PlayerSchema = new mongoose.Schema({
     type: String
   },
   headshot: {
+    type: String
+  },
+  teamName:{
     type: String
   },
   odds:[
