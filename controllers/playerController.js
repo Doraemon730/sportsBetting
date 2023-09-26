@@ -84,7 +84,10 @@ const getTopPlayerBy = async (req, res) => {
         }
       },
       {
-        $unwind: '$team' // Unwind the 'prop' array created by the lookup
+        $unwind: {
+          path: '$team', // Unwind the 'prop' array created by the lookup
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $lookup: {
@@ -109,14 +112,14 @@ const getTopPlayerBy = async (req, res) => {
           _id: '$odds.id', // Group by odds.id
           players: {
             $push: {
-              playerId: '$_id',
+              playerId: '$remoteId',
               playerName: '$name',
               playerPosition: '$position',
               contestId: '$odds.event',
               playerNumber: '$jerseyNumber',
               headshot: '$headshot',
               odds: '$odds.value',
-              teamName: '$team.alias',
+              teamName: { $ifNull: ['$team.alias', '$teamName'] },
               contestName: '$event.name',
               contestStartTime: '$event.startTime',
               overUnder: "over",
@@ -531,7 +534,7 @@ const getPlayerManifest = async (req, res) => {
   }
 }
 const remove = async (req, res) => {
-  await Player.deleteMany({ sportId: new ObjectId("65108faf4fa2698548371fbd") });
+  await Player.deleteMany({ sportId: new ObjectId("65131974db50d0c2c8bf7aa7") });
   res.json("Success");
 }
 const getLiveDataByPlayers = async (req, res) => {

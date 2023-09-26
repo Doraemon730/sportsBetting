@@ -228,5 +228,5 @@ router.post('/admin/removeNHLTeams', teamController.remove);
 router.post('/admin/getMLBPlayers', playerController.addMLBPlayersToDatabase);
 router.post('/admin/remoevNHLPlayers', playerController.remove);
 router.post('/admin/removeWeekSchedueMLB', eventController.remove);
-
+router.post('/admin/getWeeklyScheduleSoccer', eventController.getWeeklyEventsSoccer);
 module.exports = router;
