@@ -23,20 +23,20 @@ const ContestSchema = new mongoose.Schema({
   },
   sportId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Sport',
+    ref: 'sport',
     required: true
   },
 
   teams: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Team'
+      ref: 'team'
     }
   ],
 
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Bet'
+    ref: 'bet'
   }
   ]
 });

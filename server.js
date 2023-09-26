@@ -11,7 +11,9 @@ const {
   WednesdayJob,
   ThursdayJob,
   EtherJob,
-  MatchJob
+  MatchJob,
+  WeeklyRewardJob,
+  MonthlyRewardJob
 } = require('./services/betService');
 
 
@@ -66,6 +68,8 @@ app.listen(PORT, () => {
   WednesdayJob.start();
   ThursdayJob.start();
   EtherJob.start();
-  MatchJob.start()
+  MatchJob.start();
+  WeeklyRewardJob.start();
+  MonthlyRewardJob.start();
   //walletMonitor.start();
 });

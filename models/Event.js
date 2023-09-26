@@ -2,23 +2,23 @@ const mongoose = require('mongoose')
 
 
 const EventSchema = new mongoose.Schema({
-    id : {
+    id: {
         type: String,
-        index: true        
+        index: true
     },
     sportId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Sport'
+        ref: 'sport'
     },
     startTime: {
         type: Date,
         requried: true,
     },
     name: {
-        type:String,
+        type: String,
         required: true
     },
-    competitors:[{
+    competitors: [{
         id: { type: String },
         name: { type: String },
         country: { type: String },
@@ -27,12 +27,12 @@ const EventSchema = new mongoose.Schema({
         rotation_number: { type: String },
         teamId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Team'
+            ref: 'team'
         }
     }],
     participants: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Bet'
+        ref: 'bet'
     }],
     state: {
         type: Number,
@@ -40,9 +40,9 @@ const EventSchema = new mongoose.Schema({
     },
     matchId: {
         type: String
-    }    
-    
-}, { timestamps: true });    
+    }
+
+}, { timestamps: true });
 
 
 module.exports = mongoose.model('event', EventSchema);

@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const DiscountSchema = new mongoose.Schema({
     playerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Player',
+        ref: 'player',
         required: true
     },
     date: {
@@ -19,7 +19,7 @@ const DiscountSchema = new mongoose.Schema({
     },
     propId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Prop',
+        ref: 'prop',
         required: true,
     }
 });

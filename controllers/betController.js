@@ -28,12 +28,16 @@ const checkBet = async (newbet) => {
         console.log(error);
     }
 }
+
 const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
+        console.log(req.body);
         let { entryFee, betType, picks, currencyType } = req.body;
+        console.log(entryFee, betType, picks, currencyType);
 
         const jsonArray = JSON.parse(picks);
+        console.log(jsonArray);
         if (jsonArray.length < 2 || jsonArray.length > 6) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
@@ -61,7 +65,7 @@ const startBetting = async (req, res) => {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
-        
+
         let isNew = false, isFirst = false;
         const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
         if (!bet) {
@@ -91,7 +95,7 @@ const startBetting = async (req, res) => {
             if (!event) {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
-            
+
             event.participants.push(myBet._id);
             await event.save();
         }
@@ -116,6 +120,7 @@ const startBetting = async (req, res) => {
         getReferralPrize(user._id, entryFeeEtherSave);
         res.json(myBet);
     } catch (error) {
+        console.log(error);
         res.status(500).send('Server error');
     }
 }
@@ -149,7 +154,49 @@ const getAllBetsByUserId = async (req, res) => {
         }
 
         results.totalPages = totalPages;
-        results.results = await Bet.find({ userId }).skip(startIndex).limit(limit);
+        results.results = await Bet.find().skip(startIndex).limit(limit).populate({
+            path: 'picks.playerId',
+            select: '_id name position jerseyNumber'
+        });
+        res.json(results);
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
+}
+
+const getAllBetsByUserIdAdmin = async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+
+        const count = await Bet.find({ userId }).countDocuments();
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Bet.find().skip(startIndex).limit(limit).populate({
+            path: 'picks.playerId',
+            select: '_id name position jerseyNumber'
+        });
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
@@ -184,7 +231,10 @@ const getAllBets = async (req, res) => {
         }
 
         results.totalPages = totalPages;
-        results.results = await Bet.find().skip(startIndex).limit(limit);
+        results.results = await Bet.find().skip(startIndex).limit(limit).populate({
+            path: 'picks.playerId',
+            select: '_id name position jerseyNumber'
+        });
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
@@ -236,7 +286,7 @@ const sixLegParlayBettingByStep = async (req, res) => {
         }
         const entryFee = 25;
         const jsonArray = JSON.parse(picks);
-        
+
         const myBet = new Bet({
             userId,
             entryFee,
@@ -256,7 +306,7 @@ const sixLegParlayBettingByStep = async (req, res) => {
             if (!event) {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
-            
+
             event.participants.push(myBet._id);
             await event.save();
         }
@@ -303,7 +353,7 @@ const sixLegParlayBetting = async (req, res) => {
             }
 
             const jsonArray = JSON.parse(pick);
-            
+
 
             const myBet = new Bet({
                 userId,
@@ -320,12 +370,12 @@ const sixLegParlayBetting = async (req, res) => {
             await myBet.save();
             for (const element of jsonArray) {
                 const eventId = new ObjectId(element.contestId);
-    
+
                 const event = await Event.findById(eventId);
                 if (!event) {
                     return res.status(400).send({ message: "Invalid Contest." });
                 }
-                
+
                 event.participants.push(myBet._id);
                 await event.save();
             }
@@ -359,7 +409,7 @@ const firstSixLegParlayBetting = async (req, res) => {
                 entryFeeETH = 0;
             }
             const jsonArray = JSON.parse(pick);
-            
+
 
             const myBet = new Bet({
                 userId,
@@ -376,11 +426,11 @@ const firstSixLegParlayBetting = async (req, res) => {
             await myBet.save();
             for (const element of jsonArray) {
                 const eventId = new ObjectId(element.contestId);
-    
+
                 const event = await Event.findById(eventId);
                 if (!event) {
                     return res.status(400).send({ message: "Invalid Contest." });
-                }                
+                }
                 event.participants.push(myBet._id);
                 await event.save();
             }
@@ -421,12 +471,97 @@ const cancelBet = async (req, res) => {
         res.status(500).send('Server error');
     }
 }
+
+const getRewards = async (days) => {
+    const daysAgo = new Date();
+    daysAgo.setDate(sevenDaysAgo.getDate() - days);
+    const weeklyBets = await Bet.aggregate([
+        {
+            $match: {
+                createdAt: {
+                    $gte: daysAgo
+                },
+                status: 'lost'
+            }
+        },
+        {
+            $group: {
+                _id: '$userId',
+                totalLost: { $sum: '$entryFee' }
+            }
+        }
+    ]);
+
+    for (const weeklyBet of weeklyBets) {
+        const user = await User.findOne({ _id: new ObjectId(weeklyBet._id) });
+        if (!user)
+            continue;
+        const percentage = getRewardsPercentage(user.level);
+        user.credits += weeklyBet.totalLost * percentage * 0.01;
+        await user.save();
+    }
+}
+
+const getRewardsPercentage = (level) => {
+    percentage = 0;
+    switch (level) {
+        case "Rookie":
+            percentage = 0.002;
+            break;
+        case "Bronze":
+            percentage = 0.004;
+            break;
+        case "Silver":
+            percentage = 0.006;
+            break;
+        case "Gold":
+            percentage = 0.008;
+            break;
+        case "Gold II":
+            percentage = 0.010;
+            break;
+        case "Plantium":
+            percentage = 0.012;
+            break;
+        case "Plantium II":
+            percentage = 0.014;
+            break;
+        case "Plantium III":
+            percentage = 0.016;
+            break;
+        case "Diamond":
+            percentage = 0.018;
+            break;
+        case "Diamond II":
+            percentage = 0.020;
+            break;
+        case "Diamond III":
+            percentage = 0.022;
+            break;
+        case "Predator":
+            percentage = 0.024;
+            break;
+        case "Predator II":
+            percentage = 0.026;
+            break;
+        case "Predator III":
+            percentage = 0.028;
+            break;
+        case "Prestige":
+            percentage = 0.030;
+            break;
+    }
+    return percentage;
+}
+
 module.exports = {
     startBetting,
     sixLegParlayBetting,
     isAllowedSixLegParlay,
     getAllBets,
     getAllBetsByUserId,
+    getAllBetsByUserIdAdmin,
     cancelBet,
-    firstSixLegParlayBetting
+    firstSixLegParlayBetting,
+    getRewards
 }
