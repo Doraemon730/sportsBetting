@@ -31,6 +31,17 @@ const NFL_IMAGE_TYPE = "headshots"
 const NHL_API_BASEURL = "https://api.sportradar.us/nhl/trial/v7";
 const MLB_API_BASEURL = "https://api.sportradar.com/mlb/trial/v7";
 
+// Soccer
+const UEFA_COMPETITION_ID = "sr:competition:7";
+const LALIGA_COMPETITION_ID = "sr:competition:8";
+const PREMEIER_LEAGUE_COMPETITION_ID = "sr:competition:17";
+const SERIEA_COMPETITION_ID = "sr:competition:23";
+const LIGUE1_COMPETITION_ID = "sr:competition:34";
+const BUNDESLIGA_COMPETITION_ID = "sr:competition:35";
+const MLS_COMPETITION_ID = "sr:competition:242";
+
+const SOCCER_API_BASEURL = "https://api.sportradar.com/soccer/trial/v4";
+
 const YEAR = 2023
 
 module.exports = {
@@ -65,5 +76,13 @@ module.exports = {
     MLB_API_BASEURL,
     MLB_COMPETITION_ID,
     NHL_COMPETITION_ID,
-    NFL_LIVEDATA_BASEURL
+    NFL_LIVEDATA_BASEURL,
+    UEFA_COMPETITION_ID,
+    LALIGA_COMPETITION_ID,
+    PREMEIER_LEAGUE_COMPETITION_ID,
+    SERIEA_COMPETITION_ID,
+    LIGUE1_COMPETITION_ID,
+    BUNDESLIGA_COMPETITION_ID,
+    MLS_COMPETITION_ID,
+    SOCCER_API_BASEURL
 }
