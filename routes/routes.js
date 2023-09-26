@@ -14,6 +14,7 @@ const statisticsController = require('../controllers/statisticsController');
 const sportsController = require('../controllers/sportsController');
 const referralController = require('../controllers/referralController');
 const eventController = require('../controllers/eventController');
+const configureController = require('../controllers/configureController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -198,6 +199,13 @@ router.post('/admin/referral/setReferral',
 router.post('/admin/referral/getAllReferrals',
     admin,
     referralController.getAllReferrals)
+
+router.post('/admin/configure/setBetAmountLimit',
+    admin,
+    configureController.setBetAmountLimit);
+
+router.post('/configure/getBetAmountLimit',
+    configureController.getBetAmountLimit);
 
 router.post('/user/getbalance', auth, userController.getWalletBalance);
 router.post('/test', playerController.getLiveDataByPlayers);
