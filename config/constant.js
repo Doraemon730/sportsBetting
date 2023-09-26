@@ -20,6 +20,9 @@ const AMERICAN_URN_SPORT = "sr:sport:16"
 const NFL_COMPETITION_ID = "sr:competition:31"
 
 const NFL_LIVEDATA_BASEURL = "https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key"
+const MLB_LIVEDATA_BASEURL = "https://api.sportradar.com/mlb/trial/stream/en/statistics/subscribe?api_key"
+const NHL_LIVEDATA_BASEURL = "https://api.sportradar.us/nhl/trial/stream/en/statistics/subscribe?api_key"
+
 const MLB_COMPETITION_ID = "sr:competition:109"
 const NHL_COMPETITION_ID = "sr:competition:234";
 const NFL_IMAGE_BASEURL = "https://api.sportradar.us/nfl-images-t3"
@@ -29,6 +32,7 @@ const NHL_API_BASEURL = "https://api.sportradar.us/nhl/trial/v7";
 const MLB_API_BASEURL = "https://api.sportradar.com/mlb/trial/v7";
 
 const YEAR = 2023
+
 module.exports = {
     ETHER_PRICE_API,
     BET_2_2_HIGH,
@@ -50,6 +54,9 @@ module.exports = {
     ODDS_API_BASEURL,
     AMERICAN_URN_SPORT,
     NFL_COMPETITION_ID,
+    NFL_LIVEDATA_BASEURL,
+    MLB_LIVEDATA_BASEURL,
+    NHL_LIVEDATA_BASEURL,
     NFL_IMAGE_BASEURL,
     NFL_IMAGE_PROVIDER,
     NFL_IMAGE_TYPE,
@@ -58,5 +65,5 @@ module.exports = {
     MLB_API_BASEURL,
     MLB_COMPETITION_ID,
     NHL_COMPETITION_ID,
-	NFL_LIVEDATA_BASEURL
+    NFL_LIVEDATA_BASEURL
 }
