@@ -3,6 +3,7 @@ const cron = require('node-cron')
 const axios = require('axios');
 const { updateAllPromotion } = require('../controllers/userController');
 const { getETHPriceFromMarket } = require('../controllers/transactionController');
+const { getLiveDataByEvent } = require('../controllers/eventController')
 
 //betJob = cron.schedule
 const cronWednesdaySchedule = '0 0 * * 3'; // Runs at 12:00 AM every Wednesday
@@ -31,7 +32,8 @@ const weeklyReward = () => {
 
 }
 
-const cronJob = () => {
+const cronMatchJob = () => {
+  getLiveDataByEvent();
 
 }
 
@@ -40,5 +42,5 @@ module.exports = {
   WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
   ThursdayJob: cron.schedule(cronThursdaySchedule, cronThursdayJob),
   EtherJob: cron.schedule(cronEtherPriceSchedule, cronEtherPriceJob),
-  MatchJob: cron.schedule(cronMatchSchedule, cronEtherPriceJob),
+  MatchJob: cron.schedule(cronMatchSchedule, cronMatchJob),
 };
