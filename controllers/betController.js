@@ -156,7 +156,7 @@ const getAllBetsByUserId = async (req, res) => {
         results.totalPages = totalPages;
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
-            select: '_id name position jerseyNumber'
+            select: '_id name position jerseyNumber headshot'
         });
         res.json(results);
     } catch (error) {
@@ -195,7 +195,7 @@ const getAllBetsByUserIdAdmin = async (req, res) => {
         results.totalPages = totalPages;
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
-            select: '_id name position jerseyNumber'
+            select: '_id name position jerseyNumber headshot'
         });
         res.json(results);
     } catch (error) {
@@ -233,7 +233,7 @@ const getAllBets = async (req, res) => {
         results.totalPages = totalPages;
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
-            select: '_id name position jerseyNumber'
+            select: '_id name position jerseyNumber headshot'
         });
         res.json(results);
     } catch (error) {
@@ -450,10 +450,10 @@ const cancelBet = async (req, res) => {
     try {
         const { betId } = req.body;
         if (!betId)
-            res.status(404).json("Bet is not exist");
+            res.status(404).json("Invalid Bet!");
         const bet = await Bet.findOne({ _id: new ObjectId(betId) });
         if (!bet) {
-            res.status(404).json("Bet is not exist");
+            res.status(404).json("Invalid Bet!");
         }
         const now = new Date();
         const diff = Math.abs(now - bet.createdAt) / (1000 * 60);
