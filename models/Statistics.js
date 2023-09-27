@@ -25,6 +25,10 @@ const StatisticSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    daily_bets: {
+        type: Number,
+        default: 0
+    },
     daily_bet_users: {
         type: Number,
         default: 0
