@@ -35,7 +35,7 @@ const BetSchema = new mongoose.Schema({
     },
     contestId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'contest',
+      ref: 'event',
       required: true
     },
     prop: {
