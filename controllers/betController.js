@@ -460,10 +460,10 @@ const cancelBet = async (req, res) => {
     try {
         const { betId } = req.body;
         if (!betId)
-            res.status(404).json("Invalid Bet!");
+            return res.status(404).json("Invalid Bet!");
         const bet = await Bet.findOne({ _id: new ObjectId(betId) });
         if (!bet) {
-            res.status(404).json("Invalid Bet!");
+            return res.status(404).json("Invalid Bet!");
         }
         const now = new Date();
         const diff = Math.abs(now - bet.createdAt) / (1000 * 60);
@@ -471,12 +471,15 @@ const cancelBet = async (req, res) => {
             const user = await User.findOne({ _id: bet.userId });
             if (bet.credit > 0)
                 user.credits += bet.credit;
-            user.ETH_balance += USD2Ether(Ether2USD(bet.entryFee) - bet.credit);
+            let entryFee = await Ether2USD(bet.entryFee);
+            let entryETH = await USD2Ether(entryFee - bet.credit);
+            user.ETH_balance += entryETH;
             await user.save();
-            await Bet.deleteOne({ _id: new ObjectId(betId) });
-            res.json("Bet removed successfully");
+            bet.status = 'canceled';
+            await bet.save();
+            res.json("Bet canceled successfully");
         } else
-            res.status(400).json("Bet cannot be removed as it is older than 5 minutes");
+            res.status(400).json("Bet cannot be removed as it's been over 5 minutes");
     } catch (error) {
         res.status(500).send('Server error');
     }
