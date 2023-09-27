@@ -38,6 +38,11 @@ const BetSchema = new mongoose.Schema({
       ref: 'event',
       required: true
     },
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'team',
+      required: true
+    },
     prop: {
       propName: {
         type: String,
