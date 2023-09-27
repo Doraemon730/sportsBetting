@@ -19,7 +19,7 @@ const DiscountSchema = new mongoose.Schema({
     },
     propId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'prop',
+        ref: 'props',
         required: true,
     }
 });

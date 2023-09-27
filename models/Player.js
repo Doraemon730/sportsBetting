@@ -26,14 +26,14 @@ const PlayerSchema = new mongoose.Schema({
   headshot: {
     type: String
   },
-  teamName:{
+  teamName: {
     type: String
   },
-  odds:[
+  odds: [
     {
       id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'prop'
+        ref: 'props'
       },
       value: {
         type: Number

@@ -26,6 +26,7 @@ const { Web3 } = require('web3');
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const mainWalletAddress = process.env.MAIN_WALLET_ADDRESS;
 const mainWalletPrivateKey = process.env.MAIN_WALLET_PRIVATE_KEY;
+const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
 const depositBalance = async (req, res) => {
     try {
@@ -34,7 +35,7 @@ const depositBalance = async (req, res) => {
             _id: userId
         });
 
-        const infuraWebSocket = "https://eth.llamarpc.com"
+        const infuraWebSocket = ethereumNodeURL
         var provider = new ethers.JsonRpcProvider(infuraWebSocket);
         const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
         const wallet = new ethers.Wallet(user.privateKey, provider);
@@ -42,16 +43,19 @@ const depositBalance = async (req, res) => {
         const amountETH = web3.utils.fromWei(amountWei, 'ether');
         const amountUSD = await Ether2USD(amountETH)
         const gasPrice = await web3.eth.getGasPrice();
-
         // Get the gas limit
         const gasLimit = await wallet.estimateGas({
             to: mainWalletAddress,
             value: amountWei
         });
 
+        console.log(mainWalletAddress)
+
+
         // Calculate the value to send (userBalance - gasPrice * gasLimit)
         const gasFee = (BigInt(gasPrice) * BigInt(gasLimit));
         const valueToSend = BigInt(amountWei) - (BigInt(gasFee));
+        console.log(gasFee, valueToSend)
         txReceipt = await wallet.sendTransaction({
             to: mainWalletAddress,
             gasPrice: gasPrice,
@@ -87,6 +91,7 @@ const depositBalance = async (req, res) => {
         user.privateKey = undefined;
         res.json({ message: "Deposit Success!", user })
     } catch (error) {
+        console.log(error)
         res.status(500).send('Server error');
     }
 }
@@ -111,7 +116,7 @@ const withdrawBalance = async (req, res) => {
                 message: "You can't withdraw now!"
             })
         }
-        const infuraWebSocket = "https://eth.llamarpc.com"
+        const infuraWebSocket = ethereumNodeURL
         var provider = new ethers.JsonRpcProvider(infuraWebSocket);
         const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
         const wallet = new ethers.Wallet(mainWalletPrivateKey, provider);
