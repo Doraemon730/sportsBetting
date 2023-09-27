@@ -139,12 +139,27 @@ const getTopPlayerBy = async (req, res) => {
       }
       ]);
     for (const prop of props) {
-      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0]
+      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
+
+      now.setUTCHours(0, 0, 0, 0);
+      result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
+        let discountPlayer = await Discount.findOne({
+          date: now,
+          playerId: player.playerId,
+          propId: player.propId
+        }).populate('propId');
+        if (!discountPlayer) {
+          return player;
+        }
+        player.odds = discountPlayer.discount;
+        return player;
+      }));
     }
     res.status(200).json(result);
   } catch (error) {
+    console.log(error);
     res.status(500).send('Server error');
   }
 }
@@ -332,20 +347,21 @@ const getPlayersByProps = async (req, res) => {
 
     results.sort((a, b) => b.statistics[propName] - a.statistics[propName]);
 
-    if (now.getDay() === 0) {
-      now.setUTCHours(0, 0, 0, 0);
-      results = results.map(async (player) => {
+    //if (now.getDay() === 0) {
+    now.setUTCHours(0, 0, 0, 0);
+    results = results.map(async (player) => {
 
-        let discountPlayer = await Discount.find({
-          date: now,
-          playerId: player.playerId
-        }).populate('prop');
-        if (!discountPlayer)
-          return player;
-        player.statistics[discountPlayer.prop.name] = discountPlayer.discount;
+      console.log(now);
+      let discountPlayer = await Discount.find({
+        date: now,
+        playerId: player.playerId
+      }).populate('prop');
+      if (!discountPlayer)
         return player;
-      });
-    }
+      player.statistics[discountPlayer.prop.name] = discountPlayer.discount;
+      return player;
+    });
+    //}
 
     res.json(results);
   } catch (err) {
