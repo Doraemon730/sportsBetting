@@ -506,49 +506,49 @@ const getRewardsPercentage = (level) => {
     percentage = 0;
     switch (level) {
         case "Rookie":
-            percentage = 0.002;
+            percentage = 0.003;
             break;
         case "Bronze":
-            percentage = 0.004;
-            break;
-        case "Silver":
             percentage = 0.006;
             break;
+        case "Silver":
+            percentage = 0.009;
+            break;
         case "Gold":
-            percentage = 0.008;
-            break;
-        case "Gold II":
-            percentage = 0.010;
-            break;
-        case "Plantium":
             percentage = 0.012;
             break;
-        case "Plantium II":
-            percentage = 0.014;
+        case "Gold II":
+            percentage = 0.015;
             break;
-        case "Plantium III":
-            percentage = 0.016;
-            break;
-        case "Diamond":
+        case "Plantium":
             percentage = 0.018;
             break;
-        case "Diamond II":
-            percentage = 0.020;
+        case "Plantium II":
+            percentage = 0.021;
             break;
-        case "Diamond III":
-            percentage = 0.022;
-            break;
-        case "Predator":
+        case "Plantium III":
             percentage = 0.024;
             break;
+        case "Diamond":
+            percentage = 0.027;
+            break;
+        case "Diamond II":
+            percentage = 0.030;
+            break;
+        case "Diamond III":
+            percentage = 0.033;
+            break;
+        case "Predator":
+            percentage = 0.036;
+            break;
         case "Predator II":
-            percentage = 0.026;
+            percentage = 0.039;
             break;
         case "Predator III":
-            percentage = 0.028;
+            percentage = 0.042;
             break;
         case "Prestige":
-            percentage = 0.030;
+            percentage = 0.045;
             break;
     }
     return percentage;
