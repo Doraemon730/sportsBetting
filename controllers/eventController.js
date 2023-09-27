@@ -38,12 +38,13 @@ const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
 
-const getWeeklyEventsNFL = async (req, res) => {
+const getWeeklyEventsNFL = async () => {
     try {
         const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+        if (!mappings || !Array.isArray(mappings)) {
+            console.log("no mappings");
+            return;
+        }
         const events = await fetchWeeklyEventsNFL();
         for (const event of events) {
 
@@ -116,10 +117,10 @@ const getWeeklyEventsNFL = async (req, res) => {
             
 
         }
-        res.json(events);
+        
     } catch (error) {
         console.log(error.message);
-        res.json(error.message);
+        
     }
 }
 
