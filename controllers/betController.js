@@ -154,7 +154,7 @@ const getAllBetsByUserId = async (req, res) => {
         }
 
         results.totalPages = totalPages;
-        results.results = await Bet.find().skip(startIndex).limit(limit).populate({
+        results.results = await Bet.find({ userId }).skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
             select: '_id name position jerseyNumber headshot'
         }).populate({
@@ -196,7 +196,7 @@ const getAllBetsByUserIdAdmin = async (req, res) => {
         }
 
         results.totalPages = totalPages;
-        results.results = await Bet.find().skip(startIndex).limit(limit).populate({
+        results.results = await Bet.find({ userId }).skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
             select: '_id name position jerseyNumber headshot'
         }).populate({
