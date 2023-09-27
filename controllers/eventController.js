@@ -38,12 +38,13 @@ const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
 
-const getWeeklyEventsNFL = async (req, res) => {
+const getWeeklyEventsNFL = async () => {
     try {
         const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+        if (!mappings || !Array.isArray(mappings)) {
+            console.log("no mappings");
+            return;
+        }
         const events = await fetchWeeklyEventsNFL();
         for (const event of events) {
 
@@ -116,24 +117,26 @@ const getWeeklyEventsNFL = async (req, res) => {
             
 
         }
-        res.json(events);
+        
     } catch (error) {
         console.log(error.message);
-        res.json(error.message);
+        
     }
 }
 
-const getWeeklyEventsMLB = async (req, res) => {
+const getWeeklyEventsMLB = async () => {
     try {
         const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+        if (!mappings || !Array.isArray(mappings)) {
+            console.log('No mappings');
+            return;
+        }
         //console.log(mappings);        
         const players = await fetchPlayerMapping();
-        if (!players || !Array.isArray(players)) return res.status(400).send({
-            message: 'No players found'
-        });
+        if (!players || !Array.isArray(players)) {
+            console.log('No playermapping');
+            return;
+        }
 
         const events = await fetchWeeklyEventsMLB();
         for (const event of events) {
@@ -162,7 +165,7 @@ const getWeeklyEventsMLB = async (req, res) => {
 
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
             const existingEvent = await Event.findOne({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id:event.sport_event.id});
-            if (existingEvent) {                myEvent = existingEvent;
+            if (existingEvent) {                
                 myEvnt = existingEvent;
                 } else {
                 // Event doesn't exist, insert new event
@@ -209,10 +212,10 @@ const getWeeklyEventsMLB = async (req, res) => {
             //console.log(playerProps);
 
         }
-        res.json(events);
+        
     } catch (error) {
         console.log(error);
-        res.json(error.message);
+        
     }
 };
 const competitiorDraft = [
@@ -407,12 +410,12 @@ const getWeeklyEventsMLS = async (mappings) => {
         console.log(error.message);
     }
 };
-const getWeeklyEventsSoccer = async(req, res) => {
+const getWeeklyEventsSoccer = async () => {
     try{
         const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+        if (!mappings || !Array.isArray(mappings)) {
+            console.log('no mappings');
+        }
         await getWeeklyEventsUEFA(mappings);
         await getWeeklyEventsLaLiga(mappings);
         await getWeeklyEventsPremierLeague(mappings);
@@ -421,10 +424,10 @@ const getWeeklyEventsSoccer = async(req, res) => {
         await getWeeklyEventsBundesliga(mappings);
         await getWeeklyEventsMLS(mappings);
         await getWeeklyEventsSaudi(mappings);
-        res.json("success");
+        
     } catch(error) {
         console.log(error.message);
-        res.status(500).send(error.message);
+       
     }
 };
 const remove = async (req, res) => {
