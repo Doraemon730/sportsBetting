@@ -407,7 +407,7 @@ const cancelBet = async (req, res) => {
         const now = new Date();
         const diff = Math.abs(now - bet.createdAt) / (1000 * 60);
         if (diff < 5) {
-            const user = await User.findOne({ _id: bet.userId });
+            let user = await User.findOne({ _id: bet.userId });
             if (bet.parlay) {
                 if (bet.entryFee == 10)
                     user.firstSix = 1;
@@ -429,6 +429,7 @@ const cancelBet = async (req, res) => {
         } else
             res.status(400).json("Bet cannot be removed as it's been over 5 minutes");
     } catch (error) {
+        console.log(error);
         res.status(500).send('Server error');
     }
 }
