@@ -31,6 +31,11 @@ router.post(
     userController.getUserDetail);
 
 router.post(
+    '/admin/users/addBalanceAndCredits',
+    admin,
+    userController.addBalanceAndCredits);
+
+router.post(
     '/admin/users/getAllUsers',
     admin,
     userController.getAllUsers);

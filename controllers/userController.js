@@ -13,7 +13,7 @@ const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
-const { isEmpty } = require('../utils/util');
+const { isEmpty, USD2Ether } = require('../utils/util');
 
 const { addUserWallet } = require('../services/webSocketService'); // Import your WebSocket service
 
@@ -348,6 +348,37 @@ const getWalletBalance = async (req, res) => {
   }
 }
 
+const addBalanceAndCredits = async (req, res) => {
+  try {
+    const { balance, credits, userId } = req.body;
+
+    const user = await User.findById({ _id: userId });
+    const amountETH = await USD2Ether(balance);
+
+    if (!balance && !credits) {
+      return res.status(400).json({ errors: [{ msg: 'Please provide balance or credits!' }] });
+    }
+
+    if (balance) {
+      user.ETH_balance += amountETH;
+    }
+    if (credits) {
+      user.credits += parseFloat(credits);
+    }
+
+    await user.save();
+
+    user.password = undefined;
+    user.privateKey = undefined;
+
+    return res.json(user);
+
+  } catch (error) {
+    res.status(500).send('Server error');
+  }
+
+}
+
 const setUserLevel = user => {
   if (user.totalBetAmount >= 1000000000) {
     user.level = "Prestige";
@@ -398,5 +429,6 @@ module.exports = {
   sendResetPasswordEmail,
   resetPassword,
   setUserLevel,
-  getWalletBalance
+  getWalletBalance,
+  addBalanceAndCredits
 };
