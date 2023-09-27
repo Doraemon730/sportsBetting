@@ -14,12 +14,9 @@ const { updateBetWithNew, updateBetWithDaily } = require("../controllers/statist
 const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
-        console.log(req.body);
         let { entryFee, betType, picks, currencyType } = req.body;
-        console.log(entryFee, betType, picks, currencyType);
 
         const jsonArray = JSON.parse(picks);
-        console.log(jsonArray);
         if (jsonArray.length < 2 || jsonArray.length > 6) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
@@ -47,7 +44,6 @@ const startBetting = async (req, res) => {
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
-
         let isNew = false, isFirst = false;
         const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
         if (!bet) {
@@ -68,8 +64,6 @@ const startBetting = async (req, res) => {
             credit: creditSave,
         });
 
-        await myBet.save();
-
         for (const element of jsonArray) {
             const eventId = new ObjectId(element.contestId);
 
@@ -84,6 +78,8 @@ const startBetting = async (req, res) => {
         user.ETH_balance -= entryFeeEther;
         user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
+
+        await myBet.save();
         await user.save();
 
         const transaction = new Transaction({

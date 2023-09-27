@@ -15,6 +15,7 @@ const sportsController = require('../controllers/sportsController');
 const referralController = require('../controllers/referralController');
 const eventController = require('../controllers/eventController');
 const configureController = require('../controllers/configureController');
+const bonusController = require('../controllers/bonusController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -56,6 +57,11 @@ router.post('/users/sendResetPasswordEmail',
 router.post('/users/resetPassword',
     checkResetPassword,
     userController.resetPassword);
+
+router.post('/users/getReferralBonus',
+    auth,
+    bonusController.getReferralBonusByReferralId
+)
 
 // Betting routes
 router.post('/bet/getPlayersBySports',
