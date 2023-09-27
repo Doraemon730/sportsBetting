@@ -100,7 +100,9 @@ const startBetting = async (req, res) => {
             await updateBetWithDaily(isFirst, entryFeeEtherSave);
         }
         getReferralPrize(user._id, entryFeeEtherSave);
-        res.json(myBet);
+        user.password = undefined;
+        user.privateKey = undefined;
+        res.json({ betInfo: myBet, userInfo: user });
     } catch (error) {
         console.log(error);
         res.status(500).send('Server error');
@@ -180,7 +182,9 @@ const startFirstFreeBetting = async (req, res) => {
             await updateBetWithDaily(isFirst, entryFeeEtherSave);
         }
         getReferralPrize(user._id, entryFeeEtherSave);
-        res.json(myBet);
+        user.password = undefined;
+        user.privateKey = undefined;
+        res.json({ betInfo: myBet, userInfo: user });
     } catch (error) {
         console.log(error);
         res.status(500).send('Server error');
@@ -262,7 +266,9 @@ const startWednesdayFreeBetting = async (req, res) => {
             await updateBetWithDaily(isFirst, entryFeeEtherSave);
         }
         getReferralPrize(user._id, entryFeeEtherSave);
-        res.json(myBet);
+        user.password = undefined;
+        user.privateKey = undefined;
+        res.json({ betInfo: myBet, userInfo: user });
     } catch (error) {
         console.log(error);
         res.status(500).send('Server error');
@@ -416,9 +422,7 @@ const cancelBet = async (req, res) => {
             } else {
                 if (bet.credit > 0)
                     user.credits += bet.credit;
-                console.log(bet.entryFee - bet.credit)
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                console.log(entryETH)
                 user.ETH_balance += entryETH;
             }
             user.totalBetAmount -= bet.entryFee
@@ -426,11 +430,12 @@ const cancelBet = async (req, res) => {
             await user.save();
             bet.status = 'canceled';
             await bet.save();
-            res.json("Bet canceled successfully");
+            user.password = undefined;
+            user.privateKey = undefined;
+            res.json({ betInfo: bet, userInfo: user });
         } else
             res.status(400).json("Bet cannot be removed as it's been over 5 minutes");
     } catch (error) {
-        console.log(error);
         res.status(500).send('Server error');
     }
 }
