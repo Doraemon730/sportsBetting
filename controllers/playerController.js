@@ -112,7 +112,7 @@ const getTopPlayerBy = async (req, res) => {
           _id: '$odds.id', // Group by odds.id
           players: {
             $push: {
-              playerId: '$remoteId',
+              playerId: '$playerId',
               playerName: '$name',
               playerPosition: '$position',
               contestId: '$odds.event',

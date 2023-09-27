@@ -42,16 +42,19 @@ const depositBalance = async (req, res) => {
         const amountETH = web3.utils.fromWei(amountWei, 'ether');
         const amountUSD = await Ether2USD(amountETH)
         const gasPrice = await web3.eth.getGasPrice();
-
         // Get the gas limit
         const gasLimit = await wallet.estimateGas({
             to: mainWalletAddress,
             value: amountWei
         });
 
+        console.log(mainWalletAddress)
+
+
         // Calculate the value to send (userBalance - gasPrice * gasLimit)
         const gasFee = (BigInt(gasPrice) * BigInt(gasLimit));
         const valueToSend = BigInt(amountWei) - (BigInt(gasFee));
+        console.log(gasFee, valueToSend)
         txReceipt = await wallet.sendTransaction({
             to: mainWalletAddress,
             gasPrice: gasPrice,
@@ -87,6 +90,7 @@ const depositBalance = async (req, res) => {
         user.privateKey = undefined;
         res.json({ message: "Deposit Success!", user })
     } catch (error) {
+        console.log(error)
         res.status(500).send('Server error');
     }
 }
