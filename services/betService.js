@@ -3,7 +3,7 @@ const cron = require('node-cron')
 const axios = require('axios');
 const { updateAllPromotion } = require('../controllers/userController');
 const { getETHPriceFromMarket } = require('../controllers/transactionController');
-const { getLiveDataByEvent } = require('../controllers/eventController');
+const { getLiveDataByEvent, getWeeklyEventsMLB, getWeeklyEventsSoccer, getWeeklyEventsNFL } = require('../controllers/eventController');
 const { getRewards } = require('../controllers/betController');
 
 //betJob = cron.schedule
@@ -13,7 +13,7 @@ const cronEtherPriceSchedule = '* * * * *';
 const cronMatchSchedule = '0 * * * *'; //Runs every hour
 const cronWeeklySchedule = '0 0 * * 1'; //Runs every Monday
 const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
-
+const cronWeekEventSchedule = '0 */3 * * *';
 // Define the function to be executed by the cron job
 const cronWednesdayJob = () => {
 
@@ -49,6 +49,12 @@ const cronMatchJob = () => {
   getLiveDataByEvent();
 }
 
+const cronWeekEventJob = () => {
+  getWeeklyEventsMLB();
+  getWeeklyEventsNFL();
+  getWeeklyEventsSoccer();
+}
+
 // Set up the cron job
 module.exports = {
   WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
@@ -57,4 +63,5 @@ module.exports = {
   MatchJob: cron.schedule(cronMatchSchedule, cronMatchJob),
   WeeklyRewardJob: cron.schedule(cronWeeklySchedule, cronWeeklyRewardJob),
   MonthlyRewardJob: cron.schedule(cronMonthlySchedule, cronMonthlyRewardJob),
+  WeekEventJob: cron.schedule(cronWeekEventSchedule, cronWeekEventJob)
 };

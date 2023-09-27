@@ -39,7 +39,7 @@ const SERIEA_COMPETITION_ID = "sr:competition:23";
 const LIGUE1_COMPETITION_ID = "sr:competition:34";
 const BUNDESLIGA_COMPETITION_ID = "sr:competition:35";
 const MLS_COMPETITION_ID = "sr:competition:242";
-
+const SAUDI_COMPETITION_ID = "sr:competition:955";
 const SOCCER_API_BASEURL = "https://api.sportradar.com/soccer/trial/v4";
 
 const YEAR = 2023
@@ -84,5 +84,6 @@ module.exports = {
     LIGUE1_COMPETITION_ID,
     BUNDESLIGA_COMPETITION_ID,
     MLS_COMPETITION_ID,
+    SAUDI_COMPETITION_ID,
     SOCCER_API_BASEURL
 }

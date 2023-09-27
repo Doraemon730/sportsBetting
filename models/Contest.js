@@ -1,24 +1,25 @@
 const mongoose = require('mongoose');
 
 const ContestSchema = new mongoose.Schema({
+
+  eventId: {
+    type: String,
+    required:true,
+  },
   name: {
     type: String,
     required: true
   },
-
-  remoteId: {
-    type: String,
-    required: true
-  },
+  
   season: {
     type: String
-
   },
+
   startTime: {
     type: Date,
     required: true
   },
-  endTime: {
+  endTime: {  
     type: Date
   },
   sportId: {
@@ -27,11 +28,8 @@ const ContestSchema = new mongoose.Schema({
     required: true
   },
 
-  teams: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'team'
-    }
+  competitors: [
+    
   ],
 
   participants: [{
