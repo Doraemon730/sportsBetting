@@ -537,6 +537,11 @@ const remove = async (req, res) => {
   await Player.deleteMany({ sportId: new ObjectId("65131974db50d0c2c8bf7aa7") });
   res.json("Success");
 }
+
+const resetOdds = async (req, res) => {
+  await Player.updateMany({sportId:new ObjectId('650e0b6fb80ab879d1c142c8')}, {odds:[]});
+  res.json("Success");
+}
 const getLiveDataByPlayers = async (req, res) => {
 
   const axios = require('axios');
@@ -596,5 +601,6 @@ module.exports = {
   addNHLPlayersToDatabase,
   addMLBPlayersToDatabase,
   getLiveDataByPlayers,
-  remove
+  remove,
+  resetOdds
 };

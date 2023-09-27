@@ -25,7 +25,10 @@ const {
     fetchWeeklyEventsSerieA,
     fetchWeeklyEventsLigue1,
     fetchWeeklyEventsBundesliga,
-    fetchWeeklyEventsMLS
+    fetchWeeklyEventsMLS,
+    fetchWeeklyEventsSaudi,
+    fetchMLBGameSummary,
+    fetchSoccerEventSummary
 } = require('../services/eventService');
 
 const {
@@ -63,11 +66,26 @@ const getWeeklyEventsNFL = async (req, res) => {
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
-            await myEvent.save();
-
+            
+            
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
-            //console.log(playerProps);
-
+            
+            if(!playerProps)
+                continue;
+            const existingEvent = await Event.findOne({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id:event.sport_event.id});
+            if (existingEvent) {
+                // Event already exists, update it
+                myEvent = existingEvent;
+                // console.log(existingEvent);
+                // await existingEvent.set(myEvent);
+                // await existingEvent.save();
+                // console.log('Event updated!');
+                } else {
+                // Event doesn't exist, insert new event
+                await myEvent.save();
+                console.log('New event inserted!');
+            }   
+            //await myEvent.save();
             for (const playerProp of playerProps) {
                 //console.log(playerProp.player.id);
                 const player = await Player.findOne({
@@ -80,7 +98,7 @@ const getWeeklyEventsNFL = async (req, res) => {
                         srId: market.id
                     });
                     if (!player || !prop) continue;
-                    const index = player.odds.findIndex((odd) => odd.id === prop._id);
+                    const index = player.odds.findIndex(odd => String(odd.id) === String(prop._id));
                     //console.log(market);
                     if (index !== -1) {
                         player.odds[index].value = market.books[0].outcomes[0].open_total;
@@ -95,7 +113,7 @@ const getWeeklyEventsNFL = async (req, res) => {
                 }
                 await player.save();
             }
-            console.log(playerProps);
+            
 
         }
         res.json(events);
@@ -140,15 +158,26 @@ const getWeeklyEventsMLB = async (req, res) => {
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
-            await myEvent.save();
+            
 
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
+            const existingEvent = await Event.findOne({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id:event.sport_event.id});
+            if (existingEvent) {                myEvent = existingEvent;
+                myEvnt = existingEvent;
+                } else {
+                // Event doesn't exist, insert new event
+                await myEvent.save();
+                console.log('New event inserted!');
+            }   
+            //await myEvent.save();
             //console.log(playerProps);
-
+            if(!playerProps)
+                continue;
+            await myEvent.save();
             for (const playerProp of playerProps) {
                 console.log(playerProp.player.id);
                 console.log(playerProp.player.name);
-                const play = players.find(item => item.id === playerProp.player.id);
+                const play = players.find(item => String(item.id) === String(playerProp.player.id));
                 if (!play)
                     continue;
                 const player = await Player.findOne({
@@ -162,7 +191,7 @@ const getWeeklyEventsMLB = async (req, res) => {
                         srId: market.id
                     });
                     if (!prop) continue;
-                    const index = player.odds.findIndex((odd) => odd.id === prop._id);
+                    const index = player.odds.findIndex((odd) => String(odd.id) === String(prop._id));
                     console.log(market);
                     if (index !== -1) {
                         player.odds[index].value = market.books[0].outcomes[0].open_total;
@@ -182,47 +211,92 @@ const getWeeklyEventsMLB = async (req, res) => {
         }
         res.json(events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
         res.json(error.message);
     }
 };
+const competitiorDraft = [
+    "sr:competitor:2817",
+    "sr:competitor:2672",
+    "sr:competitor:17",
+    "sr:competitor:34315",
+    "sr:competitor:2714",
+    "sr:competitor:2687",
+    "sr:competitor:39",
+    "sr:competitor:23400",
+    "sr:competitor:2697",
+    "sr:competitor:1644",
+    "sr:competitor:44",
+    "sr:competitor:1649",
+    "sr:competitor:659691",
+    "sr:competitor:2702"
+];
 
-const getWeeklyEventsUEFA = async (req, res) => {
+const nameDraft = [
+    "Lewandowski, Robert",
+    "Mbappe, Kylian",
+    "Haaland, Erling",
+    "Benzema, Karim",
+    "Osimhen, Victor",
+    "Nunez, Darwin",
+    "Kane, Harry",
+    "Isak, Alexander",
+    "Martinez, Lautaro",
+    "Lacazette, Alexandre",
+    "Lukaku, Romelu",
+    "Messi, Lionel",
+    "Ronaldo, Cristiano"
+];
+const processSoccerEvents = async (mappings, events) => {
     try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
-        const events = await fetchWeeklyEventsUEFA();
-        for(const event of events) {
-            const myEvent = new Event({
+        
+        for(const event of events) {            
+            let myEvent = new Event({
                 id: event.sport_event.id,
                 startTime: event.sport_event.start_time,
                 sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
             });
-            let alias = [];
+            let alias = [], index = -1;
             for (const competitor of event.sport_event.competitors) {                
                 myEvent.competitors.push(competitor);
+                index = competitiorDraft.indexOf(competitor.id);
                 alias.push(competitor.abbreviation);
             }
+            if(index === -1)
+                continue;
             myEvent.name = alias[0] + " vs " + alias[1];
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
             
             const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
+            //console.log(markets);
+             const market = markets.find(item => item.name ==="anytime goalscorer");
             if(!market)
-                continue;
-            await myEvent.save();
+                 continue;
+            const existingEvent = await Event.findOne({sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id:event.sport_event.id});
+            if (existingEvent) {
+                // Event already exists, update it
+                myEvent = existingEvent;
+                // console.log(existingEvent);
+                // await existingEvent.set(myEvent);
+                // await existingEvent.save();
+                // console.log('Event updated!');
+              } else {
+                // Event doesn't exist, insert new event
+                await myEvent.save();
+                console.log('New event inserted!');
+            }            
             for(const play of market.books[0].outcomes){
                 let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
+                if(!player)                {                    
+
                     const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
+                    let name = profile.player.name;
+                    if(nameDraft.indexOf(name) !== -1)
+                    {                       
+                    
+                    console.log("asdf" + profile.player.name);
                     player = new Player({
                         sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
                         name: profile.player.name,
@@ -230,406 +304,123 @@ const getWeeklyEventsUEFA = async (req, res) => {
                         position: profile.player.type,
                         srId: play.player_id,
                         teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
+                    }); 
                     player.odds.push({
                         id: new ObjectId('65132681ccd67ffa439d6ead'),
                         value: 0.5,
                         event: myEvent._id
-                    });                    
+                    });
+                    await player.save();                  
+                    } 
                 }
-                await player.save();                
+                else {
+                    if(player.odds.length) {
+                        player.odds[0].event = myEvent._id;
+                        player.odds[0].value = 0.5;
+                    } else {
+                        player.odds.push({
+                            id: new ObjectId('65132681ccd67ffa439d6ead'),
+                            value: 0.5,
+                            event: myEvent._id
+                        });                    
+                    }
+                    await player.save();                
+                }
+                
             }
         }
+    } catch(error) {
+        console.log(error);
+    }
+}
+const getWeeklyEventsUEFA = async (mappings) => {
+    try{        
+        const events = await fetchWeeklyEventsUEFA();        
+        console.log("UEFA");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
-const getWeeklyEventsLaLiga = async (req, res) => {
-    try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+const getWeeklyEventsSaudi = async (mappings) => {
+    try{        
+        const events = await fetchWeeklyEventsSaudi();        
+        console.log("Saudi");
+        await processSoccerEvents(mappings, events);
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+const getWeeklyEventsLaLiga = async (mappings) => {
+    try{        
         const events = await fetchWeeklyEventsLaLiga();
-        for(const event of events) {
-            const myEvent = new Event({
-                id: event.sport_event.id,
-                startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
-            });
-            let alias = [];
-            for (const competitor of event.sport_event.competitors) {                
-                myEvent.competitors.push(competitor);
-                alias.push(competitor.abbreviation);
-            }
-            myEvent.name = alias[0] + " vs " + alias[1];
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
-            if (mapping)
-                myEvent.matchId = mapping.external_id;
-            
-            const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                continue;
-            await myEvent.save();
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
-                    const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });                    
-                }
-                await player.save();                
-            }
-        }
+        console.log("LaLiga");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
-const getWeeklyEventsPremierLeague = async (req, res) => {
-    try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+const getWeeklyEventsPremierLeague = async (mappings) => {
+    try{        
         const events = await fetchWeeklyEventsPremierLeague();
-        for(const event of events) {
-            const myEvent = new Event({
-                id: event.sport_event.id,
-                startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
-            });
-            let alias = [];
-            for (const competitor of event.sport_event.competitors) {                
-                myEvent.competitors.push(competitor);
-                alias.push(competitor.abbreviation);
-            }
-            myEvent.name = alias[0] + " vs " + alias[1];
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
-            if (mapping)
-                myEvent.matchId = mapping.external_id;
-            
-            const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                continue;
-            await myEvent.save();
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
-                    const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });                    
-                }
-                await player.save();                
-            }
-        }
+        console.log("PremierLeague");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
-const getWeeklyEventsSerieA = async (req, res) => {
+const getWeeklyEventsSerieA = async (mappings) => {
     try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+       
         const events = await fetchWeeklyEventsSerieA();
-        for(const event of events) {
-            const myEvent = new Event({
-                id: event.sport_event.id,
-                startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
-            });
-            let alias = [];
-            for (const competitor of event.sport_event.competitors) {                
-                myEvent.competitors.push(competitor);
-                alias.push(competitor.abbreviation);
-            }
-            myEvent.name = alias[0] + " vs " + alias[1];
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
-            if (mapping)
-                myEvent.matchId = mapping.external_id;
-            
-            const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                continue;
-            await myEvent.save();
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
-                    const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });                    
-                }
-                await player.save();                
-            }
-        }
+        console.log("SerieA");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
-const getWeeklyEventsLigue1 = async (req, res) => {
-    try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+const getWeeklyEventsLigue1 = async (mappings) => {
+    try{       
         const events = await fetchWeeklyEventsLigue1();
-        for(const event of events) {
-            const myEvent = new Event({
-                id: event.sport_event.id,
-                startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
-            });
-            let alias = [];
-            for (const competitor of event.sport_event.competitors) {                
-                myEvent.competitors.push(competitor);
-                alias.push(competitor.abbreviation);
-            }
-            myEvent.name = alias[0] + " vs " + alias[1];
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
-            if (mapping)
-                myEvent.matchId = mapping.external_id;
-            
-            const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                continue;
-            await myEvent.save();
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
-                    const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });                    
-                }
-                await player.save();                
-            }
-        }
+        console.log("Ligue1");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
-const getWeeklyEventsBundesliga = async (req, res) => {
-    try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+const getWeeklyEventsBundesliga = async (mappings) => {
+    try{        
         const events = await fetchWeeklyEventsBundesliga();
-        for(const event of events) {
-            const myEvent = new Event({
-                id: event.sport_event.id,
-                startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
-            });
-            let alias = [];
-            for (const competitor of event.sport_event.competitors) {                
-                myEvent.competitors.push(competitor);
-                alias.push(competitor.abbreviation);
-            }
-            myEvent.name = alias[0] + " vs " + alias[1];
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
-            if (mapping)
-                myEvent.matchId = mapping.external_id;
-            
-            const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                continue;
-            await myEvent.save();
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
-                    const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });                    
-                }
-                await player.save();                
-            }
-        }
+        console.log("Bundesliga");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
-const getWeeklyEventsMLS = async (req, res) => {
+const getWeeklyEventsMLS = async (mappings) => {
     try{
-        const mappings = await fetchEventMapping();
-        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
-            message: 'No events found'
-        });
+       
         const events = await fetchWeeklyEventsMLS();
-        for(const event of events) {
-            const myEvent = new Event({
-                id: event.sport_event.id,
-                startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
-            });
-            let alias = [];
-            for (const competitor of event.sport_event.competitors) {                
-                myEvent.competitors.push(competitor);
-                alias.push(competitor.abbreviation);
-            }
-            myEvent.name = alias[0] + " vs " + alias[1];
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
-            if (mapping)
-                myEvent.matchId = mapping.external_id;
-            
-            const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            console.log(markets);
-            const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                continue;
-            await myEvent.save();
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)
-                {
-                    console.log(play);
-                    const profile = await fetchSoccerPlayerProfile(play.player_id);
-                    console.log(profile);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    });                    
-                }
-                if(player.odds.length) {
-                    player.odds[0].event = myEvent._id;
-                    player.odds[0].value = 0.5;
-                } else {
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });                    
-                }
-                await player.save();                
-            }
-        }
+        console.log("MLS");
+        await processSoccerEvents(mappings, events);
     } catch (error) {
         console.log(error.message);
     }
 };
 const getWeeklyEventsSoccer = async(req, res) => {
     try{
-        await getWeeklyEventsUEFA();
-        await getWeeklyEventsLaLiga();
-        await getWeeklyEventsPremierLeague();
-        await getWeeklyEventsSerieA();
-        await getWeeklyEventsLigue1();
-        await getWeeklyEventsBundesliga();
-        await getWeeklyEventsMLS();
+        const mappings = await fetchEventMapping();
+        if (!mappings || !Array.isArray(mappings)) return res.status(400).send({
+            message: 'No events found'
+        });
+        await getWeeklyEventsUEFA(mappings);
+        await getWeeklyEventsLaLiga(mappings);
+        await getWeeklyEventsPremierLeague(mappings);
+        await getWeeklyEventsSerieA(mappings);
+        await getWeeklyEventsLigue1(mappings);
+        await getWeeklyEventsBundesliga(mappings);
+        await getWeeklyEventsMLS(mappings);
+        await getWeeklyEventsSaudi(mappings);
         res.json("success");
     } catch(error) {
         console.log(error.message);
@@ -708,8 +499,8 @@ const getLiveDataByEvent = async () => {
                             $set: {
                                 state: 2
                             }
-                        })
-
+                        });
+                        updateBet(event._id);
                         stream.abort();
                     }
                 });
@@ -837,56 +628,74 @@ const updateNFLBet = async (event) => {
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
         const fieldGoalStats = summarizeStatsByPlayer(statistics, 'field_goals');
         const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
-        for(const bet of event.particiapnts){
+        for(const bet of event.participants){
             //const pick = bet.picks.find(item => item.contestId === event._id);
-            let finished = 0, win = 0;
+            if(bet.status != 'pending')
+                continue;
+            let finished = 0, win = 0, refund = 0;
             for(const pick of bet.picks) {
-                if(pick.contestId.equals(event._id)){
+                if(String(pick.contestId) === String(event._id)){
                     let result, play;
                     const player = await Player.findById(pick.playerId);
                     switch(pick.prop.propName){
                         case 'Rush Yards':
-                            play = rushingStats.find(item=> item.player === player.name);
-                            result = play.yards;
+                            play = rushingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.yards;
                             
                             break;
                         case 'Pass Yards':
-                            play = passingStats.find(item=> item.player === player.name);
-                            result = play.yards;
+                            play = passingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.yards;
                             break;
                         case 'Pass Attempts':
-                            play = passingStats.find(item=> item.player === player.name);
-                            result = play.attempts;
+                            play = passingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.attempts;
                             break;
                         case 'Pass Completions':
-                            play = passingStats.find(item=> item.player === player.name);
-                            result = play.completions;
+                            play = passingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.completions;
                             break;
                         case 'Pass TDs':
-                            play = passingStats.find(item=> item.player === player.name);
-                            result = play.touchdown;
+                            play = passingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.touchdown;
                             break;
                         case 'INT':
-                            play = passingStats.find(item=> item.player === player.name);
-                            result = play.interceptions;
+                            play = passingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.interceptions;
                             break;
                         case 'Receiving Yards':
-                            play = receivingStats.find(item=> item.player === player.name);
-                            result = play.yards;
+                            play = receivingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.yards;
                             break;
                         case 'Receptions':
-                            play = receivingStats.find(item=> item.player === player.name);
-                            result = play.receptions;
+                            play = receivingStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.receptions;
                             break;
                         case 'FG Made':
-                            play = fieldGoalStats.find(item => item.player === player.name);
-                            result = play.made;
+                            play = fieldGoalStats.find(item=> item.id === player.remoteId);
+                            if(play)
+                                result = play.made;
                             break;
                         case 'Tackles+Ast':
+                            play = defenseStats.find(item => item.id === player.remoteId)
+                            if(play)
+                                result = play.tackles + play.assists;
                             break;
                     }
-                    pick.result = result;
-                    bet.picks[bet.picks.indexOf(pick)] = pick;
+                    if(!play)
+                        refund = 1;
+                    else {
+                        pick.result = result;
+                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                    }
                 }
                 if(pick.result) {
                     finished += 1;
@@ -896,162 +705,235 @@ const updateNFLBet = async (event) => {
                     }
                 }
             }
+            if (refund)
+            {
+                const user = await User.findById(bet.userId);
+                if (bet.credit > 0)
+                    user.credits += bet.credit;
+                let entryFee = await Ether2USD(bet.entryFee);
+                let entryETH = await USD2Ether(entryFee - bet.credit);
+                user.ETH_balance += entryETH;
+        
+                await user.save();
+                bet.status = 'refund';
+                await bet.save();
+                continue;
+            }
             if (finished == bet.picks.length) {
-                if (bet.parlay) {
-                  switch (bet.parlayIndex) {
-                    case 1:
+                
+                  switch (finished) {
                     case 2:
+                      if (win == 2) {
+                        bet.prize = bet.entryFee * BET_2_2_HIGH;
+                        bet.status = "win"
+                      } else {
+                        bet.prize = 0;
+                        bet.status = "lost"
+                      }
+                      break;
                     case 3:
-                    case 4:
-                    case 5:
-                      const betDate = bet.createdAt;
-                      betDate.setTime(0, 0, 0, 0);
-                      const nextBet = await Bet.findOne({
-                        userId: bet.userId,
-                        createdAt: {
-                          $gte: today,
-                          $lt: new Date(today.getTime() + 86400000),
-                        },
-                        parlay: true,
-                        parlayIndex: bet.parlayIndex + 1
-                      });
-                      if (!nextBet)
-                        return;
-                      switch (finished) {
+                      switch (win) {
                         case 2:
-                          if (win == 2) {
-                            bet.prize = bet.entryFee * BET_2_2_HIGH;
-                            bet.status = "win"
-                          } else {
-                            bet.prize = 0;
-                            bet.status = "lost"
-                          }
+                          bet.prize = bet.entryFee * BET_2_3_LOW;
+                          bet.status = "win"
                           break;
                         case 3:
-                          switch (win) {                            
-                            case 3:                             
-                              bet.prize = bet.entryFee * BET_3_3_HIGH;                              
-                              bet.status = "win"
-                              break;
-                            default:
-                              bet.prize = 0;
-                              bet.status = "lost"
-                              break;
-                          }
-                          break;
-                        case 4:
-                          switch (win) {                            
-                            case 4:                             
-                              bet.prize = bet.entryFee * BET_4_4_HIGH;                             
-                              bet.status = "win"
-                              break;
-                            default:
-                              bet.prize = 0;
-                              bet.status = "lost"
-                              break;
-                          };
-                          break;
-                        case 5:
-                          switch (win) {                            
-                            case 5:
-                              bet.prize = bet.entryFee * BET_5_5_LOW;
-                              bet.status = "win"
-                              break;
-                              defaut:
-                              bet.prize = 0;
-                              bet.status = "lost";
-                              break;
-                          }
-                          break;
-                        case 6:
-                          switch (win) {                           
-                            case 6:
-                              bet.prize = bet.entryFee * BET_6_6_LOW;
-                              bet.status = "win"
-                              break;
-                              defaut:
-                              bet.prize = 0;
-                              bet.status = "lost"
-                              break;
-                          }
+                          if (bet.betType.equals("high"))
+                            bet.prize = bet.entryFee * BET_3_3_HIGH;
+                          else
+                            bet.prize = bet.entryFee * BET_3_3_LOW;
+                          bet.status = "win"
                           break;
                         default:
+                          bet.prize = 0;
+                          bet.status = "lost"
                           break;
                       }
-                      nextBet.entryFee = bet.prize;
-                      await nextBet.save();
+                      break;
+                    case 4:
+                      switch (win) {
+                        case 3:
+                          bet.prize = bet.entryFee * BET_3_4_LOW;
+                          bet.status = "win"
+                          break;
+                        case 4:
+                          if (bet.betType.equals("high"))
+                            bet.prize = bet.entryFee * BET_4_4_HIGH;
+                          else
+                            bet.prize = bet.entryFee * BET_4_4_LOW;
+                          bet.status = "win"
+                          break;
+                        default:
+                          bet.prize = 0;
+                          bet.status = "lost"
+                          break;
+                      };
+                      break;
+                    case 5:
+                      switch (win) {
+                        case 3:
+                          bet.prize = bet.entryFee * BET_3_5_LOW;
+                          bet.status = "win"
+                          break;
+                        case 4:
+                          bet.prize = bet.entryFee * BET_4_5_LOW;
+                          bet.status = "win"
+                          break;
+                        case 5:
+                          bet.prize = bet.entryFee * BET_5_5_LOW;
+                          bet.status = "win"
+                          break;
+                          defaut:
+                          bet.prize = 0;
+                          bet.status = "lost";
+                          break;
+                      }
                       break;
                     case 6:
-                      switch (finished) {
-                        case 2:
-                          if (win == 2) {
-                            bet.prize = bet.entryFee * BET_2_2_HIGH;
-                            bet.status = "win"
-                          } else {
-                            bet.prize = 0;
-                            bet.status = "lost"
-                          }
-                          break;
-                        case 3:
-                          switch (win) {                            
-                            case 3:
-                            bet.prize = bet.entryFee * BET_3_3_HIGH;                             
-                              bet.status = "win"
-                              break;
-                            default:
-                              bet.prize = 0;
-                              bet.status = "lost"
-                              break;
-                          }
-                          break;
+                      switch (win) {
                         case 4:
-                          switch (win) {                          
-                            case 4:                              
-                              bet.prize = bet.entryFee * BET_4_4_HIGH;
-                              bet.status = "win"
-                              break;
-                            default:
-                              bet.prize = 0;
-                              bet.status = "lost"
-                              break;
-                          };
+                          bet.prize = bet.entryFee * BET_4_6_LOW;
+                          bet.status = "win"
                           break;
                         case 5:
-                          switch (win) {
-                           
-                            case 5:
-                              bet.prize = bet.entryFee * BET_5_5_LOW;
-                              bet.status = "win"
-                              break;
-                              defaut:
-                              bet.prize = 0;
-                              bet.status = "lost";
-                              break;
-                          }
+                          bet.prize = bet.entryFee * BET_5_6_LOW;
+                          bet.status = "win"
                           break;
                         case 6:
-                          switch (win) {                           
-                            case 6:
-                              bet.prize = bet.entryFee * BET_6_6_LOW;
-                              bet.status = "win"
-                              break;
-                            defaut:
-                              bet.prize = 0;
-                              bet.status = "lost"
-                              break;
-                          }
+                          bet.prize = bet.entryFee * BET_6_6_LOW;
+                          bet.status = "win"
                           break;
-                        default:
+                          defaut:
+                          bet.prize = 0;
+                          bet.status = "lost"
                           break;
-                      }
-                      if (bet.status == "win") {
-      
-                        await addPrizeTransaction(bet.userId, bet.prize);
-      
                       }
                       break;
+                    default:
+                      break;
                   }
+                  if (bet.status == "win")
+                    await addPrizeTransaction(bet.userId, bet.prize);
+                
+                if (bet.status == 'win') {
+                  const user = await User.findById(bet.userId);
+                  if (user) {
+                    user.wins += 1;
+                   
+                  }
+                  await user.save();
+                  await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
+                  await updateCapital(2, await USD2Ether(bet.entryFee));
+                }
+              }            
+              await bet.save();        
+        }
+
+    } catch (error) {
+        console.log(error.message);
+    }
+};
+
+const summarizeMLBStatsByPlayer = (data, category) => {
+    const homeStats = data.game.home.players;
+    const awayStats = data.game.away.players;
+
+
+    return [...homeStats, ...awayStats];
+  
+};
+const updateMLBBet = async (event) => {
+    try{
+        
+        const summary = await fetchMLBGameSummary(event.matchId);
+        const players = summarizeMLBStatsByPlayer(summary);
+        for(const bet of event.participants){
+            //const pick = bet.picks.find(item => item.contestId === event._id);
+            if(bet.status != 'pending')
+                continue;
+            let finished = 0, win = 0, refund = 0;
+            for(const pick of bet.picks) {
+                if(pick.contestId.equals(event._id)){
+                    let result, play;
+                    const player = await Player.findById(pick.playerId);
+                    play = players.find(item => item.id === player.remoteId);
+                    if(!play)
+                        continue;
+                    switch(pick.prop.propName){
+                        case 'Pitcher Strikeouts':                            
+                            if(play.hitting)
+                                result = play.statistics.hitting.overall.outs.ktotal ?
+                                play.statistics.hitting.overall.outs.ktotal: 0;                            
+                            else (play.pitching)
+                                result = play.statistics.pitching.overall.outs.ktotal ?
+                                play.statistics.pitching.overall.outs.ktotal: 0;                            
+                            break;
+                        case 'Total Bases':                            
+                            if(play.hitting)
+                                result = play.statistics.hitting.overall.onbase.tb ?
+                                play.statistics.hitting.overall.onbase.tb: 0;                            
+                            else (play.pitching)
+                                result = play.statistics.pitching.overall.onbase.tb ?
+                                play.statistics.pitching.overall.onbase.tb: 0;                            
+                            break;
+                        case 'Earned Runs':                            
+                            if(play.hitting)
+                                result = play.statistics.hitting.overall.runs.earned ?
+                                play.statistics.hitting.overall.runs.earned: 0;                            
+                            else (play.pitching)
+                                result = play.statistics.pitching.overall.runs.earned ?
+                                play.statistics.pitching.overall.runs.earned: 0;                            
+                            break;
+                        case 'Total Hits':
+                            if(play.hitting)
+                                result = play.statistics.hitting.overall.onbase.h ?
+                                play.statistics.hitting.overall.onbase.h: 0;                            
+                            else (play.pitching)
+                                result = play.statistics.pitching.overall.onbase.h ?
+                                play.statistics.pitching.overall.onbase.h: 0;                            
+                            break;
+                            
+                        case 'Total Runs':
+                            //play = passingStats.find(item=> item.id === player.remoteId);
+                            if(play.hitting)
+                                result = play.statistics.hitting.overall.runs.total ?
+                                play.statistics.hitting.overall.runs.total: 0;                            
+                            else (play.pitching)
+                                result = play.statistics.pitching.overall.runs.total ?
+                                play.statistics.pitching.overall.runs.total: 0;                            
+                            break;                        
+                    }
+                    if(!play)
+                        refund = 1;
+                    else {
+                        pick.result = result;
+                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                    }
+                }
+                if(pick.result) {
+                    finished += 1;
+                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                        win += 1;
+                    }
+                }
+            }
+            if (refund)
+            {
+                const user = await User.findById(bet.userId);
+                if (bet.credit > 0)
+                    user.credits += bet.credit;
+                let entryFee = await Ether2USD(bet.entryFee);
+                let entryETH = await USD2Ether(entryFee - bet.credit);
+                user.ETH_balance += entryETH;
+        
+                await user.save();
+                bet.status = 'refund';
+                await bet.save();
+                continue;
+            }
+            if (finished == bet.picks.length) {
                   switch (finished) {
                     case 2:
                       if (win == 2) {
@@ -1157,15 +1039,176 @@ const updateNFLBet = async (event) => {
                 } else {
                   await updateCapital(2, await USD2Ether(bet.entryFee));
                 }
-              }
+              
       
               await bet.save();
             
         }
-
     } catch (error) {
         console.log(error.message);
     }
+}
+const getSoccerPlayers = (data) => {
+
+    let homePlayers = data.totals.competitors[0];
+    let awayPlayers = data.totals.competitors[1];
+    return [...homePlayers, ...awayPlayers];
+}
+const updateSoccerBet = async (event) => {
+    try {
+        let statistics = await fetchSoccerEventSummary(event.id);
+        let players = getSoccerPlayers(statistics);
+        for(const bet of event.participants){
+            if(bet.status != 'pending')
+                continue;
+            let finished = 0, win = 0, refund = 0;
+            for (const pick of bet.picks) {
+                if(String(pick.contestId) === String(event._id)){
+                    let result, play;
+                    const player = await Player.findById(pick.playerId);
+                    play = players.find(item=>item.id === player.srId && item.starter === true);
+                    if(play) {
+                        result = player.statistics.goals_scored;
+                        pick.result = result;
+                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                    } else
+                        refund = 1;                    
+                }
+                if(pick.result) {
+                    finished += 1;
+                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                        win += 1;
+                    }
+                }
+            }
+            if (refund)
+            {
+                const user = await User.findById(bet.userId);
+                if (bet.credit > 0)
+                    user.credits += bet.credit;
+                let entryFee = await Ether2USD(bet.entryFee);
+                let entryETH = await USD2Ether(entryFee - bet.credit);
+                user.ETH_balance += entryETH;    
+                await user.save();
+                bet.status = 'refund';
+                await bet.save();
+                continue;
+            }
+            if (finished == bet.picks.length) {
+                
+                  switch (finished) {
+                    case 2:
+                      if (win == 2) {
+                        bet.prize = bet.entryFee * BET_2_2_HIGH;
+                        bet.status = "win"
+                      } else {
+                        bet.prize = 0;
+                        bet.status = "lost"
+                      }
+                      break;
+                    case 3:
+                      switch (win) {
+                        case 2:
+                          bet.prize = bet.entryFee * BET_2_3_LOW;
+                          bet.status = "win"
+                          break;
+                        case 3:
+                          if (bet.betType.equals("high"))
+                            bet.prize = bet.entryFee * BET_3_3_HIGH;
+                          else
+                            bet.prize = bet.entryFee * BET_3_3_LOW;
+                          bet.status = "win"
+                          break;
+                        default:
+                          bet.prize = 0;
+                          bet.status = "lost"
+                          break;
+                      }
+                      break;
+                    case 4:
+                      switch (win) {
+                        case 3:
+                          bet.prize = bet.entryFee * BET_3_4_LOW;
+                          bet.status = "win"
+                          break;
+                        case 4:
+                          if (bet.betType.equals("high"))
+                            bet.prize = bet.entryFee * BET_4_4_HIGH;
+                          else
+                            bet.prize = bet.entryFee * BET_4_4_LOW;
+                          bet.status = "win"
+                          break;
+                        default:
+                          bet.prize = 0;
+                          bet.status = "lost"
+                          break;
+                      };
+                      break;
+                    case 5:
+                      switch (win) {
+                        case 3:
+                          bet.prize = bet.entryFee * BET_3_5_LOW;
+                          bet.status = "win"
+                          break;
+                        case 4:
+                          bet.prize = bet.entryFee * BET_4_5_LOW;
+                          bet.status = "win"
+                          break;
+                        case 5:
+                          bet.prize = bet.entryFee * BET_5_5_LOW;
+                          bet.status = "win"
+                          break;
+                          defaut:
+                          bet.prize = 0;
+                          bet.status = "lost";
+                          break;
+                      }
+                      break;
+                    case 6:
+                      switch (win) {
+                        case 4:
+                          bet.prize = bet.entryFee * BET_4_6_LOW;
+                          bet.status = "win"
+                          break;
+                        case 5:
+                          bet.prize = bet.entryFee * BET_5_6_LOW;
+                          bet.status = "win"
+                          break;
+                        case 6:
+                          bet.prize = bet.entryFee * BET_6_6_LOW;
+                          bet.status = "win"
+                          break;
+                          defaut:
+                          bet.prize = 0;
+                          bet.status = "lost"
+                          break;
+                      }
+                      break;
+                    default:
+                      break;
+                  }
+                  if (bet.status == "win")
+                    await addPrizeTransaction(bet.userId, bet.prize);
+                
+                if (bet.status == 'win') {
+                  const user = await User.findById(bet.userId);
+                  if (user) {
+                    user.wins += 1;
+                   
+                  }
+                  await user.save();
+                  await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                } else {
+                  await updateCapital(2, await USD2Ether(bet.entryFee));
+                }
+              }            
+              await bet.save(); 
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+
 };
 
 const updateBet = async (eventId) => {
@@ -1178,10 +1221,16 @@ const updateBet = async (eventId) => {
         if (event.sportId === new ObjectId('650e0b6fb80ab879d1c142c8')) {
             updateNFLBet(event);
         }
+        if (event.sportId === new ObjectId('65108fcf4fa2698548371fc0')) {
+            updateMLBBet(event);
+        }
+        if (event.sportID === new ObjectId('65131974db50d0c2c8bf7aa7')) {
+            updateSoccerBet(event)
+        }
     } catch (error) {
         console.log(error.message);
     }
-}
+};
 
 module.exports = {
     getWeeklyEventsNFL,

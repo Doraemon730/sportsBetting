@@ -6,11 +6,13 @@ const apiNBAKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
 const apiNHLKey = process.env.NHL_API_KEY;
 const apiMLBKey = process.env.MLB_API_KEY;
+const SOCCER_API_KEY = process.env.SOCCER_API_KEY;
 const {
   NBA_API_BASEURL,
   LOCALE,
   NFL_API_BASEURL,
   NHL_API_BASEURL,
+  SOCCER_API_BASEURL,
   MLB_API_BASEURL,
   ODDS_API_BASEURL,
   NFL_COMPETITION_ID,
@@ -21,7 +23,8 @@ const {
   SERIEA_COMPETITION_ID,
   LIGUE1_COMPETITION_ID,
   BUNDESLIGA_COMPETITION_ID,
-  MLS_COMPETITION_ID
+  MLS_COMPETITION_ID,
+  SAUDI_COMPETITION_ID
 } = require('../config/constant');
 
 const fetchEventMapping = async () => {
@@ -72,7 +75,8 @@ const fetchWeeklyEventsMLB = async () => {
 const fetchEventPlayerProps = async (event) => {
     return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/sport_events/${event}/players_props.json?api_key=${apiOddsKey}`)
   .then(response => {
-    const playerProps = response.data.sport_event_players_props.players_props;
+    const playerProps = response.data.sport_event_players_props.players_props?
+    response.data.sport_event_players_props.players_props: response.data.sport_event_players_props.players_markets;
 
     return playerProps;
   })
@@ -91,9 +95,29 @@ const fetchNFLGameSummary = async (matchId) => {
         console.log('Error retrieving NFL schedule:' + error);
     });
 }
+const fetchMLBGameSummary = async (matchId) => {
+    return axios.get(`${MLB_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiMLBKey}`)
+    .then(response => {
+        const summary = response.data;
+        return summary;
+    })
+    .catch(error => {
+        console.log('Error retrieving MLB schedule:' + error);
+    });
+}
 // Soccer Games
+const fetchWeeklyEventsSaudi = async () => {
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${SAUDI_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
+    .then(response => {
+        const events = response.data.schedules;        
+        return events;
+    })
+    .catch(error => {
+        console.log('Error retrieving MLB Events:' + error);
+    });
+}
 const fetchWeeklyEventsUEFA = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${UEFA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&limit=10`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${UEFA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -103,7 +127,7 @@ const fetchWeeklyEventsUEFA = async () => {
     });
 }
 const fetchWeeklyEventsLaLiga = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${LALIGA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${LALIGA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -113,7 +137,7 @@ const fetchWeeklyEventsLaLiga = async () => {
     });
 }
 const fetchWeeklyEventsPremierLeague = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${PREMEIER_LEAGUE_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${PREMEIER_LEAGUE_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -123,7 +147,7 @@ const fetchWeeklyEventsPremierLeague = async () => {
     });
 }
 const fetchWeeklyEventsSerieA = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${SERIEA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${SERIEA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -133,7 +157,7 @@ const fetchWeeklyEventsSerieA = async () => {
     });
 }
 const fetchWeeklyEventsLigue1 = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${LIGUE1_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${LIGUE1_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -143,7 +167,7 @@ const fetchWeeklyEventsLigue1 = async () => {
     });
 }
 const fetchWeeklyEventsBundesliga = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${BUNDESLIGA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${BUNDESLIGA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=10&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -151,9 +175,10 @@ const fetchWeeklyEventsBundesliga = async () => {
     .catch(error => {
         console.log('Error retrieving MLB Events:' + error);
     });
-}
+};
+
 const fetchWeeklyEventsMLS = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${MLS_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${MLS_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=3&start=0`)
     .then(response => {
         const events = response.data.schedules;        
         return events;
@@ -161,7 +186,8 @@ const fetchWeeklyEventsMLS = async () => {
     .catch(error => {
         console.log('Error retrieving MLB Events:' + error);
     });
-}
+};
+
 const fetchSoccerPlayerProps = async (event) => {
     return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/sport_events/${event}/players_props.json?api_key=${apiOddsKey}`)
   .then(response => {
@@ -172,7 +198,18 @@ const fetchSoccerPlayerProps = async (event) => {
   .catch(error => {
     console.log('Error retrieving NBA schedule:' + error);
   });
+};
+
+const fetchSoccerEventSummary = async (eventId) => {
+    return axios.get(`${SOCCER_API_BASEURL}/${LOCALE}/sport_events/${eventId}/summary.json?api_key=${SOCCER_API_KEY}`)
+    .then(response => {
+        const statistics = response.data.statistics;
+    })
+    .catch(error => {
+        console.log('Error retrieving Soccer Event Summary' + error);
+    })
 }
+
 module.exports = {
     fetchWeeklyEventsNFL,
     fetchEventPlayerProps,
@@ -180,6 +217,7 @@ module.exports = {
     fetchWeeklyEventsMLB,
     fetchPlayerMapping,
     fetchNFLGameSummary,
+    fetchMLBGameSummary,
     fetchSoccerPlayerProps,
     fetchWeeklyEventsUEFA,
     fetchWeeklyEventsLaLiga,
@@ -187,6 +225,8 @@ module.exports = {
     fetchWeeklyEventsSerieA,
     fetchWeeklyEventsLigue1,
     fetchWeeklyEventsBundesliga,
-    fetchWeeklyEventsMLS
+    fetchWeeklyEventsMLS,
+    fetchWeeklyEventsSaudi,
+    fetchSoccerEventSummary
 };
 

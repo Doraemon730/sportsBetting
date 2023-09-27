@@ -463,10 +463,12 @@ const cancelBet = async (req, res) => {
                 user.credits += bet.credit;
             user.ETH_balance += USD2Ether(Ether2USD(bet.entryFee) - bet.credit);
             await user.save();
-            await Bet.deleteOne({ _id: new ObjectId(betId) });
-            res.json("Bet removed successfully");
+            bet.status = 'canceled';
+            await bet.save();
+            //await Bet.deleteOne({ _id: new ObjectId(betId) });
+            res.json("Bet canceled successfully");
         } else
-            res.status(400).json("Bet cannot be removed as it is older than 5 minutes");
+            res.status(400).json("Bet cannot be canceled as it is older than 5 minutes");
     } catch (error) {
         res.status(500).send('Server error');
     }
