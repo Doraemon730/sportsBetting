@@ -123,6 +123,7 @@ const getTopPlayerBy = async (req, res) => {
               contestName: '$event.name',
               contestStartTime: '$event.startTime',
               overUnder: "over",
+              propId: '$prop._id',
               propName: '$prop.displayName'
             }
           }
