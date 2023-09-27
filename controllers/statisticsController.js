@@ -10,19 +10,30 @@ const updateTotal = async () => {
                 _id: -1
             }
         });
-        if (now.getDate() === statistic.date.getDate()) {
-            statistic.total_users++;
-            statistic.daily_users++;
-            await statistic.save();
-        } else {
+
+        if (!statistic) {
             const newstatistic = new Statistics({
                 date: now,
-                total_users: statistic.total_users + 1,
-                daily_users: 1,
-                total_bet_amount: statistic.total_bet_amount,
-                total_bet_users: statistic.total_bet_users,
+                total_users: 1,
+                daily_users: 1
             });
             await newstatistic.save();
+        }
+        else {
+            if (now.getDate() === statistic.date.getDate()) {
+                statistic.total_users++;
+                statistic.daily_users++;
+                await statistic.save();
+            } else {
+                const newstatistic = new Statistics({
+                    date: now,
+                    total_users: statistic.total_users + 1,
+                    daily_users: 1,
+                    total_bet_amount: statistic.total_bet_amount,
+                    total_bet_users: statistic.total_bet_users,
+                });
+                await newstatistic.save();
+            }
         }
 
     } catch (error) {
