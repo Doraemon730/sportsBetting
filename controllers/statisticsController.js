@@ -10,19 +10,30 @@ const updateTotal = async () => {
                 _id: -1
             }
         });
-        if (now.getDate() === statistic.date.getDate()) {
-            statistic.total_users++;
-            statistic.daily_users++;
-            await statistic.save();
-        } else {
+
+        if (!statistic) {
             const newstatistic = new Statistics({
                 date: now,
-                total_users: statistic.total_users + 1,
-                daily_users: 1,
-                total_bet_amount: statistic.total_bet_amount,
-                total_bet_users: statistic.total_bet_users,
+                total_users: 1,
+                daily_users: 1
             });
             await newstatistic.save();
+        }
+        else {
+            if (now.getDate() === statistic.date.getDate()) {
+                statistic.total_users++;
+                statistic.daily_users++;
+                await statistic.save();
+            } else {
+                const newstatistic = new Statistics({
+                    date: now,
+                    total_users: statistic.total_users + 1,
+                    daily_users: 1,
+                    total_bet_amount: statistic.total_bet_amount,
+                    total_bet_users: statistic.total_bet_users,
+                });
+                await newstatistic.save();
+            }
         }
 
     } catch (error) {
@@ -39,7 +50,7 @@ const updateBetWithNew = async (amount) => {
             }
         });
         if (statistic && now.getDate() === statistic.date.getDate()) {
-
+            statistic.daily_bets++;
             statistic.daily_bet_users++;
             statistic.total_bets++;
             statistic.total_bet_users++;
@@ -60,6 +71,7 @@ const updateBetWithNew = async (amount) => {
                 total_bets,
                 total_bet_users,
                 total_bet_amount,
+                daily_bets: 1,
                 daily_bet_users: 1,
                 daily_bet_amount: amount,
             });
@@ -83,6 +95,7 @@ const updateBetWithDaily = async (isFirst, amount) => {
             if (isFirst)
                 statistic.daily_bet_users++;
             statistic.total_bets += 1;
+            statistic.daily_bets += 1;
             statistic.total_bet_amount += amount;
             statistic.daily_bet_amount += amount;
             await statistic.save();
@@ -92,6 +105,7 @@ const updateBetWithDaily = async (isFirst, amount) => {
                 total_bets: statistic.total_bets + 1,
                 total_bet_amount: statistic.total_bet_amount + amount,
                 daily_bet_users: 1,
+                daily_bets: 1,
                 daily_bet_amount: amount,
             });
             await newstatistic.save();

@@ -3,6 +3,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const path = require('path');
 const bodyParser = require('body-parser');
+const rateLimit = require('express-rate-limit');
 // const https = require('https');
 // const fs = require('fs');
 
@@ -29,6 +30,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+// Apply rate limiting middleware
+const limiter = rateLimit({
+  windowMs: 1 * 1000, // 1 second
+  max: 100, // Adjust the maximum number of requests per minute as per your requirements
+  message: 'Too many requests, please try again later.',
+  keyGenerator: (req) => {
+    // Generate a unique key based on the user's IP address
+    return req.ip;
+  },
+});
+app.use(limiter);
 
 // Define Routes
 const apiRoutes = require('./routes/routes');
