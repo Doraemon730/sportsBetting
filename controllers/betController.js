@@ -157,7 +157,10 @@ const getAllBetsByUserId = async (req, res) => {
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
             select: '_id name position jerseyNumber headshot'
-        });
+        }).populate({
+            path: 'picks.contestId',
+            select: '_id startTime name'
+        });;
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
@@ -196,7 +199,10 @@ const getAllBetsByUserIdAdmin = async (req, res) => {
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
             select: '_id name position jerseyNumber headshot'
-        });
+        }).populate({
+            path: 'picks.contestId',
+            select: '_id startTime name'
+        });;
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
@@ -234,9 +240,13 @@ const getAllBets = async (req, res) => {
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
             select: '_id name position jerseyNumber headshot'
+        }).populate({
+            path: 'picks.contestId',
+            select: '_id startTime name'
         });
         res.json(results);
     } catch (error) {
+        console.log(error);
         res.status(500).send('Server error');
     }
 }
