@@ -120,6 +120,7 @@ const getTopPlayerBy = async (req, res) => {
               headshot: '$headshot',
               odds: '$odds.value',
               teamName: { $ifNull: ['$team.alias', '$teamName'] },
+              teamId: '$team._id',
               contestName: '$event.name',
               contestStartTime: '$event.startTime',
               overUnder: "over",
