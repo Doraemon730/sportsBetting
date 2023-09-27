@@ -313,7 +313,7 @@ const getAllBetsByUserId = async (req, res) => {
         }).populate({
             path: 'picks.teamId',
             select: '_id name'
-        });;
+        });
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
@@ -355,7 +355,10 @@ const getAllBetsByUserIdAdmin = async (req, res) => {
         }).populate({
             path: 'picks.contestId',
             select: '_id startTime name'
-        });;
+        }).populate({
+            path: 'picks.teamId',
+            select: '_id name'
+        });
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
