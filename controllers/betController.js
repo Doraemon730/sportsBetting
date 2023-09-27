@@ -54,7 +54,7 @@ const startBetting = async (req, res) => {
         let creditSave = 0;
         user.credits -= entryFee;
         creditSave = user.credits > 0 ? entryFee : temp;
-        user.credits = user.credits > 0 ? creditSave = entryFee : 0;
+        user.credits = user.credits > 0 ? user.credits : 0;
         entryFee = entryFee - temp;
         entryFee = entryFee > 0 ? entryFee : 0;
 
