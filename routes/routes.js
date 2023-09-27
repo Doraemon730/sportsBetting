@@ -81,14 +81,14 @@ router.post('/bet/start',
     betController.startBetting
 );
 
-router.post('/bet/sixLegParlay',
+router.post('/bet/startWedFreeBetting',
     auth,
     checkWednesday,
-    betController.sixLegParlayBetting);
+    betController.startWednesdayFreeBetting);
 
-router.post('/bet/firstSixLegParlay',
+router.post('/bet/startFirstFreeBetting',
     auth,
-    betController.firstSixLegParlayBetting);
+    betController.startFirstFreeBetting);
 
 router.post('/admin/bet/getAllBets',
     admin,

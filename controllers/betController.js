@@ -11,24 +11,6 @@ const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
 const { updateBetWithNew, updateBetWithDaily } = require("../controllers/statisticsController")
 
-const checkBet = async (newbet) => {
-    try {
-        const bet = await Bet.findOne({
-            userId: newbet.userId,
-            entryFee: newbet.entryFee,
-            betType: newbet.betType,
-            picks: newbet.picks,
-            parlay: newbet.parlay,
-            palrayNumber: newbet.palrayNumber
-        })
-        if (bet)
-            return true;
-        return false;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
 const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
@@ -102,6 +84,168 @@ const startBetting = async (req, res) => {
         user.ETH_balance -= entryFeeEther;
         user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
+        await user.save();
+
+        const transaction = new Transaction({
+            userId,
+            amountETH: entryFeeEtherSave,
+            amountUSD: entryFeeSave,
+            transactionType: "bet"
+        });
+        await transaction.save();
+        if (isNew) {
+            await updateBetWithNew(entryFeeEtherSave);
+
+        } else {
+            await updateBetWithDaily(isFirst, entryFeeEtherSave);
+        }
+        getReferralPrize(user._id, entryFeeEtherSave);
+        res.json(myBet);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server error');
+    }
+}
+
+const startFirstFreeBetting = async (req, res) => {
+    try {
+        const userId = new ObjectId(req.user.id);
+        let { entryFee, betType, picks, currencyType } = req.body;
+        const jsonArray = JSON.parse(picks);
+
+        if (jsonArray.length !== 6) {
+            return res.status(400).json({ message: "Invalid Betting." });
+        }
+
+        let user = await User.findOne({ _id: userId });
+
+        if (currencyType === "ETH") {
+            entryFee = await Ether2USD(entryFee);
+        }
+
+        const entryFeeEtherSave = await USD2Ether(entryFee);
+        const entryFeeSave = entryFee;
+
+        let isNew = false, isFirst = false;
+        const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
+        if (!bet) {
+            isNew = true;
+        } else {
+            let now = new Date();
+            if (now.getDate() !== bet.createdAt.getDate()) {
+                isFirst = true;
+            }
+        }
+
+        const myBet = new Bet({
+            userId,
+            entryFee: entryFeeSave,
+            entryFeeETH: entryFeeEtherSave,
+            betType,
+            picks: jsonArray,
+            parlay: true,
+            credit: 0,
+        });
+
+
+        for (const element of jsonArray) {
+            const eventId = new ObjectId(element.contestId);
+
+            const event = await Event.findById(eventId);
+            if (!event) {
+                return res.status(400).send({ message: "Invalid Contest." });
+            }
+            event.participants.push(myBet._id);
+            await event.save();
+        }
+
+        user.freeSix = -1;
+        user.totalBetAmount += parseFloat(entryFeeSave);
+        user = setUserLevel(user);
+
+        await myBet.save();
+        await user.save();
+
+        const transaction = new Transaction({
+            userId,
+            amountETH: entryFeeEtherSave,
+            amountUSD: entryFeeSave,
+            transactionType: "bet"
+        });
+        await transaction.save();
+        if (isNew) {
+            await updateBetWithNew(entryFeeEtherSave);
+
+        } else {
+            await updateBetWithDaily(isFirst, entryFeeEtherSave);
+        }
+        getReferralPrize(user._id, entryFeeEtherSave);
+        res.json(myBet);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server error');
+    }
+}
+
+const startWednesdayFreeBetting = async (req, res) => {
+    try {
+        const userId = new ObjectId(req.user.id);
+
+        let { entryFee, betType, picks, currencyType } = req.body;
+
+        const jsonArray = JSON.parse(picks);
+
+        if (jsonArray.length !== 6) {
+            return res.status(400).json({ message: "Invalid Betting." });
+        }
+
+        let user = await User.findOne({ _id: userId });
+
+        if (currencyType === "ETH") {
+            entryFee = await Ether2USD(entryFee);
+        }
+
+        const entryFeeEtherSave = await USD2Ether(entryFee);
+        const entryFeeSave = entryFee;
+
+        let isNew = false, isFirst = false;
+        const bet = await Bet.findOne({ userId }).sort({ createdAt: -1 }).exec();
+        if (!bet) {
+            isNew = true;
+        } else {
+            let now = new Date();
+            if (now.getDate() !== bet.createdAt.getDate()) {
+                isFirst = true;
+            }
+        }
+
+        const myBet = new Bet({
+            userId,
+            entryFee: entryFeeSave,
+            entryFeeETH: entryFeeEtherSave,
+            betType,
+            picks: jsonArray,
+            parlay: true,
+            credit: 0,
+        });
+
+
+        for (const element of jsonArray) {
+            const eventId = new ObjectId(element.contestId);
+
+            const event = await Event.findById(eventId);
+            if (!event) {
+                return res.status(400).send({ message: "Invalid Contest." });
+            }
+            event.participants.push(myBet._id);
+            await event.save();
+        }
+
+        user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
+        user.totalBetAmount += parseFloat(entryFeeSave);
+        user = setUserLevel(user);
+
+        await myBet.save();
         await user.save();
 
         const transaction = new Transaction({
@@ -251,211 +395,6 @@ const getAllBets = async (req, res) => {
     }
 }
 
-const isAllowedSixLegParlay = async (req, res) => {
-    const userId = new ObjectId(req.user.id);
-    const user = await User.findOne({ _id: userId }).populate('promotion');
-    if (user.promotion.approach != 1)
-        res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0); // Set the time to the start of the day
-    const bet = await Bet.findOne({
-        userId: userId, createdAt: {
-            $gte: today,
-            $lt: new Date(today.getTime() + 86400000),
-        }, entryFee: {
-            $gte: 25
-        }
-    });
-    if (!bet) {
-        res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available. In order to proceed, you are required to place a minimum bet of $25.' });
-    }
-    res.status(200).json({ message: 'You can proceed six leg parlay' });
-}
-const sixLegParlayBettingByStep = async (req, res) => {
-    try {
-        const userId = new ObjectId(req.user.id);
-        const user = await User.findOne({ _id: userId }).populate('promotion');
-        if (user.promotion.approach != 1)
-            res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0); // Set the time to the start of the day
-        const bet = await Bet.findOne({
-            userId: userId, createdAt: {
-                $gte: today,
-                $lt: new Date(today.getTime() + 86400000),
-            }, entryFee: {
-                $gte: 25
-            }
-        });
-        if (!bet) {
-            res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available. In order to proceed, you are required to place a minimum bet of $25.' });
-        }
-        const { betType, picks, palrayNumber } = req.body;
-        if (palrayNumber > 6) {
-            res.status(403).json({ message: 'Sorry, you can select only 6 bets' });
-        }
-        const entryFee = 25;
-        const jsonArray = JSON.parse(picks);
-
-        const myBet = new Bet({
-            userId,
-            entryFee,
-            betType,
-            picks: jsonArray,
-            parlay: true,
-            palrayNumber
-        });
-        if (checkBet(myBet)) {
-            res.status(403).json({ message: 'Sorry, you have to select different bet' });
-        }
-        await myBet.save();
-        for (const element of jsonArray) {
-            const eventId = new ObjectId(element.contestId);
-
-            const event = await Event.findById(eventId);
-            if (!event) {
-                return res.status(400).send({ message: "Invalid Contest." });
-            }
-
-            event.participants.push(myBet._id);
-            await event.save();
-        }
-        if (palrayNumber == 6) {
-            user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
-            await user.save();
-        }
-        res.status(200).json(myBet);
-
-    } catch (error) {
-        res.status(500).json(error.message);
-    }
-}
-const sixLegParlayBetting = async (req, res) => {
-    try {
-        const userId = new ObjectId(req.user.id);
-        const user = await User.findOne({ _id: userId }).populate('promotion');
-        if (user.promotion.approach != 1)
-            res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0); // Set the time to the start of the day
-        const bet = await Bet.findOne({
-            userId: userId, createdAt: {
-                $gte: today,
-                $lt: new Date(today.getTime() + 86400000),
-            }, entryFee: {
-                $gte: 25
-            }
-        });
-        if (!bet) {
-            res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available. In order to proceed, you are required to place a minimum bet of $25.' });
-        }
-        const { picks } = req.body;
-        let parlayNumber = 0;
-        let entryFee = 25;
-        let entryFeeETH = await USD2Ether(entryFee);
-        let betType = 'high';
-        for (const pick of picks) {
-
-            parlayNumber++;
-            if (parlayNumber != 1) {
-                entryFee = 0;
-                entryFeeETH = 0;
-            }
-
-            const jsonArray = JSON.parse(pick);
-
-
-            const myBet = new Bet({
-                userId,
-                entryFeeETH,
-                entryFee,
-                betType,
-                picks: jsonArray,
-                parlay: true,
-                parlayIndex: parlayNumber
-            });
-            if (checkBet(myBet)) {
-                res.status(403).json({ message: 'Sorry, you have to select different bet' });
-            }
-            await myBet.save();
-            for (const element of jsonArray) {
-                const eventId = new ObjectId(element.contestId);
-
-                const event = await Event.findById(eventId);
-                if (!event) {
-                    return res.status(400).send({ message: "Invalid Contest." });
-                }
-
-                event.participants.push(myBet._id);
-                await event.save();
-            }
-
-        }
-        user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
-        await user.save();
-
-        res.status(200).json("six leg parlay successed.");
-
-    } catch (error) {
-        res.status(500).json(error.message);
-    }
-}
-const firstSixLegParlayBetting = async (req, res) => {
-    try {
-        const userId = new ObjectId(req.user.id);
-        const user = await User.findOne({ _id: userId }).populate('promotion');
-        if (user.firstSix != 1)
-            res.status(403).json({ message: 'Sorry, the option to place a six-leg parlay is not available.' });
-        user.firstSix = -1;
-        const { picks } = req.body;
-        let parlayNumber = 0;
-        let entryFee = 10;
-        let entryFeeETH = await USD2Ether(entryFee);
-        let betType = 'high';
-        for (const pick of picks) {
-            parlayNumber++;
-            if (parlayNumber != 1) {
-                entryFee = 0;
-                entryFeeETH = 0;
-            }
-            const jsonArray = JSON.parse(pick);
-
-
-            const myBet = new Bet({
-                userId,
-                entryFeeETH,
-                entryFee,
-                betType,
-                picks: jsonArray,
-                parlay: true,
-                parlayIndex: parlayNumber
-            });
-            if (checkBet(myBet)) {
-                res.status(403).json({ message: 'Sorry, you have to select different bet' });
-            }
-            await myBet.save();
-            for (const element of jsonArray) {
-                const eventId = new ObjectId(element.contestId);
-
-                const event = await Event.findById(eventId);
-                if (!event) {
-                    return res.status(400).send({ message: "Invalid Contest." });
-                }
-                event.participants.push(myBet._id);
-                await event.save();
-            }
-
-        }
-        user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
-        await user.save();
-
-        res.status(200).json("six leg parlay successed.");
-
-    } catch (error) {
-        res.status(500).json(error.message);
-    }
-}
-
 const cancelBet = async (req, res) => {
     try {
         const { betId } = req.body;
@@ -469,11 +408,20 @@ const cancelBet = async (req, res) => {
         const diff = Math.abs(now - bet.createdAt) / (1000 * 60);
         if (diff < 5) {
             const user = await User.findOne({ _id: bet.userId });
-            if (bet.credit > 0)
-                user.credits += bet.credit;
-            let entryFee = await Ether2USD(bet.entryFee);
-            let entryETH = await USD2Ether(entryFee - bet.credit);
-            user.ETH_balance += entryETH;
+            if (bet.parlay) {
+                if (bet.entryFee == 10)
+                    user.firstSix = 1;
+                if (bet.entryFee == 25)
+                    user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
+            } else {
+                if (bet.credit > 0)
+                    user.credits += bet.credit;
+                let entryFee = await Ether2USD(bet.entryFee);
+                let entryETH = await USD2Ether(entryFee - bet.credit);
+                user.ETH_balance += entryETH;
+            }
+            user.totalBetAmount -= bet.entryFee
+            user = setUserLevel(user);
             await user.save();
             bet.status = 'canceled';
             await bet.save();
@@ -569,12 +517,11 @@ const getRewardsPercentage = (level) => {
 
 module.exports = {
     startBetting,
-    sixLegParlayBetting,
-    isAllowedSixLegParlay,
     getAllBets,
     getAllBetsByUserId,
     getAllBetsByUserIdAdmin,
     cancelBet,
-    firstSixLegParlayBetting,
-    getRewards
+    getRewards,
+    startFirstFreeBetting,
+    startWednesdayFreeBetting
 }
