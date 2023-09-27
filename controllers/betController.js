@@ -416,8 +416,9 @@ const cancelBet = async (req, res) => {
             } else {
                 if (bet.credit > 0)
                     user.credits += bet.credit;
-                let entryFee = await Ether2USD(bet.entryFee);
-                let entryETH = await USD2Ether(entryFee - bet.credit);
+                console.log(bet.entryFee - bet.credit)
+                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                console.log(entryETH)
                 user.ETH_balance += entryETH;
             }
             user.totalBetAmount -= bet.entryFee
