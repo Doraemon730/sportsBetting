@@ -17,13 +17,8 @@ const { isEmpty, USD2Ether } = require('../utils/util');
 
 const { addUserWallet } = require('../services/webSocketService'); // Import your WebSocket service
 
-//const infuraWebSocket = process.env.ETHEREUM_NODE_URL;
-//const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
+const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
-// const createWallet = () => {
-//   const newWallet = web3.eth.accounts.create();
-//   return newWallet;
-// }
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, referralCode } = req.body;
 
@@ -36,7 +31,7 @@ const registerUser = async (req, res) => {
     }
 
     const myReferralCode = generateReferralCode();
-    const infuraWebSocket = "https://eth.llamarpc.com";
+    const infuraWebSocket = ethereumNodeURL;
     const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
     const wallet = web3.eth.accounts.create();
     const walletAddress = wallet.address;

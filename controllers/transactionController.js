@@ -26,6 +26,7 @@ const { Web3 } = require('web3');
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const mainWalletAddress = process.env.MAIN_WALLET_ADDRESS;
 const mainWalletPrivateKey = process.env.MAIN_WALLET_PRIVATE_KEY;
+const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
 const depositBalance = async (req, res) => {
     try {
@@ -34,7 +35,7 @@ const depositBalance = async (req, res) => {
             _id: userId
         });
 
-        const infuraWebSocket = "https://eth.llamarpc.com"
+        const infuraWebSocket = ethereumNodeURL
         var provider = new ethers.JsonRpcProvider(infuraWebSocket);
         const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
         const wallet = new ethers.Wallet(user.privateKey, provider);
@@ -115,7 +116,7 @@ const withdrawBalance = async (req, res) => {
                 message: "You can't withdraw now!"
             })
         }
-        const infuraWebSocket = "https://eth.llamarpc.com"
+        const infuraWebSocket = ethereumNodeURL
         var provider = new ethers.JsonRpcProvider(infuraWebSocket);
         const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
         const wallet = new ethers.Wallet(mainWalletPrivateKey, provider);
