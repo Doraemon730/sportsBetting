@@ -3,7 +3,7 @@ const cron = require('node-cron')
 const axios = require('axios');
 const { updateAllPromotion } = require('../controllers/userController');
 const { getETHPriceFromMarket } = require('../controllers/transactionController');
-const { getLiveDataByEvent, getWeeklyEventsMLB, getWeeklyEventsSoccer, getWeeklyEventsNFL } = require('../controllers/eventController');
+const { getLiveDataByEvent, getWeekEventAll, checkEvents} = require('../controllers/eventController');
 const { getRewards } = require('../controllers/betController');
 
 //betJob = cron.schedule
@@ -53,13 +53,15 @@ const cronMatchJob = () => {
 }
 
 const cronWeekEventJob = () => {
-  getWeeklyEventsMLB();
-  getWeeklyEventsNFL();
-  getWeeklyEventsSoccer();
+  getWeekEventAll();
+  const time = new Date().toString();
+  console.log('Cron Job for Week Event' + time);
 }
 
 const cronCheckResultJob = () => {
-
+  checkEvents();
+  const time = new Date().toString();
+  console.log('Cron Job for Check Results' + time);
 }
 
 // Set up the cron job
