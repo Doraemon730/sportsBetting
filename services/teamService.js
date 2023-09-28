@@ -48,7 +48,7 @@ const fetchNFLTeams = async () => {
       return conferences;
     })
     .catch(error => {
-      throw new Error('Error retrieving NBA schedule:', error);
+      throw new Error('Error retrieving NHL schedule:', error);
     });
 }
 const fetchNFLTeamsFromRemoteId = async (remoteId) => {
