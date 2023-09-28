@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const path = require('path');
 const bodyParser = require('body-parser');
 const rateLimit = require('express-rate-limit');
+const geoip = require('geoip-lite');
 // const https = require('https');
 // const fs = require('fs');
 
@@ -42,6 +43,33 @@ const limiter = rateLimit({
   },
 });
 app.use(limiter);
+
+// Middleware to check and ban specific states
+app.use((req, res, next) => {
+  // const ip = "98.155.38.149"
+  const ip = req.ip; // Get the user's IP address
+
+  const bannedCountries = ['AF', 'AU', 'BY', 'BE', 'CD', 'CU', 'CW', 'CZ',
+    'DE', 'GR', 'IR', 'IQ', 'IT', 'CI', 'LR', 'LY', 'LT', 'NL', 'KP', 'PT',
+    'RS', 'SK', 'ES', 'SD', 'SE', 'SY', 'ZW'];
+  const bannedStates = ['HI', 'ID', 'MT', 'NV', 'WA'];
+
+  // const ip = req.ip; // Get the user's IP address
+  const geo = geoip.lookup(ip); // Use geoip-lite to get location information
+  if (geo) {
+    const country = geo.country; // Get the country from location information (may need to adjust depending on the database format)
+    console.log(country);
+    if (bannedCountries.includes(country)) {
+      return res.status(403).json({ message: 'Access from your country is not allowed.' });
+    }
+    const state = geo.region; // Get the state from location information (may need to adjust depending on the database format)
+    console.log(state);
+    if (bannedStates.includes(state)) {
+      return res.status(403).json({ message: 'Access from your state is not allowed.' });
+    }
+  }
+  next();
+});
 
 // Define Routes
 const apiRoutes = require('./routes/routes');
