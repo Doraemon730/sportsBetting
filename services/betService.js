@@ -3,14 +3,14 @@ const cron = require('node-cron')
 const axios = require('axios');
 const { updateAllPromotion } = require('../controllers/userController');
 const { getETHPriceFromMarket } = require('../controllers/transactionController');
-const { getLiveDataByEvent, getWeekEventAll, checkEvents} = require('../controllers/eventController');
+const { getLiveDataByEvent, getWeekEventAll, checkEvents } = require('../controllers/eventController');
 const { getRewards } = require('../controllers/betController');
 
 //betJob = cron.schedule
 const cronWednesdaySchedule = '0 0 * * 3'; // Runs at 12:00 AM every Wednesday
 const cronThursdaySchedule = '0 0 * * 4'; // Runs at 12:00 AM every Thursday
 const cronEtherPriceSchedule = '* * * * *';
-const cronMatchSchedule = '*/30 * * * *'; //Runs every half an hour
+const cronMatchSchedule = '* * * * *'; //Runs every half an hour
 const cronWeeklySchedule = '0 0 * * 1'; //Runs every Monday
 const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
 const cronWeekEventSchedule = '0 */3 * * *';
