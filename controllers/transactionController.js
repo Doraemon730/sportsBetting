@@ -359,6 +359,10 @@ const getRevenue = async (req, res) => {
         });
 
         result = { revenue: [], profit: [], total: statistic.total };
+        if (!data_1) {
+            result = { revenue: [0, 0, 0, 0, 0], profit: [0, 0, 0, 0, 0], total: statistic.total };
+            return res.json(result);
+        }
         let betAmount = 0;
         let prizeAmount = 0;
         for (let i = 0; i < data_1.length; i++) {
