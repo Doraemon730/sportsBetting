@@ -549,8 +549,10 @@ const getLiveDataByEvent = async () => {
                         //     broadcastingData.player = getNHLData(detailData);
                         // }
                         if (sportType == "MLB") {
-                            broadcastingData.player = getMLBData(detailData);
-                            global.io.sockets.emit('broadcast', { broadcastingData });
+                            if (detailData.hasOwnProperty('statistics')) {
+                                broadcastingData.player = getMLBData(detailData);
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                            }
                         }
                     }
                 }
