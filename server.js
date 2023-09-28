@@ -7,8 +7,8 @@ const rateLimit = require('express-rate-limit');
 const geoip = require('geoip-lite');
 // const https = require('https');
 // const fs = require('fs');
-const {createServer} = require('http');
-const {Server} = require('socket.io');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const httpServer = createServer(app);
@@ -19,7 +19,8 @@ const {
   MatchJob,
   WeeklyRewardJob,
   MonthlyRewardJob,
-  WeekEventJob
+  WeekEventJob,
+  CheckResultJob
 } = require('./services/betService');
 
 
@@ -102,8 +103,8 @@ function onNewWebsocketConnection(socket) {
   onlineClients.add(socket.id);
 
   socket.on("disconnect", () => {
-      onlineClients.delete(socket.id);
-      console.info(`Socket ${socket.id} has disconnected.`);
+    onlineClients.delete(socket.id);
+    console.info(`Socket ${socket.id} has disconnected.`);
   });
 
   // echoes on the terminal every "hello" message this socket sends
@@ -128,5 +129,6 @@ httpServer.listen(PORT, () => {
   WeeklyRewardJob.start();
   MonthlyRewardJob.start();
   WeekEventJob.start();
+  CheckResultJob.start();
   //walletMonitor.start();
 });
