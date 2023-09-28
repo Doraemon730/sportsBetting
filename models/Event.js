@@ -36,7 +36,7 @@ const EventSchema = new mongoose.Schema({
     }],
     state: {
         type: Number,
-        default: 0 // 0 - not started; 1- in progress ;2 finished
+        default: 0 // 0 - not started; 1- in progress ;2 finished (not checked); 3 checked
     },
     matchId: {
         type: String
