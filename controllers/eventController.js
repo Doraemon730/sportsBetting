@@ -63,7 +63,7 @@ const getWeeklyEventsNFL = async () => {
             console.log("no mappings");
             return;
         }
-        const events = await fetchWeeklyEventsNFL();
+        let events = await fetchWeeklyEventsNFL();
         console.log("NFL events count =" + events.length);
         
         let now = new Date();
@@ -389,7 +389,7 @@ const processSoccerEvents = async (mappings, events) => {
 }
 const getWeeklyEventsUEFA = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsUEFA();
+        let events = await fetchWeeklyEventsUEFA();
         console.log("UEFA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -398,7 +398,7 @@ const getWeeklyEventsUEFA = async (mappings) => {
 };
 const getWeeklyEventsSaudi = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsSaudi();
+        let events = await fetchWeeklyEventsSaudi();
         console.log("Saudi");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -407,7 +407,7 @@ const getWeeklyEventsSaudi = async (mappings) => {
 };
 const getWeeklyEventsLaLiga = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsLaLiga();
+        let events = await fetchWeeklyEventsLaLiga();
         console.log("LaLiga");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -416,7 +416,7 @@ const getWeeklyEventsLaLiga = async (mappings) => {
 };
 const getWeeklyEventsPremierLeague = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsPremierLeague();
+        let events = await fetchWeeklyEventsPremierLeague();
         console.log("PremierLeague");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -426,7 +426,7 @@ const getWeeklyEventsPremierLeague = async (mappings) => {
 const getWeeklyEventsSerieA = async (mappings) => {
     try {
 
-        const events = await fetchWeeklyEventsSerieA();
+        let events = await fetchWeeklyEventsSerieA();
         console.log("SerieA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -435,7 +435,7 @@ const getWeeklyEventsSerieA = async (mappings) => {
 };
 const getWeeklyEventsLigue1 = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsLigue1();
+        let events = await fetchWeeklyEventsLigue1();
         console.log("Ligue1");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -444,7 +444,7 @@ const getWeeklyEventsLigue1 = async (mappings) => {
 };
 const getWeeklyEventsBundesliga = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsBundesliga();
+        let events = await fetchWeeklyEventsBundesliga();
         console.log("Bundesliga");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -454,7 +454,7 @@ const getWeeklyEventsBundesliga = async (mappings) => {
 const getWeeklyEventsMLS = async (mappings) => {
     try {
 
-        const events = await fetchWeeklyEventsMLS();
+        let events = await fetchWeeklyEventsMLS();
         console.log("MLS");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -495,7 +495,7 @@ const remove = async (req, res) => {
 
 const getLiveDataByEvent = async () => {
     try {
-        const events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
+        let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
         // console.log(events.length);
         for (const event of events) {
             url = ""
@@ -1468,7 +1468,7 @@ const getWeekEventAll = async() =>{
 }
 const checkEvents = async () => {
     try{
-        const events = await Event.find({state: 2});
+        let events = await Event.find({state: 2});
         for(let event of events) {
             if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
                 updateNFLBet(event);
