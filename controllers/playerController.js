@@ -143,6 +143,8 @@ const getTopPlayerBy = async (req, res) => {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
+      if(prop.displayName === "Rush+Rec Yards")
+        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
 
       now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
@@ -423,7 +425,7 @@ const addNFLPlayersToDatabase = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
 
   }
 }
@@ -451,7 +453,7 @@ const addNHLPlayersToDatabase = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).send("Server Error");
   }
 }
@@ -479,7 +481,7 @@ const addMLBPlayersToDatabase = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).send("Server Error");
   }
 }
@@ -536,8 +538,9 @@ const getPlayerProp = async (req, res) => {
 const getPlayerManifest = async (req, res) => {
   try {
     const manifest = await fetchPlayerManifest();
-
+    
     for (const asset of manifest.assetlist) {
+      //console.log(asset.player_id);
       const player = await Player.findOne({ remoteId: asset.player_id });
       if (!player) continue;
       await fetchPlayerImage(asset.id, asset.player_id);
@@ -552,12 +555,12 @@ const getPlayerManifest = async (req, res) => {
   }
 }
 const remove = async (req, res) => {
-  await Player.deleteMany({ sportId: new ObjectId("65131974db50d0c2c8bf7aa7") });
+  await Player.deleteMany({ sportId: new ObjectId("650e0b6fb80ab879d1c142c8") });
   res.json("Success");
 }
 
 const resetOdds = async (req, res) => {
-  await Player.updateMany({sportId:new ObjectId('650e0b6fb80ab879d1c142c8')}, {odds:[]});
+  await Player.updateMany({sportId:new ObjectId('650e0b6fb80ab879d1c142c8')}, {headshot:undefined});
   res.json("Success");
 }
 const getLiveDataByPlayers = async (req, res) => {

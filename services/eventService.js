@@ -39,8 +39,8 @@ const fetchEventMapping = async () => {
     });
 }
 
-const fetchPlayerMapping = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/players/mappings.json?api_key=${apiOddsKey}`)
+const fetchPlayerMapping = async (start) => {
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/players/mappings.json?api_key=${apiOddsKey}&start=${start}`)
     .then(response => {
         const mappings = response.data.mappings;
         return mappings;
@@ -203,7 +203,8 @@ const fetchSoccerPlayerProps = async (event) => {
 const fetchSoccerEventSummary = async (eventId) => {
     return axios.get(`${SOCCER_API_BASEURL}/${LOCALE}/sport_events/${eventId}/summary.json?api_key=${SOCCER_API_KEY}`)
     .then(response => {
-        const statistics = response.data.statistics;
+        const statistics = response.data;
+        return statistics;
     })
     .catch(error => {
         console.log('Error retrieving Soccer Event Summary' + error);

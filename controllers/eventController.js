@@ -63,10 +63,15 @@ const getWeeklyEventsNFL = async () => {
             console.log("no mappings");
             return;
         }
-        const events = await fetchWeeklyEventsNFL();
+        let events = await fetchWeeklyEventsNFL();
+        console.log("NFL events count =" + events.length);
+        
+        let now = new Date();
+        events = events.filter(item => new Date(item.sport_event.start_time) > now);
+        console.log("NFL events count =" + events.length);
         for (const event of events) {
 
-            const myEvent = new Event({
+            let myEvent = new Event({
                 id: event.sport_event.id,
                 startTime: event.sport_event.start_time,
                 sportId: new ObjectId('650e0b6fb80ab879d1c142c8')
@@ -88,19 +93,15 @@ const getWeeklyEventsNFL = async () => {
 
 
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
-
+            console.log('EventController.js/getWeeklyEventsNFL/92 eventId = ' + event.sport_event.id);
             if (!playerProps)
                 continue;
             const existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id: event.sport_event.id });
             if (existingEvent) {
-                // Event already exists, update it
                 myEvent = existingEvent;
-                // console.log(existingEvent);
-                // await existingEvent.set(myEvent);
-                // await existingEvent.save();
-                // console.log('Event updated!');
+                existingEvent.startTime = myEvent.startTime;
+                await existingEvent.save();
             } else {
-                // Event doesn't exist, insert new event
                 await myEvent.save();
                 console.log('New event inserted!');
             }
@@ -135,9 +136,9 @@ const getWeeklyEventsNFL = async () => {
 
 
         }
-
+        console.log("Get NFL Events and update finished at " + new Date().toString());
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
 
     }
 }
@@ -150,13 +151,19 @@ const getWeeklyEventsMLB = async () => {
             return;
         }
         //console.log(mappings);        
-        const players = await fetchPlayerMapping();
+        let players = await fetchPlayerMapping(0);
+        players.concat(await fetchPlayerMapping(1000));
+        players.concat(await fetchPlayerMapping(2000));
         if (!players || !Array.isArray(players)) {
             console.log('No playermapping');
             return;
         }
 
-        const events = await fetchWeeklyEventsMLB();
+        let events = await fetchWeeklyEventsMLB();
+        console.log("MLB events count = " + events.length);
+        let now = new Date();
+        events = events.filter(item => new Date(item.sport_event.start_time) > now);
+        console.log("MLB events count = " + events.length);
         for (const event of events) {
 
             const myEvent = new Event({
@@ -182,9 +189,9 @@ const getWeeklyEventsMLB = async () => {
 
 
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
-            const existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id: event.sport_event.id });
+            const existingEvent = await Event.findOne({ sportId: new ObjectId('65108fcf4fa2698548371fc0'), id: event.sport_event.id });
             if (existingEvent) {
-                myEvnt = existingEvent;
+                myEvent = existingEvent;
             } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
@@ -194,7 +201,7 @@ const getWeeklyEventsMLB = async () => {
             //console.log(playerProps);
             if (!playerProps)
                 continue;
-            await myEvent.save();
+            
             for (const playerProp of playerProps) {
                 console.log(playerProp.player.id);
                 console.log(playerProp.player.name);
@@ -230,7 +237,7 @@ const getWeeklyEventsMLB = async () => {
             //console.log(playerProps);
 
         }
-
+        console.log("Get MLB Events and update finished at " + new Date().toString());
     } catch (error) {
         console.log(error);
 
@@ -286,8 +293,12 @@ const teamDraft = [
 ]
 const processSoccerEvents = async (mappings, events) => {
     try {
-
-        for (const event of events) {
+        
+        console.log("MLB events count = " + events.length);
+        let now = new Date();
+        let eventes = events.filter(item => new Date(item.sport_event.start_time) > now);
+        console.log("MLB events count = " + eventes.length);
+        for (const event of eventes) {
             let competitors = event.sport_event.competitors;
 
             let myEvent = new Event({
@@ -378,7 +389,7 @@ const processSoccerEvents = async (mappings, events) => {
 }
 const getWeeklyEventsUEFA = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsUEFA();
+        let events = await fetchWeeklyEventsUEFA();
         console.log("UEFA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -387,7 +398,7 @@ const getWeeklyEventsUEFA = async (mappings) => {
 };
 const getWeeklyEventsSaudi = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsSaudi();
+        let events = await fetchWeeklyEventsSaudi();
         console.log("Saudi");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -396,7 +407,7 @@ const getWeeklyEventsSaudi = async (mappings) => {
 };
 const getWeeklyEventsLaLiga = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsLaLiga();
+        let events = await fetchWeeklyEventsLaLiga();
         console.log("LaLiga");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -405,7 +416,7 @@ const getWeeklyEventsLaLiga = async (mappings) => {
 };
 const getWeeklyEventsPremierLeague = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsPremierLeague();
+        let events = await fetchWeeklyEventsPremierLeague();
         console.log("PremierLeague");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -415,7 +426,7 @@ const getWeeklyEventsPremierLeague = async (mappings) => {
 const getWeeklyEventsSerieA = async (mappings) => {
     try {
 
-        const events = await fetchWeeklyEventsSerieA();
+        let events = await fetchWeeklyEventsSerieA();
         console.log("SerieA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -424,7 +435,7 @@ const getWeeklyEventsSerieA = async (mappings) => {
 };
 const getWeeklyEventsLigue1 = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsLigue1();
+        let events = await fetchWeeklyEventsLigue1();
         console.log("Ligue1");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -433,7 +444,7 @@ const getWeeklyEventsLigue1 = async (mappings) => {
 };
 const getWeeklyEventsBundesliga = async (mappings) => {
     try {
-        const events = await fetchWeeklyEventsBundesliga();
+        let events = await fetchWeeklyEventsBundesliga();
         console.log("Bundesliga");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -443,7 +454,7 @@ const getWeeklyEventsBundesliga = async (mappings) => {
 const getWeeklyEventsMLS = async (mappings) => {
     try {
 
-        const events = await fetchWeeklyEventsMLS();
+        let events = await fetchWeeklyEventsMLS();
         console.log("MLS");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -464,6 +475,7 @@ const getWeeklyEventsSoccer = async () => {
         await getWeeklyEventsBundesliga(mappings);
         await getWeeklyEventsMLS(mappings);
         await getWeeklyEventsSaudi(mappings);
+        console.log("Get Soccer Events and update finished at " + new Date().toString());
 
     } catch (error) {
         console.log(error.message);
@@ -473,7 +485,7 @@ const getWeeklyEventsSoccer = async () => {
 const remove = async (req, res) => {
     try {
         await Event.deleteMany({
-            sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
+            sportId: new ObjectId('65108fcf4fa2698548371fc0')
         });
         res.json("Success");
     } catch (error) {
@@ -483,7 +495,7 @@ const remove = async (req, res) => {
 
 const getLiveDataByEvent = async () => {
     try {
-        const events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
+        let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
         // console.log(events.length);
         for (const event of events) {
             url = ""
@@ -722,6 +734,8 @@ const updateNFLBet = async (event) => {
     try {
         const statistics = await fetchNFLGameSummary(event.matchId);
         console.log("summary", JSON.stringify(statistics));
+        if(statistics.status != "closed")
+            return;
         const rushingStats = summarizeStatsByPlayer(statistics, 'rushing');
         const receivingStats = summarizeStatsByPlayer(statistics, 'receiving');
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
@@ -957,9 +971,10 @@ const updateNFLBet = async (event) => {
             }
             await bet.save();
         }
-
+        event.state = 3;
+        await event.save();
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 
@@ -974,6 +989,8 @@ const summarizeMLBStatsByPlayer = (data, category) => {
 const updateMLBBet = async (event) => {
     try {
         const summary = await fetchMLBGameSummary(event.matchId);
+        if (!summary || summary.game.status != 'closed')
+            return;
         const players = summarizeMLBStatsByPlayer(summary);
         for (const bet of event.participants) {
             //const pick = bet.picks.find(item => item.contestId === event._id);
@@ -998,7 +1015,7 @@ const updateMLBBet = async (event) => {
                                 result = play.statistics.pitching.overall.outs.ktotal ?
                                     play.statistics.pitching.overall.outs.ktotal : 0;
                             break;
-                        case 'Total bases':
+                        case 'Total Bases':
                             console.log(play.statistics.hitting);
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.tb ?
@@ -1198,6 +1215,8 @@ const updateMLBBet = async (event) => {
                 await bet.save();
             }
         }
+        event.state = 3;
+        await event.save();
     } catch (error) {
         console.log(error);
     }
@@ -1210,7 +1229,10 @@ const getSoccerPlayers = (data) => {
 }
 const updateSoccerBet = async (event) => {
     try {
-        let statistics = await fetchSoccerEventSummary(event.id);
+        let data = await fetchSoccerEventSummary(event.id);
+        if(!data.hasOwnProperty('statistics'))
+            return;
+        let statistics = data.statistics;
         let players = getSoccerPlayers(statistics);
         for (const bet of event.participants) {
             if (bet.status != 'pending')
@@ -1394,6 +1416,8 @@ const updateSoccerBet = async (event) => {
             }
             await bet.save();
         }
+        event.state = 3;
+        await event.save();
     } catch (error) {
         console.log(error.message);
     }
@@ -1433,12 +1457,40 @@ const testBet = async (req, res) => {
         console.log(error);
     }
 }
-
+const getWeekEventAll = async() =>{
+    try{
+        await getWeeklyEventsNFL();
+        await getWeeklyEventsMLB();
+        await getWeeklyEventsSoccer();
+    } catch(error) {
+        console.log(error);
+    }
+}
+const checkEvents = async () => {
+    try{
+        let events = await Event.find({state: 2});
+        for(let event of events) {
+            if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
+                updateNFLBet(event);
+            }
+            if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
+                updateMLBBet(event);
+            }
+            if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
+                updateSoccerBet(event);
+            }
+        }
+    } catch(error) {
+        console.log(error);
+    }
+}
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,
     getLiveDataByEvent,
     getWeeklyEventsSoccer,
+    getWeekEventAll,
     remove,
-    testBet
+    testBet,
+    checkEvents
 }
