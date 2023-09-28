@@ -21,7 +21,7 @@ const setReferral = async (req, res) => {
         }
 
         if (commission) {
-            if (commission <= referral.commission)
+            if (commission < referral.commission)
                 return res.status(400).json({ message: "Invalid Commission." });
             else
                 referral.commission = commission;

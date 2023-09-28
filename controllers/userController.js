@@ -29,17 +29,12 @@ const registerUser = async (req, res) => {
         .status(400)
         .json({ errors: [{ msg: 'User already exists' }] });
     }
-    console.log("user")
 
     const myReferralCode = generateReferralCode();
-
-    console.log("user1")
     const infuraWebSocket = ethereumNodeURL;
     const web3 = new Web3(new Web3.providers.HttpProvider(infuraWebSocket));
     const wallet = web3.eth.accounts.create();
     const walletAddress = wallet.address;
-    console.log(walletAddress);
-    console.log(wallet.privateKey);
     user = new User({
       email,
       firstName,
