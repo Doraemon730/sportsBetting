@@ -204,6 +204,11 @@ router.post('/admin/statistics',
     admin,
     statisticsController.getStatistics);
 
+
+router.post('/admin/statistics/getRevenue',
+    admin,
+    transactionController.getRevenue);
+
 router.post('/admin/statistics/getTotalBet',
     admin,
     statisticsController.getTotalUserWithBet);
