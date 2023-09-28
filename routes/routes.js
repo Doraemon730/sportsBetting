@@ -135,6 +135,12 @@ router.post(
     transactionController.getAllTransactions
 );
 
+router.post(
+    '/transaction/getTransactionsByUserId',
+    auth,
+    transactionController.getTransactionsByUserId
+);
+
 // Contest routes
 router.post(
     '/contest/fetchAllNBAContest',
