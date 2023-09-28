@@ -73,6 +73,7 @@ const startBetting = async (req, res) => {
             }
 
             event.participants.push(myBet._id);
+            event.participants = [...new Set(event.participants)];
             await event.save();
         }
         user.ETH_balance -= entryFeeEther;
@@ -153,7 +154,9 @@ const startFirstFreeBetting = async (req, res) => {
             if (!event) {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
+
             event.participants.push(myBet._id);
+            event.participants = [...new Set(event.participants)];
             await event.save();
         }
 
@@ -238,6 +241,7 @@ const startWednesdayFreeBetting = async (req, res) => {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
             event.participants.push(myBet._id);
+            event.participants = [...new Set(event.participants)];
             await event.save();
         }
 
