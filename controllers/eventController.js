@@ -497,7 +497,6 @@ const getLiveDataByEvent = async () => {
                 })
                 continue;
             }
-            console.log(event)
             await Event.updateOne({
                 _id: event._id
             }, {
@@ -513,12 +512,13 @@ const getLiveDataByEvent = async () => {
             stream.on('data', async (chunk) => {
                 // Process the incoming data chunk here
                 const jsonData = JSON.parse(chunk.toString());
-                console.log(event.name, jsonData);
+                // console.log(event.name, jsonData);
                 if (jsonData.hasOwnProperty('payload')) {
                     const detailData = jsonData['payload'];
                     if (detailData.hasOwnProperty('player')) {
                         if (sportType == "NFL") {
                             broadcastingData.player = getNFLData(detailData);
+                            global.io.sockets.emit('broadcast', { broadcastingData });
                         }
                         // if (sportType == "NHL") {
                         //     broadcastingData.player = getNHLData(detailData);
