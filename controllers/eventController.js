@@ -275,7 +275,7 @@ const nameDraft = [
     "Messi, Lionel",
     "Ronaldo, Cristiano"
 ];
-const teamDraft =[
+const teamDraft = [
     '65150e67f9968df69b4e3322',
     '65150eaff9968df69b4e3326',
     '65150fd9f9968df69b4e3388',
@@ -300,7 +300,7 @@ const processSoccerEvents = async (mappings, events) => {
         console.log("MLB events count = " + eventes.length);
         for (const event of eventes) {
             let competitors = event.sport_event.competitors;
-            
+
             let myEvent = new Event({
                 id: event.sport_event.id,
                 startTime: event.sport_event.start_time,
@@ -309,10 +309,10 @@ const processSoccerEvents = async (mappings, events) => {
             });
             let index = competitiorDraft.indexOf(competitors[0].id);
             if (index === -1)
-                index = competitiorDraft.indexOf(competitors[1].id);            
-            if(index === -1)
+                index = competitiorDraft.indexOf(competitors[1].id);
+            if (index === -1)
                 continue;
-            
+
             myEvent.name = competitors[0].abbreviation + " vs " + competitors[1].abbreviation;
 
             const mapping = mappings.find(item => item.id === event.sport_event.id);
@@ -322,9 +322,9 @@ const processSoccerEvents = async (mappings, events) => {
             const markets = await fetchSoccerPlayerProps(event.sport_event.id);
             //console.log(markets);
             //const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!markets)
-                 continue;
-            const existingEvent = await Event.findOne({sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id:event.sport_event.id});
+            if (!markets)
+                continue;
+            const existingEvent = await Event.findOne({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id: event.sport_event.id });
             if (existingEvent) {
                 // Event already exists, update it
                 myEvent = existingEvent;
@@ -336,37 +336,36 @@ const processSoccerEvents = async (mappings, events) => {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
                 console.log('New event inserted!');
-            }            
-            for(const play of markets[0].books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)                {                    
+            }
+            for (const play of markets[0].books[0].outcomes) {
+                let player = await Player.findOne({ srId: play.player_id });
+                if (!player) {
 
                     const profile = await fetchSoccerPlayerProfile(play.player_id);
                     let name = profile.player.name;
-                    if(nameDraft.indexOf(name) !== -1)
-                    {                       
+                    if (nameDraft.indexOf(name) !== -1) {
                         let com = profile.competitors[0].id;
                         let i = competitiorDraft.indexOf(com);
-                        if(i === -1)
+                        if (i === -1)
                             i = competitiorDraft.indexOf(profile.competitors[1].id)
 
-                    console.log("asdf" + profile.player.name);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                        teamId: new ObjectId(teamDraft[i])
-                    }); 
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });
-                    await player.save();                  
-                    } 
+                        console.log("asdf" + profile.player.name);
+                        player = new Player({
+                            sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+                            name: profile.player.name,
+                            jerseyNumber: profile.player.jersey_number,
+                            position: profile.player.type,
+                            srId: play.player_id,
+                            teamName: profile.competitors[0].abbreviation,
+                            teamId: new ObjectId(teamDraft[i])
+                        });
+                        player.odds.push({
+                            id: new ObjectId('65132681ccd67ffa439d6ead'),
+                            value: 0.5,
+                            event: myEvent._id
+                        });
+                        await player.save();
+                    }
                 }
                 else {
                     if (player.odds.length) {
@@ -533,7 +532,6 @@ const getLiveDataByEvent = async () => {
                 })
                 continue;
             }
-            console.log(event)
             await Event.updateOne({
                 _id: event._id
             }, {
@@ -542,26 +540,31 @@ const getLiveDataByEvent = async () => {
                 }
             })
             let broadcastingData = {
-                eventId: event._id
+                contestId: event._id
             }
             const stream = request(url);
-            const isCompleted = false;
+            let isCompleted = false;
+            let failCount = 0;
             stream.on('data', async (chunk) => {
                 // Process the incoming data chunk here
                 const jsonData = JSON.parse(chunk.toString());
-                console.log(event.name, jsonData);
+                // console.log(event.name, jsonData);
                 if (jsonData.hasOwnProperty('payload')) {
+                    failCount = 0;
                     const detailData = jsonData['payload'];
                     if (detailData.hasOwnProperty('player')) {
                         if (sportType == "NFL") {
                             broadcastingData.player = getNFLData(detailData);
+                            global.io.sockets.emit('broadcast', { broadcastingData });
                         }
                         // if (sportType == "NHL") {
                         //     broadcastingData.player = getNHLData(detailData);
                         // }
                         if (sportType == "MLB") {
-                            broadcastingData.player = getMLBData(detailData);
-                            global.io.sockets.emit('broadcast', { broadcastingData });
+                            if (detailData.hasOwnProperty('statistics')) {
+                                broadcastingData.player = getMLBData(detailData);
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                            }
                         }
                     }
                 }
@@ -582,11 +585,23 @@ const getLiveDataByEvent = async () => {
                     updateBet(event._id);
                     stream.abort();
                 }
+                if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                    failCount++;
+                    if (failCount > 100) {
+                        await Event.updateOne({
+                            _id: event._id
+                        }, {
+                            $set: {
+                                state: 2
+                            }
+                        });
+                        stream.abort();
+                    }
+                }
             });
             // Handle errors
             stream.on('error', async (error) => {
                 console.error('Error:', error);
-                stream.abort();
                 await Event.updateOne({
                     _id: event._id
                 }, {
@@ -594,12 +609,12 @@ const getLiveDataByEvent = async () => {
                         state: 2
                     }
                 });
+                stream.abort();
             });
 
             // Handle the end of the stream
             stream.on('end', async () => {
                 console.log('Stream ended');
-                stream.abort();
                 await Event.updateOne({
                     _id: event._id
                 }, {
@@ -607,6 +622,7 @@ const getLiveDataByEvent = async () => {
                         state: 2
                     }
                 });
+                stream.abort();
             });
 
 
