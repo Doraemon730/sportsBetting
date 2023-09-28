@@ -1,5 +1,6 @@
 const Transaction = require('../models/Transaction');
 const Ethereum = require('../models/Ethereum');
+const Capital = require('../models/Capital');
 const User = require('../models/User');
 const {
     updateCapital
@@ -285,6 +286,140 @@ const checkWithdraw = (user) => {
     return false
 }
 
+const getRevenue = async (req, res) => {
+    try {
+        const data_1 = await Transaction.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$transactionType',
+                amount: { $sum: '$amountETH' },
+            }
+        }]);
+
+        const data_14 = await Transaction.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$transactionType',
+                amount: { $sum: '$amountETH' },
+            }
+        }])
+
+        const data_30 = await Transaction.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$transactionType',
+                amount: { $sum: '$amountETH' },
+            }
+        }])
+
+        const data_365 = await Transaction.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$transactionType',
+                amount: { $sum: '$amountETH' },
+            }
+        }])
+
+        const data_max = await Transaction.aggregate([{
+            $group: {
+                _id: '$transactionType',
+                amount: { $sum: '$amountETH' },
+            }
+        }])
+
+
+        const statistic = await Capital.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+
+        result = { revenue: [], profit: [], total: statistic.total };
+        let betAmount = 0;
+        let prizeAmount = 0;
+        for (let i = 0; i < data_1.length; i++) {
+            if (data_1[i]._id == 'bet')
+                betAmount = data_1[i].amount;
+            if (data_1[i]._id == 'prize')
+                prizeAmount = data_1[i].amount;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_14.length; i++) {
+            if (data_14[i]._id == 'bet')
+                betAmount = data_14[i].amount;
+            if (data_14[i]._id == 'prize')
+                prizeAmount = data_14[i].amount;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_30.length; i++) {
+            if (data_30[i]._id == 'bet')
+                betAmount = data_30[i].amount;
+            if (data_30[i]._id == 'prize')
+                prizeAmount = data_30[i].amount;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_365.length; i++) {
+            if (data_365[i]._id == 'bet')
+                betAmount = data_365[i].amount;
+            if (data_365[i]._id == 'prize')
+                prizeAmount = data_365[i].amount;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_max.length; i++) {
+            if (data_max[i]._id == 'bet')
+                betAmount = data_max[i].amount;
+            if (data_max[i]._id == 'prize')
+                prizeAmount = data_max[i].amount;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
+}
+
 module.exports = {
     depositBalance,
     withdrawBalance,
@@ -292,5 +427,6 @@ module.exports = {
     getETHPrice,
     getETHPriceFromMarket,
     getAllTransactions,
-    getTransactionsByUserId
+    getTransactionsByUserId,
+    getRevenue
 }
