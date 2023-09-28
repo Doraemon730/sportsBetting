@@ -142,7 +142,23 @@ const remove = async (req, res) => {
     res.json("Success");
   }
 
-
+const addSoccerTeam = async (req, res) => {
+    try{
+        const {name, remoteId, alias, srId} = req.body;
+        const team = new Team({
+            name,
+            sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+            remoteId,
+            alias,
+            srId
+        });
+        await team.save();
+        res.json(team);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send("Error");
+    }
+}
 module.exports = {
     addNBATeamsToDatabase,
     getIdfromRemoteId,
@@ -150,5 +166,6 @@ module.exports = {
     addNFLTeamsToDatabase,
     addNHLTeamsToDatabase,
     addMLBTeamsToDatabase,
-    remove
+    remove,
+    addSoccerTeam
 }
