@@ -3,7 +3,7 @@ const Player = require('../models/Player');
 const Prop = require('../models/Prop');
 const User = require('../models/User');
 const Team = require('../models/Team');
-const {updateCapital} = require('./capitalController');
+const { updateCapital } = require('./capitalController');
 const request = require('request')
 const {
     NFL_LIVEDATA_BASEURL,
@@ -33,7 +33,7 @@ const {
     fetchSoccerEventSummary
 } = require('../services/eventService');
 
-const {USD2Ether, Ether2USD} = require('../utils/util');
+const { USD2Ether, Ether2USD } = require('../utils/util');
 const {
     BET_2_2_HIGH,
     BET_3_3_HIGH,
@@ -47,11 +47,11 @@ const {
     BET_4_6_LOW,
     BET_5_6_LOW,
     BET_6_6_LOW
-  } = require('../config/constant');
+} = require('../config/constant');
 const {
     fetchSoccerPlayerProfile
 } = require('../services/playerService');
-const {addPrizeTransaction} = require('./transactionController.js');
+const { addPrizeTransaction } = require('./transactionController.js');
 const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
@@ -85,13 +85,13 @@ const getWeeklyEventsNFL = async () => {
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
-            
-            
+
+
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
-            
-            if(!playerProps)
+
+            if (!playerProps)
                 continue;
-            const existingEvent = await Event.findOne({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id:event.sport_event.id});
+            const existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id: event.sport_event.id });
             if (existingEvent) {
                 // Event already exists, update it
                 myEvent = existingEvent;
@@ -99,11 +99,11 @@ const getWeeklyEventsNFL = async () => {
                 // await existingEvent.set(myEvent);
                 // await existingEvent.save();
                 // console.log('Event updated!');
-                } else {
+            } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
                 console.log('New event inserted!');
-            }   
+            }
             //await myEvent.save();
             for (const playerProp of playerProps) {
                 //console.log(playerProp.player.id);
@@ -132,13 +132,13 @@ const getWeeklyEventsNFL = async () => {
                 }
                 await player.save();
             }
-            
+
 
         }
-        
+
     } catch (error) {
         console.log(error.message);
-        
+
     }
 }
 
@@ -179,20 +179,20 @@ const getWeeklyEventsMLB = async () => {
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
-            
+
 
             const playerProps = await fetchEventPlayerProps(event.sport_event.id);
-            const existingEvent = await Event.findOne({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id:event.sport_event.id});
-            if (existingEvent) {                
+            const existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id: event.sport_event.id });
+            if (existingEvent) {
                 myEvnt = existingEvent;
-                } else {
+            } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
                 console.log('New event inserted!');
-            }   
+            }
             //await myEvent.save();
             //console.log(playerProps);
-            if(!playerProps)
+            if (!playerProps)
                 continue;
             await myEvent.save();
             for (const playerProp of playerProps) {
@@ -230,10 +230,10 @@ const getWeeklyEventsMLB = async () => {
             //console.log(playerProps);
 
         }
-        
+
     } catch (error) {
         console.log(error);
-        
+
     }
 };
 const competitiorDraft = [
@@ -269,33 +269,33 @@ const nameDraft = [
     "Ronaldo, Cristiano"
 ];
 const processSoccerEvents = async (mappings, events) => {
-    try{
-        
-        for(const event of events) {            
+    try {
+
+        for (const event of events) {
             let myEvent = new Event({
                 id: event.sport_event.id,
                 startTime: event.sport_event.start_time,
                 sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
             });
             let alias = [], index = -1;
-            for (const competitor of event.sport_event.competitors) {                
+            for (const competitor of event.sport_event.competitors) {
                 myEvent.competitors.push(competitor);
                 index = competitiorDraft.indexOf(competitor.id);
                 alias.push(competitor.abbreviation);
             }
-            if(index === -1)
+            if (index === -1)
                 continue;
             myEvent.name = alias[0] + " vs " + alias[1];
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
-            
+
             const markets = await fetchSoccerPlayerProps(event.sport_event.id);
             //console.log(markets);
-             const market = markets.find(item => item.name ==="anytime goalscorer");
-            if(!market)
-                 continue;
-            const existingEvent = await Event.findOne({sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id:event.sport_event.id});
+            const market = markets.find(item => item.name === "anytime goalscorer");
+            if (!market)
+                continue;
+            const existingEvent = await Event.findOne({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id: event.sport_event.id });
             if (existingEvent) {
                 // Event already exists, update it
                 myEvent = existingEvent;
@@ -303,39 +303,38 @@ const processSoccerEvents = async (mappings, events) => {
                 // await existingEvent.set(myEvent);
                 // await existingEvent.save();
                 // console.log('Event updated!');
-              } else {
+            } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
                 console.log('New event inserted!');
-            }            
-            for(const play of market.books[0].outcomes){
-                let player = await Player.findOne({srId: play.player_id});
-                if(!player)                {                    
+            }
+            for (const play of market.books[0].outcomes) {
+                let player = await Player.findOne({ srId: play.player_id });
+                if (!player) {
 
                     const profile = await fetchSoccerPlayerProfile(play.player_id);
                     let name = profile.player.name;
-                    if(nameDraft.indexOf(name) !== -1)
-                    {                       
-                    
-                    console.log("asdf" + profile.player.name);
-                    player = new Player({
-                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                        name: profile.player.name,
-                        jerseyNumber: profile.player.jersey_number,
-                        position: profile.player.type,
-                        srId: play.player_id,
-                        teamName:profile.competitors[0].abbreviation,
-                    }); 
-                    player.odds.push({
-                        id: new ObjectId('65132681ccd67ffa439d6ead'),
-                        value: 0.5,
-                        event: myEvent._id
-                    });
-                    await player.save();                  
-                    } 
+                    if (nameDraft.indexOf(name) !== -1) {
+
+                        console.log("asdf" + profile.player.name);
+                        player = new Player({
+                            sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+                            name: profile.player.name,
+                            jerseyNumber: profile.player.jersey_number,
+                            position: profile.player.type,
+                            srId: play.player_id,
+                            teamName: profile.competitors[0].abbreviation,
+                        });
+                        player.odds.push({
+                            id: new ObjectId('65132681ccd67ffa439d6ead'),
+                            value: 0.5,
+                            event: myEvent._id
+                        });
+                        await player.save();
+                    }
                 }
                 else {
-                    if(player.odds.length) {
+                    if (player.odds.length) {
                         player.odds[0].event = myEvent._id;
                         player.odds[0].value = 0.5;
                     } else {
@@ -343,20 +342,20 @@ const processSoccerEvents = async (mappings, events) => {
                             id: new ObjectId('65132681ccd67ffa439d6ead'),
                             value: 0.5,
                             event: myEvent._id
-                        });                    
+                        });
                     }
-                    await player.save();                
+                    await player.save();
                 }
-                
+
             }
         }
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }
 const getWeeklyEventsUEFA = async (mappings) => {
-    try{        
-        const events = await fetchWeeklyEventsUEFA();        
+    try {
+        const events = await fetchWeeklyEventsUEFA();
         console.log("UEFA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -364,8 +363,8 @@ const getWeeklyEventsUEFA = async (mappings) => {
     }
 };
 const getWeeklyEventsSaudi = async (mappings) => {
-    try{        
-        const events = await fetchWeeklyEventsSaudi();        
+    try {
+        const events = await fetchWeeklyEventsSaudi();
         console.log("Saudi");
         await processSoccerEvents(mappings, events);
     } catch (error) {
@@ -373,7 +372,7 @@ const getWeeklyEventsSaudi = async (mappings) => {
     }
 };
 const getWeeklyEventsLaLiga = async (mappings) => {
-    try{        
+    try {
         const events = await fetchWeeklyEventsLaLiga();
         console.log("LaLiga");
         await processSoccerEvents(mappings, events);
@@ -382,7 +381,7 @@ const getWeeklyEventsLaLiga = async (mappings) => {
     }
 };
 const getWeeklyEventsPremierLeague = async (mappings) => {
-    try{        
+    try {
         const events = await fetchWeeklyEventsPremierLeague();
         console.log("PremierLeague");
         await processSoccerEvents(mappings, events);
@@ -391,8 +390,8 @@ const getWeeklyEventsPremierLeague = async (mappings) => {
     }
 };
 const getWeeklyEventsSerieA = async (mappings) => {
-    try{
-       
+    try {
+
         const events = await fetchWeeklyEventsSerieA();
         console.log("SerieA");
         await processSoccerEvents(mappings, events);
@@ -401,7 +400,7 @@ const getWeeklyEventsSerieA = async (mappings) => {
     }
 };
 const getWeeklyEventsLigue1 = async (mappings) => {
-    try{       
+    try {
         const events = await fetchWeeklyEventsLigue1();
         console.log("Ligue1");
         await processSoccerEvents(mappings, events);
@@ -410,7 +409,7 @@ const getWeeklyEventsLigue1 = async (mappings) => {
     }
 };
 const getWeeklyEventsBundesliga = async (mappings) => {
-    try{        
+    try {
         const events = await fetchWeeklyEventsBundesliga();
         console.log("Bundesliga");
         await processSoccerEvents(mappings, events);
@@ -419,8 +418,8 @@ const getWeeklyEventsBundesliga = async (mappings) => {
     }
 };
 const getWeeklyEventsMLS = async (mappings) => {
-    try{
-       
+    try {
+
         const events = await fetchWeeklyEventsMLS();
         console.log("MLS");
         await processSoccerEvents(mappings, events);
@@ -429,7 +428,7 @@ const getWeeklyEventsMLS = async (mappings) => {
     }
 };
 const getWeeklyEventsSoccer = async () => {
-    try{
+    try {
         const mappings = await fetchEventMapping();
         if (!mappings || !Array.isArray(mappings)) {
             console.log('no mappings');
@@ -442,10 +441,10 @@ const getWeeklyEventsSoccer = async () => {
         await getWeeklyEventsBundesliga(mappings);
         await getWeeklyEventsMLS(mappings);
         await getWeeklyEventsSaudi(mappings);
-        
-    } catch(error) {
+
+    } catch (error) {
         console.log(error.message);
-       
+
     }
 };
 const remove = async (req, res) => {
@@ -461,84 +460,120 @@ const remove = async (req, res) => {
 
 const getLiveDataByEvent = async () => {
     try {
-        const events = await Event.find();
+        const events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
+        // console.log(events.length);
         for (const event of events) {
-            if (event.status == 0 && event.startTime <= new Date().now()) {
-                url = ""
-                let sportType = ""
-                console.log()
-                if (event.sportId == '650e0b6fb80ab879d1c142c8') {
-                    url = `${NFL_LIVEDATA_BASEURL}=${NFL_API_KEY}&match=sd:match:${event.matchId}`
-                    sportType = "NFL"
-                }
-                // if (event.sportId == '65108faf4fa2698548371fbd') {
-                //     url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
-                //     sportType = "NHL"
-                // }
-                if (event.sportId == '65108fcf4fa2698548371fc0') {
-                    url = `${MLB_LIVEDATA_BASEURL}=${MLB_API_KEY}&match=sd:match:${event.matchId}`
-                    sportType = "MLB"
-                }
+            url = ""
+            let sportType = ""
+            if (new Date().getTime() - event.startTime > 1000 * 60 * 60 * 3) {
                 await Event.updateOne({
                     _id: event._id
                 }, {
                     $set: {
-                        state: 1
+                        state: 3
                     }
                 })
-                let broadcastingData = {
-                    eventId: event._id
-                }
-                const stream = request(url);
-                const isCompleted = false;
-                stream.on('data', async (chunk) => {
-                    // Process the incoming data chunk here
-                    console.log(chunk);
-                    const jsonData = JSON.parse(chunk.toString());
-                    if (jsonData.hasOwnProperty('payload')) {
-                        const detailData = jsonData['payload'];
-                        if (detailData.hasOwnProperty('player')) {
-                            if (sportType == "NFL") {
-                                broadcastingData.player = getNFLData(detailData);
-                            }
-                            // if (sportType == "NHL") {
-                            //     broadcastingData.player = getNHLData(detailData);
-                            // }
-                            if (sportType == "MLB") {
-                                broadcastingData.player = getMLBData(detailData);
-                                global.io.sockets.emit('broadcast',{ broadcastingData});
-                            }
-                        }
-                    }
-                    if (jsonData.hasOwnProperty('metadata')) {
-                        const metadata = jsonData['metadata'];
-                        if (metadata['status'] == 'complete') {
-                            isCompleted = true;
-                        }
-                    }
-                    if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                        await Event.updateOne({
-                            _id: event._id
-                        }, {
-                            $set: {
-                                state: 2
-                            }
-                        });
-                        updateBet(event._id);
-                        stream.abort();
-                    }
-                });
-                // Handle errors
-                stream.on('error', (error) => {
-                    console.error('Error:', error);
-                });
-
-                // Handle the end of the stream
-                stream.on('end', () => {
-                    console.log('Stream ended');
-                });
-
+                continue;
             }
+
+            if (event.sportId == '650e0b6fb80ab879d1c142c8') {
+                url = `${NFL_LIVEDATA_BASEURL}=${NFL_API_KEY}&match=sd:match:${event.matchId}`
+                sportType = "NFL"
+            }
+            // if (event.sportId == '65108faf4fa2698548371fbd') {
+            //     url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
+            //     sportType = "NHL"
+            // }
+            else if (event.sportId == '65108fcf4fa2698548371fc0') {
+                url = `${MLB_LIVEDATA_BASEURL}=${MLB_API_KEY}&match=sd:match:${event.matchId}`
+                sportType = "MLB"
+            } else {
+                await Event.updateOne({
+                    _id: event._id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
+                continue;
+            }
+            console.log(event)
+            await Event.updateOne({
+                _id: event._id
+            }, {
+                $set: {
+                    state: 1
+                }
+            })
+            let broadcastingData = {
+                eventId: event._id
+            }
+            const stream = request(url);
+            const isCompleted = false;
+            stream.on('data', async (chunk) => {
+                // Process the incoming data chunk here
+                const jsonData = JSON.parse(chunk.toString());
+                console.log(event.name, jsonData);
+                if (jsonData.hasOwnProperty('payload')) {
+                    const detailData = jsonData['payload'];
+                    if (detailData.hasOwnProperty('player')) {
+                        if (sportType == "NFL") {
+                            broadcastingData.player = getNFLData(detailData);
+                        }
+                        // if (sportType == "NHL") {
+                        //     broadcastingData.player = getNHLData(detailData);
+                        // }
+                        if (sportType == "MLB") {
+                            broadcastingData.player = getMLBData(detailData);
+                            global.io.sockets.emit('broadcast', { broadcastingData });
+                        }
+                    }
+                }
+                if (jsonData.hasOwnProperty('metadata')) {
+                    const metadata = jsonData['metadata'];
+                    if (metadata['status'] == 'complete') {
+                        isCompleted = true;
+                    }
+                }
+                if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                    await Event.updateOne({
+                        _id: event._id
+                    }, {
+                        $set: {
+                            state: 2
+                        }
+                    });
+                    updateBet(event._id);
+                    stream.abort();
+                }
+            });
+            // Handle errors
+            stream.on('error', async (error) => {
+                console.error('Error:', error);
+                stream.abort();
+                await Event.updateOne({
+                    _id: event._id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                });
+            });
+
+            // Handle the end of the stream
+            stream.on('end', async () => {
+                console.log('Stream ended');
+                stream.abort();
+                await Event.updateOne({
+                    _id: event._id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                });
+            });
+
+
         }
     } catch (error) {
         throw new Error(error.message);
@@ -631,15 +666,15 @@ const getMLBData = (detailData) => {
 
 const summarizeStatsByPlayer = (data, category) => {
     const homeStats = data.statistics.home[category].players.map((player) => ({
-      player: player.name,
-      ...player,
+        player: player.name,
+        ...player,
     }));
-  
+
     const awayStats = data.statistics.away[category].players.map((player) => ({
-      player: player.name,
-      ...player,
+        player: player.name,
+        ...player,
     }));
-  
+
     return [...homeStats, ...awayStats];
 };
 
@@ -652,76 +687,76 @@ const updateNFLBet = async (event) => {
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
         const fieldGoalStats = summarizeStatsByPlayer(statistics, 'field_goals');
         const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
-        for(const bet of event.participants){
+        for (const bet of event.participants) {
             //const pick = bet.picks.find(item => item.contestId === event._id);
-            if(bet.status != 'pending')
+            if (bet.status != 'pending')
                 continue;
             let finished = 0, win = 0, refund = 0;
-            for(const pick of bet.picks) {
-                if(String(pick.contestId) === String(event._id)){
+            for (const pick of bet.picks) {
+                if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
-                    switch(pick.prop.propName){
+                    switch (pick.prop.propName) {
                         case 'Rush Yards':
-                            play = rushingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = rushingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.yards;
-                            
+
                             break;
                         case 'Pass Yards':
-                            play = passingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = passingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.yards;
                             break;
                         case 'Pass Attempts':
-                            play = passingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = passingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.attempts;
                             break;
                         case 'Pass Completions':
-                            play = passingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = passingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.completions;
                             break;
                         case 'Pass TDs':
-                            play = passingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = passingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.touchdown;
                             break;
                         case 'INT':
-                            play = passingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = passingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.interceptions;
                             break;
                         case 'Receiving Yards':
-                            play = receivingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = receivingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.yards;
                             break;
                         case 'Receptions':
-                            play = receivingStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = receivingStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.receptions;
                             break;
                         case 'FG Made':
-                            play = fieldGoalStats.find(item=> item.id === player.remoteId);
-                            if(play)
+                            play = fieldGoalStats.find(item => item.id === player.remoteId);
+                            if (play)
                                 result = play.made;
                             break;
                         case 'Tackles+Ast':
                             play = defenseStats.find(item => item.id === player.remoteId)
-                            if(play)
+                            if (play)
                                 result = play.tackles + play.assists;
                             break;
                     }
-                    if(!play)
+                    if (!play)
                         refund = 1;
                     else {
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     }
                 }
-                if(pick.result) {
+                if (pick.result) {
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -729,129 +764,158 @@ const updateNFLBet = async (event) => {
                     }
                 }
             }
-            if (refund)
-            {
+            if (refund) {
                 const user = await User.findById(bet.userId);
                 if (bet.credit > 0)
                     user.credits += bet.credit;
-                let entryFee = await Ether2USD(bet.entryFee);
-                let entryETH = await USD2Ether(entryFee - bet.credit);
+                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                 user.ETH_balance += entryETH;
-        
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
                 continue;
             }
             if (finished == bet.picks.length) {
-                
-                  switch (finished) {
+                switch (finished) {
                     case 2:
-                      if (win == 2) {
-                        bet.prize = bet.entryFee * BET_2_2_HIGH;
-                        bet.status = "win"
-                      } else {
-                        bet.prize = 0;
-                        bet.status = "lost"
-                      }
-                      break;
+                        if (win == 2) {
+                            bet.prize = bet.entryFee * BET_2_2_HIGH;
+                            bet.status = "win"
+                        } else {
+                            bet.prize = 0;
+                            bet.status = "lost"
+                        }
+                        break;
                     case 3:
-                      switch (win) {
-                        case 2:
-                          bet.prize = bet.entryFee * BET_2_3_LOW;
-                          bet.status = "win"
-                          break;
-                        case 3:
-                          if (bet.betType.equals("high"))
-                            bet.prize = bet.entryFee * BET_3_3_HIGH;
-                          else
-                            bet.prize = bet.entryFee * BET_3_3_LOW;
-                          bet.status = "win"
-                          break;
-                        default:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 2:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_2_3_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 3:
+                                if (bet.betType.equals("high"))
+                                    bet.prize = bet.entryFee * BET_3_3_HIGH;
+                                else
+                                    bet.prize = bet.entryFee * BET_3_3_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        }
+                        break;
                     case 4:
-                      switch (win) {
-                        case 3:
-                          bet.prize = bet.entryFee * BET_3_4_LOW;
-                          bet.status = "win"
-                          break;
-                        case 4:
-                          if (bet.betType.equals("high"))
-                            bet.prize = bet.entryFee * BET_4_4_HIGH;
-                          else
-                            bet.prize = bet.entryFee * BET_4_4_LOW;
-                          bet.status = "win"
-                          break;
-                        default:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      };
-                      break;
+                        switch (win) {
+                            case 3:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_3_4_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 4:
+                                if (bet.betType.equals("high"))
+                                    bet.prize = bet.entryFee * BET_4_4_HIGH;
+                                else
+                                    bet.prize = bet.entryFee * BET_4_4_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        };
+                        break;
                     case 5:
-                      switch (win) {
-                        case 3:
-                          bet.prize = bet.entryFee * BET_3_5_LOW;
-                          bet.status = "win"
-                          break;
-                        case 4:
-                          bet.prize = bet.entryFee * BET_4_5_LOW;
-                          bet.status = "win"
-                          break;
-                        case 5:
-                          bet.prize = bet.entryFee * BET_5_5_LOW;
-                          bet.status = "win"
-                          break;
-                          defaut:
-                          bet.prize = 0;
-                          bet.status = "lost";
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 3:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_3_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 4:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_4_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 5:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_5_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost";
+                                break;
+                        }
+                        break;
                     case 6:
-                      switch (win) {
-                        case 4:
-                          bet.prize = bet.entryFee * BET_4_6_LOW;
-                          bet.status = "win"
-                          break;
-                        case 5:
-                          bet.prize = bet.entryFee * BET_5_6_LOW;
-                          bet.status = "win"
-                          break;
-                        case 6:
-                          bet.prize = bet.entryFee * BET_6_6_LOW;
-                          bet.status = "win"
-                          break;
-                          defaut:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 4:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_4_6_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 5:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_5_6_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 6:
+                                bet.prize = bet.entryFee * BET_6_6_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        }
+                        break;
                     default:
-                      break;
-                  }
-                  if (bet.status === "win")
-                    await addPrizeTransaction(bet.userId, bet.prize);
-                
-                if (bet.status === 'win') {
-                  const user = await User.findById(bet.userId);
-                  if (user) {
-                    user.wins += 1;
-                   
-                  }
-                  await user.save();
-                  await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
-                } else {
-                  await updateCapital(2, await USD2Ether(bet.entryFee));
+                        break;
                 }
-              }            
-              await bet.save();        
+                if (bet.status === "win")
+                    await addPrizeTransaction(bet.userId, bet.prize);
+                if (bet.status === 'win') {
+                    const user = await User.findById(bet.userId);
+                    if (user) {
+                        user.wins += 1;
+                    }
+                    await user.save();
+                    await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                } else {
+                    await updateCapital(2, await USD2Ether(bet.entryFee));
+                }
+            }
+            await bet.save();
         }
 
     } catch (error) {
@@ -865,83 +929,79 @@ const summarizeMLBStatsByPlayer = (data, category) => {
 
 
     return [...homeStats, ...awayStats];
-  
+
 };
 const updateMLBBet = async (event) => {
-    try{
-        console.log("0");
+    try {
         const summary = await fetchMLBGameSummary(event.matchId);
         const players = summarizeMLBStatsByPlayer(summary);
-        for(const bet of event.participants){
+        for (const bet of event.participants) {
             //const pick = bet.picks.find(item => item.contestId === event._id);
-            if(!bet || bet.status != 'pending')
+            if (!bet || bet.status != 'pending')
                 continue;
-            console.log("1");
             let finished = 0, win = 0, refund = 0;
-            for(const pick of bet.picks) {
-                if(String(pick.contestId) === String(event._id)){
-                    console.log("2");
+            for (const pick of bet.picks) {
+                if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id === player.remoteId);
-                    if(!play)
+                    if (!play)
                         continue;
                     console.log(pick.prop.propName);
                     console.log(play.statistics.hitting);
-                    switch(pick.prop.propName){
-                        case 'Pitcher Strikeouts':                            
-                            if(play.statistics.hitting)
+                    switch (pick.prop.propName) {
+                        case 'Pitcher Strikeouts':
+                            if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.outs.ktotal ?
-                                play.statistics.hitting.overall.outs.ktotal: 0;                            
+                                    play.statistics.hitting.overall.outs.ktotal : 0;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.outs.ktotal ?
-                                play.statistics.pitching.overall.outs.ktotal: 0;                            
+                                    play.statistics.pitching.overall.outs.ktotal : 0;
                             break;
                         case 'Total bases':
-                            console.log(play.statistics.hitting);                            
-                            if(play.statistics.hitting)
+                            console.log(play.statistics.hitting);
+                            if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.tb ?
-                                play.statistics.hitting.overall.onbase.tb: 0;                            
+                                    play.statistics.hitting.overall.onbase.tb : 0;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.tb ?
-                                play.statistics.pitching.overall.onbase.tb: 0;                            
+                                    play.statistics.pitching.overall.onbase.tb : 0;
                             break;
-                        case 'Earned Runs':                            
-                            if(play.statistics.hitting)
+                        case 'Earned Runs':
+                            if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.runs.earned ?
-                                play.statistics.hitting.overall.runs.earned: 0;                            
+                                    play.statistics.hitting.overall.runs.earned : 0;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.earned ?
-                                play.statistics.pitching.overall.runs.earned: 0;                            
+                                    play.statistics.pitching.overall.runs.earned : 0;
                             break;
                         case 'Total Hits':
-                            if(play.statistics.hitting)
+                            if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.h ?
-                                play.statistics.hitting.overall.onbase.h: 0;                            
+                                    play.statistics.hitting.overall.onbase.h : 0;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.h ?
-                                play.statistics.pitching.overall.onbase.h: 0;                            
+                                    play.statistics.pitching.overall.onbase.h : 0;
                             break;
-                            
+
                         case 'Total Runs':
                             //play = passingStats.find(item=> item.id === player.remoteId);
-                            if(play.statistics.hitting)
+                            if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.runs.total ?
-                                play.statistics.hitting.overall.runs.total: 0;                            
+                                    play.statistics.hitting.overall.runs.total : 0;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.total ?
-                                play.statistics.pitching.overall.runs.total: 0;                            
-                            break;                        
+                                    play.statistics.pitching.overall.runs.total : 0;
+                            break;
                     }
-                    if(!play)
+                    if (!play)
                         refund = 1;
                     else {
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     }
                 }
-                console.log(pick.result);
-                if(pick.result) {
+                if (pick.result) {
                     finished += 1;
                     if (pick.overUnder === "over" && pick.result > pick.prop.odds ||
                         pick.overUnder === "under" && pick.result < pick.prop.odds) {
@@ -949,131 +1009,154 @@ const updateMLBBet = async (event) => {
                     }
                 }
             }
-            if (refund)
-            {
+            if (refund) {
                 const user = await User.findById(bet.userId);
                 if (bet.credit > 0)
                     user.credits += bet.credit;
-                let entryFee = await Ether2USD(bet.entryFee);
-                let entryETH = await USD2Ether(entryFee - bet.credit);
+                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                 user.ETH_balance += entryETH;
-        
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
                 continue;
             }
             if (finished === bet.picks.length) {
-                console.log("finished");
-                  switch (finished) {
+                switch (finished) {
                     case 2:
-                      if (win == 2) {
-                        bet.prize = bet.entryFee * BET_2_2_HIGH;
-                        bet.status = "win"
-                      } else {
-                        bet.prize = 0;
-                        bet.status = "lost"
-                      }
-                      break;
+                        if (win == 2) {
+                            bet.prize = bet.entryFee * BET_2_2_HIGH;
+                            bet.status = "win"
+                        } else {
+                            bet.prize = 0;
+                            bet.status = "lost"
+                        }
+                        break;
                     case 3:
-                      switch (win) {
-                        case 2:
-                          bet.prize = bet.entryFee * BET_2_3_LOW;
-                          bet.status = "win"
-                          break;
-                        case 3:
-                          if (bet.betType.equals("high"))
-                            bet.prize = bet.entryFee * BET_3_3_HIGH;
-                          else
-                            bet.prize = bet.entryFee * BET_3_3_LOW;
-                          bet.status = "win"
-                          break;
-                        default:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 2:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_2_3_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 3:
+                                if (bet.betType.equals("high"))
+                                    bet.prize = bet.entryFee * BET_3_3_HIGH;
+                                else
+                                    bet.prize = bet.entryFee * BET_3_3_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        }
+                        break;
                     case 4:
-                      switch (win) {
-                        case 3:
-                          bet.prize = bet.entryFee * BET_3_4_LOW;
-                          bet.status = "win"
-                          break;
-                        case 4:
-                          if (bet.betType.equals("high"))
-                            bet.prize = bet.entryFee * BET_4_4_HIGH;
-                          else
-                            bet.prize = bet.entryFee * BET_4_4_LOW;
-                          bet.status = "win"
-                          break;
-                        default:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      };
-                      break;
+                        switch (win) {
+                            case 3:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_3_4_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 4:
+                                if (bet.betType.equals("high"))
+                                    bet.prize = bet.entryFee * BET_4_4_HIGH;
+                                else
+                                    bet.prize = bet.entryFee * BET_4_4_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        };
+                        break;
                     case 5:
-                      switch (win) {
-                        case 3:
-                          bet.prize = bet.entryFee * BET_3_5_LOW;
-                          bet.status = "win"
-                          break;
-                        case 4:
-                          bet.prize = bet.entryFee * BET_4_5_LOW;
-                          bet.status = "win"
-                          break;
-                        case 5:
-                          bet.prize = bet.entryFee * BET_5_5_LOW;
-                          bet.status = "win"
-                          break;
-                          defaut:
-                          bet.prize = 0;
-                          bet.status = "lost";
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 3:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_3_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 4:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_4_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 5:
+                                bet.prize = bet.entryFee * BET_5_5_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost";
+                                break;
+                        }
+                        break;
                     case 6:
-                      switch (win) {
-                        case 4:
-                          bet.prize = bet.entryFee * BET_4_6_LOW;
-                          bet.status = "win"
-                          break;
-                        case 5:
-                          bet.prize = bet.entryFee * BET_5_6_LOW;
-                          bet.status = "win"
-                          break;
-                        case 6:
-                          bet.prize = bet.entryFee * BET_6_6_LOW;
-                          bet.status = "win"
-                          break;
-                          defaut:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 4:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_4_6_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 5:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_5_6_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 6:
+                                bet.prize = bet.entryFee * BET_6_6_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        }
+                        break;
                     default:
-                      break;
-                  }
-                  if (bet.status === "win"){
+                        break;
+                }
+                if (bet.status === "win") {
                     await addPrizeTransaction(bet.userId, bet.prize);
-                  }
                 }
                 if (bet.status == 'win') {
-                  const user = await User.findById(bet.userId);
-                  if (user) {
-                    user.wins += 1;
-                   
-                  }
-                  await user.save();
-                  await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                    const user = await User.findById(bet.userId);
+                    if (user) {
+                        user.wins += 1;
+                    }
+                    await user.save();
+                    await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
-                  await updateCapital(2, await USD2Ether(bet.entryFee));
-                }              
-      
-              await bet.save();
-            
+                    await updateCapital(2, await USD2Ether(bet.entryFee));
+                }
+                await bet.save();
+            }
         }
     } catch (error) {
         console.log(error);
@@ -1089,23 +1172,23 @@ const updateSoccerBet = async (event) => {
     try {
         let statistics = await fetchSoccerEventSummary(event.id);
         let players = getSoccerPlayers(statistics);
-        for(const bet of event.participants){
-            if(bet.status != 'pending')
+        for (const bet of event.participants) {
+            if (bet.status != 'pending')
                 continue;
             let finished = 0, win = 0, refund = 0;
             for (const pick of bet.picks) {
-                if(String(pick.contestId) === String(event._id)){
+                if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
-                    play = players.find(item=>item.id === player.srId && item.starter === true);
-                    if(play) {
+                    play = players.find(item => item.id === player.srId && item.starter === true);
+                    if (play) {
                         result = player.statistics.goals_scored;
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else
-                        refund = 1;                    
+                        refund = 1;
                 }
-                if(pick.result) {
+                if (pick.result) {
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1113,133 +1196,167 @@ const updateSoccerBet = async (event) => {
                     }
                 }
             }
-            if (refund)
-            {
+            if (refund) {
                 const user = await User.findById(bet.userId);
                 if (bet.credit > 0)
                     user.credits += bet.credit;
-                let entryFee = await Ether2USD(bet.entryFee);
-                let entryETH = await USD2Ether(entryFee - bet.credit);
-                user.ETH_balance += entryETH;    
+                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                user.ETH_balance += entryETH;
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
                 continue;
             }
             if (finished == bet.picks.length) {
-                
-                  switch (finished) {
+
+                switch (finished) {
                     case 2:
-                      if (win == 2) {
-                        bet.prize = bet.entryFee * BET_2_2_HIGH;
-                        bet.status = "win"
-                      } else {
-                        bet.prize = 0;
-                        bet.status = "lost"
-                      }
-                      break;
+                        if (win == 2) {
+                            bet.prize = bet.entryFee * BET_2_2_HIGH;
+                            bet.status = "win"
+                        } else {
+                            bet.prize = 0;
+                            bet.status = "lost"
+                        }
+                        break;
                     case 3:
-                      switch (win) {
-                        case 2:
-                          bet.prize = bet.entryFee * BET_2_3_LOW;
-                          bet.status = "win"
-                          break;
-                        case 3:
-                          if (bet.betType.equals("high"))
-                            bet.prize = bet.entryFee * BET_3_3_HIGH;
-                          else
-                            bet.prize = bet.entryFee * BET_3_3_LOW;
-                          bet.status = "win"
-                          break;
-                        default:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 2:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_2_3_LOW;
+                                    bet.status = "win"
+                                }
+                                bet.prize = bet.entryFee * BET_2_3_LOW;
+                                bet.status = "win"
+                                break;
+                            case 3:
+                                if (bet.betType.equals("high"))
+                                    bet.prize = bet.entryFee * BET_3_3_HIGH;
+                                else
+                                    bet.prize = bet.entryFee * BET_3_3_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        }
+                        break;
                     case 4:
-                      switch (win) {
-                        case 3:
-                          bet.prize = bet.entryFee * BET_3_4_LOW;
-                          bet.status = "win"
-                          break;
-                        case 4:
-                          if (bet.betType.equals("high"))
-                            bet.prize = bet.entryFee * BET_4_4_HIGH;
-                          else
-                            bet.prize = bet.entryFee * BET_4_4_LOW;
-                          bet.status = "win"
-                          break;
-                        default:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      };
-                      break;
+                        switch (win) {
+                            case 3:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_3_4_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 4:
+                                if (bet.betType.equals("high"))
+                                    bet.prize = bet.entryFee * BET_4_4_HIGH;
+                                else
+                                    bet.prize = bet.entryFee * BET_4_4_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        };
+                        break;
                     case 5:
-                      switch (win) {
-                        case 3:
-                          bet.prize = bet.entryFee * BET_3_5_LOW;
-                          bet.status = "win"
-                          break;
-                        case 4:
-                          bet.prize = bet.entryFee * BET_4_5_LOW;
-                          bet.status = "win"
-                          break;
-                        case 5:
-                          bet.prize = bet.entryFee * BET_5_5_LOW;
-                          bet.status = "win"
-                          break;
-                          defaut:
-                          bet.prize = 0;
-                          bet.status = "lost";
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 3:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_3_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 4:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_4_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 5:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_5_5_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost";
+                                break;
+                        }
+                        break;
                     case 6:
-                      switch (win) {
-                        case 4:
-                          bet.prize = bet.entryFee * BET_4_6_LOW;
-                          bet.status = "win"
-                          break;
-                        case 5:
-                          bet.prize = bet.entryFee * BET_5_6_LOW;
-                          bet.status = "win"
-                          break;
-                        case 6:
-                          bet.prize = bet.entryFee * BET_6_6_LOW;
-                          bet.status = "win"
-                          break;
-                          defaut:
-                          bet.prize = 0;
-                          bet.status = "lost"
-                          break;
-                      }
-                      break;
+                        switch (win) {
+                            case 4:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_4_6_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 5:
+                                if (bet.betType.equals("high")) {
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                } else {
+                                    bet.prize = bet.entryFee * BET_5_6_LOW;
+                                    bet.status = "win"
+                                }
+                                break;
+                            case 6:
+                                bet.prize = bet.entryFee * BET_6_6_LOW;
+                                bet.status = "win"
+                                break;
+                            default:
+                                bet.prize = 0;
+                                bet.status = "lost"
+                                break;
+                        }
+                        break;
                     default:
-                      break;
-                  }
-                  if (bet.status == "win")
-                    await addPrizeTransaction(bet.userId, bet.prize);
-                
-                if (bet.status == 'win') {
-                  const user = await User.findById(bet.userId);
-                  if (user) {
-                    user.wins += 1;
-                   
-                  }
-                  await user.save();
-                  await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
-                } else {
-                  await updateCapital(2, await USD2Ether(bet.entryFee));
+                        break;
                 }
-              }            
-              await bet.save(); 
+                if (bet.status == "win")
+                    await addPrizeTransaction(bet.userId, bet.prize);
+
+                if (bet.status == 'win') {
+                    const user = await User.findById(bet.userId);
+                    if (user) {
+                        user.wins += 1;
+
+                    }
+                    await user.save();
+                    await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                } else {
+                    await updateCapital(2, await USD2Ether(bet.entryFee));
+                }
+            }
+            await bet.save();
         }
     } catch (error) {
         console.log(error.message);
     }
-
 };
 
 const updateBet = async (eventId) => {
@@ -1250,13 +1367,13 @@ const updateBet = async (eventId) => {
         console.log(event);
         if (!event)
             return;
-        
+
         if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
             updateNFLBet(event);
         }
         if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
             updateMLBBet(event);
-        }        
+        }
         if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
             updateSoccerBet(event);
         }
@@ -1267,12 +1384,12 @@ const updateBet = async (eventId) => {
 
 const testBet = async (req, res) => {
     try {
-        const {eventId} = req.body;
+        const { eventId } = req.body;
         const event = await Event.findById(new ObjectId(eventId));
         console.log(event);
         await updateBet(event._id);
 
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }
