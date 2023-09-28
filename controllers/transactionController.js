@@ -241,6 +241,42 @@ const getAllTransactions = async (req, res) => {
     }
 }
 
+const getTransactionsByUserId = async (req, res) => {
+    try {
+        const page = parseInt(req.body.page) || 1;
+        const limit = parseInt(req.body.limit) || 10;
+        const userId = new ObjectId(req.user.id);
+
+        const count = await Transaction.countDocuments({ userId: userId });
+        const totalPages = Math.ceil(count / limit);
+
+        const startIndex = (page - 1) * limit;
+        const endIndex = page * limit;
+
+        const results = {};
+
+        if (endIndex < count) {
+            results.next = {
+                page: page + 1,
+                limit: limit
+            };
+        }
+
+        if (startIndex > 0) {
+            results.previous = {
+                page: page - 1,
+                limit: limit
+            };
+        }
+
+        results.totalPages = totalPages;
+        results.results = await Transaction.find({ userId: userId }).skip(startIndex).limit(limit);
+        res.json(results);
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
+}
+
 const checkWithdraw = (user) => {
     const firstDeposit = user.firstDepositAmount;
     const firstCredit = firstDeposit > 100 ? 100 : firstDeposit;
@@ -256,4 +292,5 @@ module.exports = {
     getETHPrice,
     getETHPriceFromMarket,
     getAllTransactions,
+    getTransactionsByUserId
 }
