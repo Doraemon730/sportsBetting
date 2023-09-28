@@ -7,8 +7,11 @@ const rateLimit = require('express-rate-limit');
 const geoip = require('geoip-lite');
 // const https = require('https');
 // const fs = require('fs');
+const {createServer} = require('http');
+const {Server} = require('socket.io');
 
 const app = express();
+const httpServer = createServer(app);
 const {
   WednesdayJob,
   ThursdayJob,
@@ -88,23 +91,34 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// const options = {
-//   key: fs.readFileSync('private.key'),
-//   cert: fs.readFileSync('certificate.crt'),
-//   passphrase: '!@QWAS3ed'
-// }
 
 const PORT = process.env.PORT || 5000;
 const now = new Date();
-// https.createServer(options, app).listen(PORT, () => {
-//   console.log(`Server started on port ${PORT}`);
 
-//   WednesdayJob.start();
-//   ThursdayJob.start();
-//   EtherJob.start();
-// });
+let nextVisitorNumber = 1;
+const onlineClients = new Set();
+function onNewWebsocketConnection(socket) {
+  console.info(`Socket ${socket.id} has connected.`);
+  onlineClients.add(socket.id);
 
-app.listen(PORT, () => {
+  socket.on("disconnect", () => {
+      onlineClients.delete(socket.id);
+      console.info(`Socket ${socket.id} has disconnected.`);
+  });
+
+  // echoes on the terminal every "hello" message this socket sends
+  socket.on("hello", helloMsg => console.info(`Socket ${socket.id} says: "${helloMsg}"`));
+
+  // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
+  socket.emit("welcome", `Welcome! You are visitor number ${nextVisitorNumber++}`);
+}
+
+// bind socket.io to that server
+global.io = new Server(httpServer, { cors: { origin: '*' } });
+
+global.io.on("connection", onNewWebsocketConnection);
+
+httpServer.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 
   WednesdayJob.start();
