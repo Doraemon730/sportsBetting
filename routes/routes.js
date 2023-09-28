@@ -249,4 +249,5 @@ router.post('/admin/getWeeklyScheduleSoccer', eventController.getWeeklyEventsSoc
 router.post('/admin/resetOdds', playerController.resetOdds);
 
 router.post('/admin/testBet', eventController.testBet);
+router.post('/admin/addSoccerTeam', teamController.addSoccerTeam);
 module.exports = router;

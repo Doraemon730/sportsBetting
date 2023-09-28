@@ -268,34 +268,52 @@ const nameDraft = [
     "Messi, Lionel",
     "Ronaldo, Cristiano"
 ];
+const teamDraft =[
+    '65150e67f9968df69b4e3322',
+    '65150eaff9968df69b4e3326',
+    '65150fd9f9968df69b4e3388',
+    '651510bdf9968df69b4e33e8',
+    '651510f2f9968df69b4e33eb',
+    '65151160f9968df69b4e33ef',
+    '6515133df9968df69b4e34af',
+    '651513c2f9968df69b4e34b3',
+    '651513fff9968df69b4e34b6',
+    '6515142ef9968df69b4e3514',
+    '651514d4f9968df69b4e3519',
+    '65151527f9968df69b4e351c',
+    '65151585f9968df69b4e357b',
+    '65150d19294650b6131a48e1',
+]
 const processSoccerEvents = async (mappings, events) => {
     try {
 
         for (const event of events) {
+            let competitors = event.sport_event.competitors;
+            
             let myEvent = new Event({
                 id: event.sport_event.id,
                 startTime: event.sport_event.start_time,
-                sportId: new ObjectId('65131974db50d0c2c8bf7aa7')
+                sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+                competitors: competitors
             });
-            let alias = [], index = -1;
-            for (const competitor of event.sport_event.competitors) {
-                myEvent.competitors.push(competitor);
-                index = competitiorDraft.indexOf(competitor.id);
-                alias.push(competitor.abbreviation);
-            }
+            let index = competitiorDraft.indexOf(competitors[0].id);
             if (index === -1)
+                index = competitiorDraft.indexOf(competitors[1].id);            
+            if(index === -1)
                 continue;
-            myEvent.name = alias[0] + " vs " + alias[1];
+            
+            myEvent.name = competitors[0].abbreviation + " vs " + competitors[1].abbreviation;
+
             const mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
 
             const markets = await fetchSoccerPlayerProps(event.sport_event.id);
             //console.log(markets);
-            const market = markets.find(item => item.name === "anytime goalscorer");
-            if (!market)
-                continue;
-            const existingEvent = await Event.findOne({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id: event.sport_event.id });
+            //const market = markets.find(item => item.name ==="anytime goalscorer");
+            if(!markets)
+                 continue;
+            const existingEvent = await Event.findOne({sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id:event.sport_event.id});
             if (existingEvent) {
                 // Event already exists, update it
                 myEvent = existingEvent;
@@ -307,31 +325,37 @@ const processSoccerEvents = async (mappings, events) => {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
                 console.log('New event inserted!');
-            }
-            for (const play of market.books[0].outcomes) {
-                let player = await Player.findOne({ srId: play.player_id });
-                if (!player) {
+            }            
+            for(const play of markets[0].books[0].outcomes){
+                let player = await Player.findOne({srId: play.player_id});
+                if(!player)                {                    
 
                     const profile = await fetchSoccerPlayerProfile(play.player_id);
                     let name = profile.player.name;
-                    if (nameDraft.indexOf(name) !== -1) {
+                    if(nameDraft.indexOf(name) !== -1)
+                    {                       
+                        let com = profile.competitors[0].id;
+                        let i = competitiorDraft.indexOf(com);
+                        if(i === -1)
+                            i = competitiorDraft.indexOf(profile.competitors[1].id)
 
-                        console.log("asdf" + profile.player.name);
-                        player = new Player({
-                            sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
-                            name: profile.player.name,
-                            jerseyNumber: profile.player.jersey_number,
-                            position: profile.player.type,
-                            srId: play.player_id,
-                            teamName: profile.competitors[0].abbreviation,
-                        });
-                        player.odds.push({
-                            id: new ObjectId('65132681ccd67ffa439d6ead'),
-                            value: 0.5,
-                            event: myEvent._id
-                        });
-                        await player.save();
-                    }
+                    console.log("asdf" + profile.player.name);
+                    player = new Player({
+                        sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+                        name: profile.player.name,
+                        jerseyNumber: profile.player.jersey_number,
+                        position: profile.player.type,
+                        srId: play.player_id,
+                        teamName:profile.competitors[0].abbreviation,
+                        teamId: new ObjectId(teamDraft[i])
+                    }); 
+                    player.odds.push({
+                        id: new ObjectId('65132681ccd67ffa439d6ead'),
+                        value: 0.5,
+                        event: myEvent._id
+                    });
+                    await player.save();                  
+                    } 
                 }
                 else {
                     if (player.odds.length) {
