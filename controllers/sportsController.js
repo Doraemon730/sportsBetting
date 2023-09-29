@@ -1,6 +1,6 @@
 const Sport = require('../models/Sport');
 const { ObjectId } = require("mongodb");
-
+require('../utils/log');
 const getAllSports = async (req, res) => {
     try {
         const sports = await Sport.aggregate([

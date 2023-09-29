@@ -1,6 +1,7 @@
 const Statistics = require('../models/Statistics');
 const Bet = require('../models/Bet');
 const User = require('../models/User');
+require('../utils/log');
 const updateTotal = async () => {
     try {
         const now = new Date();
@@ -114,6 +115,7 @@ const updateBetWithDaily = async (isFirst, amount) => {
         console.log(error);
     }
 }
+
 const getStatisticsByDate = async (date) => {
     try {
         date.setUTCHours(0, 0, 0, 0);

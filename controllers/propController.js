@@ -1,6 +1,6 @@
 const Prop = require('../models/Prop');
 const { ObjectId } = require("mongodb");
-
+require('../utils/log');
 const addProp = async (req, res) => {
     try {
         const {

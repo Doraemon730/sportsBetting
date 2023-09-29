@@ -1,6 +1,6 @@
 const Discount = require('../models/Discount')
 const Player = require('../models/Player')
-
+require('../utils/log');
 const { ObjectId } = require('mongodb')
 
 const setDiscount = async (req, res) => {

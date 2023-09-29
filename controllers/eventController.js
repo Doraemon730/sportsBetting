@@ -3,7 +3,9 @@ const Player = require('../models/Player');
 const Prop = require('../models/Prop');
 const User = require('../models/User');
 const Team = require('../models/Team');
+const Bet = require('../models/Bet');
 const { updateCapital } = require('./capitalController');
+require('../utils/log');
 const request = require('request')
 const {
     NFL_LIVEDATA_BASEURL,
@@ -64,8 +66,8 @@ const getWeeklyEventsNFL = async () => {
             return;
         }
         let events = await fetchWeeklyEventsNFL();
-        console.log("NFL events count =" + events.length);
-        
+        //console.log("NFL events count =" + events.length);
+
         let now = new Date();
         events = events.filter(item => new Date(item.sport_event.start_time) > now);
         console.log("NFL events count =" + events.length);
@@ -103,7 +105,7 @@ const getWeeklyEventsNFL = async () => {
                 await existingEvent.save();
             } else {
                 await myEvent.save();
-                console.log('New event inserted!');
+                console.log('NFL New event inserted! _id=' + myEvent.id);
             }
             //await myEvent.save();
             for (const playerProp of playerProps) {
@@ -155,12 +157,11 @@ const getWeeklyEventsMLB = async () => {
         players.concat(await fetchPlayerMapping(1000));
         players.concat(await fetchPlayerMapping(2000));
         if (!players || !Array.isArray(players)) {
-            console.log('No playermapping');
+            console.log('No player mapping');
             return;
         }
 
         let events = await fetchWeeklyEventsMLB();
-        console.log("MLB events count = " + events.length);
         let now = new Date();
         events = events.filter(item => new Date(item.sport_event.start_time) > now);
         console.log("MLB events count = " + events.length);
@@ -192,16 +193,18 @@ const getWeeklyEventsMLB = async () => {
             const existingEvent = await Event.findOne({ sportId: new ObjectId('65108fcf4fa2698548371fc0'), id: event.sport_event.id });
             if (existingEvent) {
                 myEvent = existingEvent;
+                existingEvent.startTime = myEvent.startTime;
+                await existingEvent.save();
             } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
-                console.log('New event inserted!');
+                console.log('MLB New event inserted! _id=' + myEvent.id);
             }
             //await myEvent.save();
             //console.log(playerProps);
             if (!playerProps)
                 continue;
-            
+
             for (const playerProp of playerProps) {
                 console.log(playerProp.player.id);
                 console.log(playerProp.player.name);
@@ -293,7 +296,7 @@ const teamDraft = [
 ]
 const processSoccerEvents = async (mappings, events) => {
     try {
-        
+
         console.log("MLB events count = " + events.length);
         let now = new Date();
         let eventes = events.filter(item => new Date(item.sport_event.start_time) > now);
@@ -328,14 +331,12 @@ const processSoccerEvents = async (mappings, events) => {
             if (existingEvent) {
                 // Event already exists, update it
                 myEvent = existingEvent;
-                // console.log(existingEvent);
-                // await existingEvent.set(myEvent);
-                // await existingEvent.save();
-                // console.log('Event updated!');
+                existingEvent.startTime = myEvent.startTime;
+                await existingEvent.save();               
             } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
-                console.log('New event inserted!');
+                console.log('Soccer New event inserted! id = ' + myEvent.id);
             }
             for (const play of markets[0].books[0].outcomes) {
                 let player = await Player.findOne({ srId: play.player_id });
@@ -493,6 +494,15 @@ const remove = async (req, res) => {
     }
 };
 
+const isJSON = (str) => {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 const getLiveDataByEvent = async () => {
     try {
         let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
@@ -547,47 +557,34 @@ const getLiveDataByEvent = async () => {
             let failCount = 0;
             stream.on('data', async (chunk) => {
                 // Process the incoming data chunk here
-                const jsonData = JSON.parse(chunk.toString());
-                // console.log(event.name, jsonData);
-                if (jsonData.hasOwnProperty('payload')) {
-                    failCount = 0;
-                    const detailData = jsonData['payload'];
-                    if (detailData.hasOwnProperty('player')) {
-                        if (sportType == "NFL") {
-                            broadcastingData.player = getNFLData(detailData);
-                            global.io.sockets.emit('broadcast', { broadcastingData });
-                        }
-                        // if (sportType == "NHL") {
-                        //     broadcastingData.player = getNHLData(detailData);
-                        // }
-                        if (sportType == "MLB") {
-                            if (detailData.hasOwnProperty('statistics')) {
-                                broadcastingData.player = getMLBData(detailData);
+                if (isJSON(chunk.toString())) {
+                    const jsonData = JSON.parse(chunk.toString());
+                    if (jsonData.hasOwnProperty('payload')) {
+                        failCount = 0;
+                        const detailData = jsonData['payload'];
+                        if (detailData.hasOwnProperty('player')) {
+                            if (sportType == "NFL") {
+                                broadcastingData.player = getNFLData(detailData);
                                 global.io.sockets.emit('broadcast', { broadcastingData });
+                            }
+                            // if (sportType == "NHL") {
+                            //     broadcastingData.player = getNHLData(detailData);
+                            // }
+                            if (sportType == "MLB") {
+                                if (detailData.hasOwnProperty('statistics')) {
+                                    broadcastingData.player = getMLBData(detailData);
+                                    global.io.sockets.emit('broadcast', { broadcastingData });
+                                }
                             }
                         }
                     }
-                }
-                if (jsonData.hasOwnProperty('metadata')) {
-                    const metadata = jsonData['metadata'];
-                    if (metadata['status'] == 'complete') {
-                        isCompleted = true;
-                    }
-                }
-                if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                    await Event.updateOne({
-                        _id: event._id
-                    }, {
-                        $set: {
-                            state: 2
+                    if (jsonData.hasOwnProperty('metadata')) {
+                        const metadata = jsonData['metadata'];
+                        if (metadata['status'] == 'complete') {
+                            isCompleted = true;
                         }
-                    });
-                    updateBet(event._id);
-                    stream.abort();
-                }
-                if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                    failCount++;
-                    if (failCount > 100) {
+                    }
+                    if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
                         await Event.updateOne({
                             _id: event._id
                         }, {
@@ -595,7 +592,21 @@ const getLiveDataByEvent = async () => {
                                 state: 2
                             }
                         });
+                        updateBet(event._id);
                         stream.abort();
+                    }
+                    if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                        failCount++;
+                        if (failCount > 100) {
+                            await Event.updateOne({
+                                _id: event._id
+                            }, {
+                                $set: {
+                                    state: 2
+                                }
+                            });
+                            stream.abort();
+                        }
                     }
                 }
             });
@@ -628,7 +639,8 @@ const getLiveDataByEvent = async () => {
 
         }
     } catch (error) {
-        throw new Error(error.message);
+        //throw new Error(error.message);
+        console.log(error);
     }
 }
 
@@ -732,24 +744,32 @@ const summarizeStatsByPlayer = (data, category) => {
 
 const updateNFLBet = async (event) => {
     try {
+        console.log(event.matchId);
         const statistics = await fetchNFLGameSummary(event.matchId);
-        console.log("summary", JSON.stringify(statistics));
-        if(statistics.status != "closed")
+        console.log("summaryNFL", event._id);
+        console.log(statistics.status);
+        if (statistics.status != "closed" && statistics.status != "complete")
             return;
+        console.log("asdfasdf");
         const rushingStats = summarizeStatsByPlayer(statistics, 'rushing');
         const receivingStats = summarizeStatsByPlayer(statistics, 'receiving');
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
         const fieldGoalStats = summarizeStatsByPlayer(statistics, 'field_goals');
-        const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
-        for (const bet of event.participants) {
+        const defenseStats = summarizeStatsByPlayer(statistics, 'defense');      
+        
+        console.log("bets "+ event.participants);
+        for (const betId of event.participants) {
+            let bet = await Bet.findById(betId);
             //const pick = bet.picks.find(item => item.contestId === event._id);
-            if (bet.status != 'pending')
+            if (!bet || bet.status != 'pending')
                 continue;
+            console.log("id" + bet._id);
             let finished = 0, win = 0, refund = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
+                    console.log("player", player );
                     switch (pick.prop.propName) {
                         case 'Rush Yards':
                             play = rushingStats.find(item => item.id === player.remoteId);
@@ -803,6 +823,8 @@ const updateNFLBet = async (event) => {
                                 result = play.tackles + play.assists;
                             break;
                     }
+                    console.log("play " + play);
+                    console.log("result " + result);
                     if (!play)
                         refund = 1;
                     else {
@@ -819,6 +841,7 @@ const updateNFLBet = async (event) => {
                 }
             }
             if (refund) {
+                console.log('refund');
                 const user = await User.findById(bet.userId);
                 if (bet.credit > 0)
                     user.credits += bet.credit;
@@ -956,6 +979,7 @@ const updateNFLBet = async (event) => {
                     default:
                         break;
                 }
+                console.log("status + ", bet.status);
                 if (bet.status === "win")
                     await addPrizeTransaction(bet.userId, bet.prize);
                 if (bet.status === 'win') {
@@ -966,9 +990,11 @@ const updateNFLBet = async (event) => {
                     await user.save();
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
-                    await updateCapital(2, await USD2Ether(bet.entryFee));
+                    
+                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
             }
+            console.log("bet result ", bet);
             await bet.save();
         }
         event.state = 3;
@@ -1210,7 +1236,7 @@ const updateMLBBet = async (event) => {
                     await user.save();
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
-                    await updateCapital(2, await USD2Ether(bet.entryFee));
+                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
                 await bet.save();
             }
@@ -1223,16 +1249,16 @@ const updateMLBBet = async (event) => {
 }
 const getSoccerPlayers = (data) => {
 
-    let homePlayers = data.totals.competitors[0];
-    let awayPlayers = data.totals.competitors[1];
-    console.log(homePlayers);
-    console.log(awayPlayers);
+    let homePlayers = data.totals.competitors[0].players;
+    let awayPlayers = data.totals.competitors[1].players;
     return [...homePlayers, ...awayPlayers];
 }
 const updateSoccerBet = async (event) => {
     try {
         let data = await fetchSoccerEventSummary(event.id);
-        if(!data.hasOwnProperty('statistics'))
+        console.log("update Soccer ");
+        //console.log(data);
+        if (!data.hasOwnProperty('statistics'))
             return;
         let statistics = data.statistics;
         console.log(statistics);
@@ -1415,7 +1441,7 @@ const updateSoccerBet = async (event) => {
                     await user.save();
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
-                    await updateCapital(2, await USD2Ether(bet.entryFee));
+                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
             }
             await bet.save();
@@ -1461,30 +1487,33 @@ const testBet = async (req, res) => {
         console.log(error);
     }
 }
-const getWeekEventAll = async() =>{
-    try{
+const getWeekEventAll = async () => {
+    try {
         await getWeeklyEventsNFL();
         await getWeeklyEventsMLB();
         await getWeeklyEventsSoccer();
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }
 const checkEvents = async () => {
-    try{
-        let events = await Event.find({state: 2});
-        for(let event of events) {
+    try {
+        let events = await Event.find({ state: 2 });
+        for (let event of events) {            
             if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
+                console.log("NFL ", event._id);
                 updateNFLBet(event);
             }
             if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
+                console.log("MLB ", event._id);
                 updateMLBBet(event);
             }
             if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
+                console.log("Soccer ", event._id);
                 updateSoccerBet(event);
             }
         }
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }

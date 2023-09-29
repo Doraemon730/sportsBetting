@@ -59,11 +59,13 @@ const registerUser = async (req, res) => {
 
     if (!isEmpty(referralCode)) {
       const referral = await Referral.findOne({ referralCode });
-      if (referral.invitesList == null) {
-        referral.invitesList = [];
+      if (referral) {
+        if (referral.invitesList == null) {
+          referral.invitesList = [];
+        }
+        referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
+        await referral.save();
       }
-      referral.invitesList.push({ invitedUserId: user.id, betAmount: 0 });
-      await referral.save();
     }
 
     const payload = {

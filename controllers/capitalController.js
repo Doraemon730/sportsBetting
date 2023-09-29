@@ -1,5 +1,5 @@
 const Capital = require('../models/Capital');
-
+require('../utils/log');
 
 const updateDeposit = async (amount) => {
     try {

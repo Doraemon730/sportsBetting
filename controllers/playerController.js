@@ -4,6 +4,7 @@ const Discount = require("../models/Discount");
 const Event = require('../models/Event');
 const Prop = require('../models/Prop');
 const fs = require('fs');
+require('../utils/log');
 const {
   ObjectId
 } = require("mongodb");
@@ -143,7 +144,7 @@ const getTopPlayerBy = async (req, res) => {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
-      if(prop.displayName === "Rush+Rec Yards")
+      if (prop.displayName === "Rush+Rec Yards")
         result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
 
       now.setUTCHours(0, 0, 0, 0);
@@ -538,7 +539,7 @@ const getPlayerProp = async (req, res) => {
 const getPlayerManifest = async (req, res) => {
   try {
     const manifest = await fetchPlayerManifest();
-    
+
     for (const asset of manifest.assetlist) {
       //console.log(asset.player_id);
       const player = await Player.findOne({ remoteId: asset.player_id });
@@ -560,56 +561,10 @@ const remove = async (req, res) => {
 }
 
 const resetOdds = async (req, res) => {
-  await Player.updateMany({sportId:new ObjectId('650e0b6fb80ab879d1c142c8')}, {headshot:undefined});
+  await Player.updateMany({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8') }, { headshot: undefined });
   res.json("Success");
 }
-const getLiveDataByPlayers = async (req, res) => {
 
-  const axios = require('axios');
-
-  const apiKey = '2uea7w9xs2h2mmupfh7avwbx'
-
-  const request = require('request')
-  url = 'https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key=2uea7w9xs2h2mmupfh7avwbx&match=sd:match:8c138263-1dc1-4e28-96ee-21158684cd55'
-
-  const stream = request(url);
-  stream.on('data', (chunk) => {
-    // Process the incoming data chunk here
-    console.log(chunk.toString()); // You can replace this with your own logic
-  });
-
-  // Handle errors
-  stream.on('error', (error) => {
-    console.error('Error:', error);
-  });
-
-  // Handle the end of the stream
-  stream.on('end', () => {
-    console.log('Stream ended');
-  });
-  // fetch('https://api.sportradar.us/nfl/official/trial/stream/en/statistics/subscribe?api_key=2uea7w9xs2h2mmupfh7avwbx')
-  //   .then(response => {
-  //     const reader = response.body.getReader();
-  //     const decoder = new TextDecoder();
-  //     let data = '';
-  //     reader.read().then(chunk => {
-  //       data += decoder.decode(chunk.value);
-  //       console.log(data);
-  //     });
-  //   })
-  //   .catch(error => {
-  //     console.error(error);
-  //   });
-
-  // return axios.get(`https://api.sportradar.us/nfl/official/trial/v7/en/games/9e665e5b-0ab8-4ccd-a6ac-2a4d13afba63/boxscore.json?api_key=${apiKey}`)
-  //   .then(response => {
-  //     return res.json(response.data)
-  //   })
-  //   .catch(error => {
-  //     console.log(error);
-  //   });
-
-};
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -621,7 +576,6 @@ module.exports = {
   getPlayerManifest,
   addNHLPlayersToDatabase,
   addMLBPlayersToDatabase,
-  getLiveDataByPlayers,
   remove,
   resetOdds
 };

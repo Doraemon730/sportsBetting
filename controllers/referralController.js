@@ -2,7 +2,7 @@ const Referral = require('../models/Referral');
 const User = require('../models/User');
 const Bonus = require('../models/Bonus');
 const { ObjectId } = require("mongodb");
-
+require('../utils/log');
 const setReferral = async (req, res) => {
     try {
         const { userId, referralCode, commission } = req.body;

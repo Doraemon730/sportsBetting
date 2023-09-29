@@ -1,6 +1,7 @@
 const {
   ObjectId
 } = require('mongodb');
+require('../utils/log');
 const axios = require('axios');
 const apiNBAKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;

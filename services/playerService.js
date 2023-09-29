@@ -8,6 +8,7 @@ const {
 const axios = require('axios');
 const Fs = require('fs');
 const Path = require('path');
+require('../utils/log');
 const apiKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
 const apiImageKey = process.env.NFL_HEAD_KEY;

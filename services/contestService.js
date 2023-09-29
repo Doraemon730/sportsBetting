@@ -4,7 +4,7 @@ const { ObjectId } = require('mongodb');
 const axios = require('axios');
 const apiKey = process.env.NBA_API_KEY;
 const NFL_API_KEY = process.env.NFL_API_KEY;
-
+require('../utils/log');
 const { NBA_API_BASEURL, LOCALE, NFL_API_BASEURL} = require('../config/constant');
 
 

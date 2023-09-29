@@ -1,5 +1,6 @@
 const Contest = require('../models/Contest');
 const User = require('../models/User');
+require('../utils/log');
 const {
   ObjectId
 } = require('mongodb');

@@ -1,4 +1,5 @@
 const Bet = require("../models/Bet");
+require('../utils/log');
 const Contest = require("../models/Contest");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
