@@ -364,7 +364,8 @@ const processSoccerEvents = async (mappings, events) => {
                             position: profile.player.type,
                             srId: play.player_id,
                             teamName: profile.competitors[0].abbreviation,
-                            teamId: new ObjectId(teamDraft[i])
+                            teamId: new ObjectId(teamDraft[i]),
+                            headshot: profile.player.name
                         });
                         player.odds.push({
                             id: new ObjectId('65132681ccd67ffa439d6ead'),
