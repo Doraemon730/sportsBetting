@@ -1,6 +1,7 @@
 const Statistics = require('../models/Statistics');
 const Bet = require('../models/Bet');
 const User = require('../models/User');
+require('../utils/log');
 const Transaction = require('../models/Transaction');
 const updateTotal = async () => {
     try {
@@ -39,7 +40,7 @@ const updateTotal = async () => {
         }
 
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 const updateBetWithNew = async (amount) => {
@@ -81,7 +82,7 @@ const updateBetWithNew = async (amount) => {
             await newstatistic.save();
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 
@@ -116,7 +117,7 @@ const updateBetWithDaily = async (isFirst, amount) => {
             await newstatistic.save();
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 
@@ -149,7 +150,7 @@ const getStatisticsByDate = async (date) => {
         });
         return statistics;
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 

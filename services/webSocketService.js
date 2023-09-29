@@ -35,7 +35,7 @@ const addUserWallet = async (walletAddress) => {
   try{
     userWallets.set(walletAddress, 0);
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 }
 const getBalance = (walletAddress, callback) => {

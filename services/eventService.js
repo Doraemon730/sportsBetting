@@ -1,6 +1,6 @@
 const { ObjectId } = require('mongodb');
 const axios = require('axios');
-
+require('../utils/log');
 const apiOddsKey = process.env.ODDS_API_KEY;
 const apiNBAKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
@@ -88,7 +88,7 @@ const fetchEventPlayerProps = async (event) => {
 const fetchNFLGameSummary = async (matchId) => {
     return axios.get(`${NFL_API_BASEURL}/${LOCALE}/games/${matchId}/statistics.json?api_key=${apiNFLKey}`)
     .then(response => {
-        const statistics = response.data.statistics;
+        const statistics = response.data;
         return statistics;
     })
     .catch(error => {

@@ -1,4 +1,5 @@
 const Bet = require("../models/Bet");
+require('../utils/log');
 const Contest = require("../models/Contest");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
@@ -9,7 +10,7 @@ const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
-const { updateBetWithNew, updateBetWithDaily } = require("../controllers/statisticsController")
+const { updateBetWithNew, updateBetWithDaily} = require("../controllers/statisticsController")
 
 const startBetting = async (req, res) => {
     try {

@@ -9,7 +9,8 @@ const geoip = require('geoip-lite');
 // const fs = require('fs');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-
+const morgan = require('morgan');
+const fs = require('fs');
 const app = express();
 const httpServer = createServer(app);
 const {
@@ -75,6 +76,10 @@ app.use(limiter);
 //   next();
 // });
 
+// Log sytem
+
+const logStream = fs.createWriteStream(path.join(__dirname, 'logs.log'), { flags: 'a' });
+app.use(morgan('combined', { stream: logStream }));
 // Define Routes
 const apiRoutes = require('./routes/routes');
 app.use('/api', apiRoutes);
@@ -122,13 +127,13 @@ global.io.on("connection", onNewWebsocketConnection);
 httpServer.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 
-  WednesdayJob.start();
-  ThursdayJob.start();
+  //WednesdayJob.start();
+  //ThursdayJob.start();
   EtherJob.start();
   MatchJob.start();
-  WeeklyRewardJob.start();
-  MonthlyRewardJob.start();
-  WeekEventJob.start();
+  //WeeklyRewardJob.start();
+  //MonthlyRewardJob.start();
+  //WeekEventJob.start();
   CheckResultJob.start();
   //walletMonitor.start();
 });
