@@ -1276,7 +1276,8 @@ const updateSoccerBet = async (event) => {
         console.log(JSON.stringify(data), true);
         if (!data.hasOwnProperty('statistics') )
             return;
-        //if( !data.statistics.)
+        if( data.sport_event_status.status !== "ended")
+            return;
         let statistics = data.statistics;
         //console.log(statistics);
         let players = getSoccerPlayers(statistics);
