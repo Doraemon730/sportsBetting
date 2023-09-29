@@ -173,7 +173,7 @@ const getETHPriceFromMarket = async () => {
         console.log("Etherium price:" + price);
 
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 

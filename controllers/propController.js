@@ -29,7 +29,7 @@ const getPropsBySport = async (sportId) => {
         });
         return props;
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 

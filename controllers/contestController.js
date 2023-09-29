@@ -291,7 +291,7 @@ const updateBetfromContest = async (gameId) => {
       };
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 }
 module.exports = {

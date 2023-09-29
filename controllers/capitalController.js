@@ -29,7 +29,7 @@ const updateDeposit = async (amount) => {
             await newcap.save();
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 
@@ -61,7 +61,7 @@ const updateWithdraw = async (amount) => {
             await newcap.save();
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 
@@ -92,7 +92,7 @@ const updateProfit = async (amount) => {
             await newcap.save();
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 const updateLost = async (amount) => {
@@ -122,7 +122,7 @@ const updateLost = async (amount) => {
             await newcap.save();
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 const updateCapital = async (type, amount) => {
@@ -142,7 +142,7 @@ const updateCapital = async (type, amount) => {
                 break;
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 

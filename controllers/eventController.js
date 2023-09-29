@@ -393,7 +393,7 @@ const getWeeklyEventsUEFA = async (mappings) => {
         console.log("UEFA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsSaudi = async (mappings) => {
@@ -402,7 +402,7 @@ const getWeeklyEventsSaudi = async (mappings) => {
         console.log("Saudi");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsLaLiga = async (mappings) => {
@@ -411,7 +411,7 @@ const getWeeklyEventsLaLiga = async (mappings) => {
         console.log("LaLiga");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsPremierLeague = async (mappings) => {
@@ -420,7 +420,7 @@ const getWeeklyEventsPremierLeague = async (mappings) => {
         console.log("PremierLeague");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsSerieA = async (mappings) => {
@@ -430,7 +430,7 @@ const getWeeklyEventsSerieA = async (mappings) => {
         console.log("SerieA");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsLigue1 = async (mappings) => {
@@ -439,7 +439,7 @@ const getWeeklyEventsLigue1 = async (mappings) => {
         console.log("Ligue1");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsBundesliga = async (mappings) => {
@@ -448,7 +448,7 @@ const getWeeklyEventsBundesliga = async (mappings) => {
         console.log("Bundesliga");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsMLS = async (mappings) => {
@@ -458,7 +458,7 @@ const getWeeklyEventsMLS = async (mappings) => {
         console.log("MLS");
         await processSoccerEvents(mappings, events);
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 const getWeeklyEventsSoccer = async () => {
@@ -478,7 +478,7 @@ const getWeeklyEventsSoccer = async () => {
         console.log("Get Soccer Events and update finished at " + new Date().toString());
 
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
 
     }
 };
@@ -1225,6 +1225,8 @@ const getSoccerPlayers = (data) => {
 
     let homePlayers = data.totals.competitors[0];
     let awayPlayers = data.totals.competitors[1];
+    console.log(homePlayers);
+    console.log(awayPlayers);
     return [...homePlayers, ...awayPlayers];
 }
 const updateSoccerBet = async (event) => {
@@ -1233,6 +1235,8 @@ const updateSoccerBet = async (event) => {
         if(!data.hasOwnProperty('statistics'))
             return;
         let statistics = data.statistics;
+        console.log(statistics);
+        console.log("asdf1111");        
         let players = getSoccerPlayers(statistics);
         for (const bet of event.participants) {
             if (bet.status != 'pending')
@@ -1419,7 +1423,7 @@ const updateSoccerBet = async (event) => {
         event.state = 3;
         await event.save();
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 
@@ -1442,7 +1446,7 @@ const updateBet = async (eventId) => {
             updateSoccerBet(event);
         }
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 };
 

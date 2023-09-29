@@ -36,7 +36,7 @@ const fetchPlayerProfile = async (playerId) => {
       }
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -52,7 +52,7 @@ const fetchNFLPlayerProfile = async (playerId) => {
       }
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -66,7 +66,7 @@ const fetchSoccerPlayerProfile = async (srId) => {
      
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -80,7 +80,7 @@ const fetchPlayerNumber = async (playerId) => {
       return parseInt(response.data.jersey_number);
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -92,7 +92,7 @@ const fetchPlayerManifest = async () => {
       return response.data;
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -120,7 +120,7 @@ const fetchPlayerImage = async (asset_id, fileName) => {
   //  return response.data;
   // })
   // .catch(error => {
-  //   console.log(error.message);
+  //   console.log(error);
   //   //throw new Error('Error retrieving player Info:', error);
   // });
 }
