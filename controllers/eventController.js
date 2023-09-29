@@ -505,7 +505,7 @@ const isJSON = (str) => {
 const getLiveDataByEvent = async () => {
     try {
         let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
-        // console.log(events.length);
+        console.log(events.length);
         for (const event of events) {
             url = ""
             let sportType = ""
@@ -564,6 +564,7 @@ const getLiveDataByEvent = async () => {
                         if (detailData.hasOwnProperty('player')) {
                             if (sportType == "NFL") {
                                 broadcastingData.player = getNFLData(detailData);
+                                console.log(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
                             // if (sportType == "NHL") {
@@ -572,6 +573,7 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "MLB") {
                                 if (detailData.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData);
+                                    console.log(broadcastingData)
                                     global.io.sockets.emit('broadcast', { broadcastingData });
                                 }
                             }
