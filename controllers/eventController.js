@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Team = require('../models/Team');
 const Bet = require('../models/Bet');
 const { updateCapital } = require('./capitalController');
-const {updateBetResult} = require('./statisticsController');
+const { updateBetResult } = require('./statisticsController');
 require('../utils/log');
 const request = require('request')
 const {
@@ -333,7 +333,7 @@ const processSoccerEvents = async (mappings, events) => {
                 // Event already exists, update it
                 myEvent = existingEvent;
                 existingEvent.startTime = myEvent.startTime;
-                await existingEvent.save();               
+                await existingEvent.save();
             } else {
                 // Event doesn't exist, insert new event
                 await myEvent.save();
@@ -758,9 +758,9 @@ const updateNFLBet = async (event) => {
         const receivingStats = summarizeStatsByPlayer(statistics, 'receiving');
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
         const fieldGoalStats = summarizeStatsByPlayer(statistics, 'field_goals');
-        const defenseStats = summarizeStatsByPlayer(statistics, 'defense');      
-        
-        console.log("bets "+ event.participants);
+        const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
+
+        console.log("bets " + event.participants);
         for (const betId of event.participants) {
             let bet = await Bet.findById(betId);
             //const pick = bet.picks.find(item => item.contestId === event._id);
@@ -772,7 +772,7 @@ const updateNFLBet = async (event) => {
                 if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
-                    console.log("player", player );
+                    console.log("player", player);
                     switch (pick.prop.propName) {
                         case 'Rush Yards':
                             play = rushingStats.find(item => item.id === player.remoteId);
@@ -1267,7 +1267,7 @@ const updateSoccerBet = async (event) => {
         if (!data.hasOwnProperty('statistics'))
             return;
         let statistics = data.statistics;
-        console.log(statistics);  
+        console.log(statistics);
         let players = getSoccerPlayers(statistics);
         for (const bet of event.participants) {
             if (bet.status != 'pending')
@@ -1506,7 +1506,7 @@ const getWeekEventAll = async () => {
 const checkEvents = async () => {
     try {
         let events = await Event.find({ state: 2 });
-        for (let event of events) {            
+        for (let event of events) {
             if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
                 console.log("NFL ", event._id);
                 updateNFLBet(event);

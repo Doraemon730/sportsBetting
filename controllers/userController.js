@@ -149,7 +149,6 @@ const loginUser = async (req, res) => {
 
 const getUserDetail = async (req, res) => {
   try {
-    console.log("ASdfasdfasdf")
     const user = await User.findById(req.user.id).select('-password -privateKey');
     res.json(user);
   } catch (err) {
