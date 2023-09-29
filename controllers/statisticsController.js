@@ -119,6 +119,27 @@ const updateBetWithDaily = async (isFirst, amount) => {
         console.log(error.message);
     }
 }
+
+const updateBetResult = async (isWin) => {
+    try {
+        const statistic = await Statistics.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+        if (statistic) {
+            if (isWin)
+                statistic.daily_wins++;
+            if (!isWin)
+                statistic.daily_loss++;
+            await statistic.save();
+            await newstatistic.save();
+        }
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
 const getStatisticsByDate = async (date) => {
     try {
         date.setUTCHours(0, 0, 0, 0);
@@ -206,5 +227,6 @@ module.exports = {
     updateBetWithDaily,
     updateBetWithNew,
     getTotalUserWithBet,
-    getUserBetStats
+    getUserBetStats,
+    updateBetResult
 }
