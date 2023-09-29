@@ -127,13 +127,13 @@ global.io.on("connection", onNewWebsocketConnection);
 httpServer.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 
-  //WednesdayJob.start();
-  //ThursdayJob.start();
+  WednesdayJob.start();
+  ThursdayJob.start();
   EtherJob.start();
   MatchJob.start();
-  //WeeklyRewardJob.start();
-  //MonthlyRewardJob.start();
-  //WeekEventJob.start();
+  WeeklyRewardJob.start();
+  MonthlyRewardJob.start();
+  WeekEventJob.start();
   CheckResultJob.start();
   //walletMonitor.start();
 });
