@@ -65,7 +65,7 @@ const getWeeklyEventsNFL = async () => {
         }
         let events = await fetchWeeklyEventsNFL();
         console.log("NFL events count =" + events.length);
-        
+
         let now = new Date();
         events = events.filter(item => new Date(item.sport_event.start_time) > now);
         console.log("NFL events count =" + events.length);
@@ -201,7 +201,7 @@ const getWeeklyEventsMLB = async () => {
             //console.log(playerProps);
             if (!playerProps)
                 continue;
-            
+
             for (const playerProp of playerProps) {
                 console.log(playerProp.player.id);
                 console.log(playerProp.player.name);
@@ -293,7 +293,7 @@ const teamDraft = [
 ]
 const processSoccerEvents = async (mappings, events) => {
     try {
-        
+
         console.log("MLB events count = " + events.length);
         let now = new Date();
         let eventes = events.filter(item => new Date(item.sport_event.start_time) > now);
@@ -493,6 +493,15 @@ const remove = async (req, res) => {
     }
 };
 
+const isJSON = (str) => {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 const getLiveDataByEvent = async () => {
     try {
         let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
@@ -547,47 +556,34 @@ const getLiveDataByEvent = async () => {
             let failCount = 0;
             stream.on('data', async (chunk) => {
                 // Process the incoming data chunk here
-                const jsonData = JSON.parse(chunk.toString());
-                // console.log(event.name, jsonData);
-                if (jsonData.hasOwnProperty('payload')) {
-                    failCount = 0;
-                    const detailData = jsonData['payload'];
-                    if (detailData.hasOwnProperty('player')) {
-                        if (sportType == "NFL") {
-                            broadcastingData.player = getNFLData(detailData);
-                            global.io.sockets.emit('broadcast', { broadcastingData });
-                        }
-                        // if (sportType == "NHL") {
-                        //     broadcastingData.player = getNHLData(detailData);
-                        // }
-                        if (sportType == "MLB") {
-                            if (detailData.hasOwnProperty('statistics')) {
-                                broadcastingData.player = getMLBData(detailData);
+                if (isJSON(chunk.toString())) {
+                    const jsonData = JSON.parse(chunk.toString());
+                    if (jsonData.hasOwnProperty('payload')) {
+                        failCount = 0;
+                        const detailData = jsonData['payload'];
+                        if (detailData.hasOwnProperty('player')) {
+                            if (sportType == "NFL") {
+                                broadcastingData.player = getNFLData(detailData);
                                 global.io.sockets.emit('broadcast', { broadcastingData });
+                            }
+                            // if (sportType == "NHL") {
+                            //     broadcastingData.player = getNHLData(detailData);
+                            // }
+                            if (sportType == "MLB") {
+                                if (detailData.hasOwnProperty('statistics')) {
+                                    broadcastingData.player = getMLBData(detailData);
+                                    global.io.sockets.emit('broadcast', { broadcastingData });
+                                }
                             }
                         }
                     }
-                }
-                if (jsonData.hasOwnProperty('metadata')) {
-                    const metadata = jsonData['metadata'];
-                    if (metadata['status'] == 'complete') {
-                        isCompleted = true;
-                    }
-                }
-                if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                    await Event.updateOne({
-                        _id: event._id
-                    }, {
-                        $set: {
-                            state: 2
+                    if (jsonData.hasOwnProperty('metadata')) {
+                        const metadata = jsonData['metadata'];
+                        if (metadata['status'] == 'complete') {
+                            isCompleted = true;
                         }
-                    });
-                    updateBet(event._id);
-                    stream.abort();
-                }
-                if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                    failCount++;
-                    if (failCount > 100) {
+                    }
+                    if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
                         await Event.updateOne({
                             _id: event._id
                         }, {
@@ -595,7 +591,21 @@ const getLiveDataByEvent = async () => {
                                 state: 2
                             }
                         });
+                        updateBet(event._id);
                         stream.abort();
+                    }
+                    if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                        failCount++;
+                        if (failCount > 100) {
+                            await Event.updateOne({
+                                _id: event._id
+                            }, {
+                                $set: {
+                                    state: 2
+                                }
+                            });
+                            stream.abort();
+                        }
                     }
                 }
             });
@@ -734,7 +744,7 @@ const updateNFLBet = async (event) => {
     try {
         const statistics = await fetchNFLGameSummary(event.matchId);
         console.log("summary", JSON.stringify(statistics));
-        if(statistics.status != "closed")
+        if (statistics.status != "closed")
             return;
         const rushingStats = summarizeStatsByPlayer(statistics, 'rushing');
         const receivingStats = summarizeStatsByPlayer(statistics, 'receiving');
@@ -1230,7 +1240,7 @@ const getSoccerPlayers = (data) => {
 const updateSoccerBet = async (event) => {
     try {
         let data = await fetchSoccerEventSummary(event.id);
-        if(!data.hasOwnProperty('statistics'))
+        if (!data.hasOwnProperty('statistics'))
             return;
         let statistics = data.statistics;
         let players = getSoccerPlayers(statistics);
@@ -1457,19 +1467,19 @@ const testBet = async (req, res) => {
         console.log(error);
     }
 }
-const getWeekEventAll = async() =>{
-    try{
+const getWeekEventAll = async () => {
+    try {
         await getWeeklyEventsNFL();
         await getWeeklyEventsMLB();
         await getWeeklyEventsSoccer();
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }
 const checkEvents = async () => {
-    try{
-        let events = await Event.find({state: 2});
-        for(let event of events) {
+    try {
+        let events = await Event.find({ state: 2 });
+        for (let event of events) {
             if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
                 updateNFLBet(event);
             }
@@ -1480,7 +1490,7 @@ const checkEvents = async () => {
                 updateSoccerBet(event);
             }
         }
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }
