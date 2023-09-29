@@ -2,6 +2,7 @@ const Statistics = require('../models/Statistics');
 const Bet = require('../models/Bet');
 const User = require('../models/User');
 require('../utils/log');
+const Transaction = require('../models/Transaction');
 const updateTotal = async () => {
     try {
         const now = new Date();
@@ -32,6 +33,7 @@ const updateTotal = async () => {
                     daily_users: 1,
                     total_bet_amount: statistic.total_bet_amount,
                     total_bet_users: statistic.total_bet_users,
+                    total_bets: statistic.total_bets,
                 });
                 await newstatistic.save();
             }
@@ -69,6 +71,7 @@ const updateBetWithNew = async (amount) => {
             }
             const newstatistic = new Statistics({
                 date: now,
+                total_users,
                 total_bets,
                 total_bet_users,
                 total_bet_amount,
@@ -105,6 +108,8 @@ const updateBetWithDaily = async (isFirst, amount) => {
                 date: now,
                 total_bets: statistic.total_bets + 1,
                 total_bet_amount: statistic.total_bet_amount + amount,
+                total_bet_users: statistic.total_bet_users,
+                total_users: statistic.total_users,
                 daily_bet_users: 1,
                 daily_bets: 1,
                 daily_bet_amount: amount,
@@ -113,6 +118,26 @@ const updateBetWithDaily = async (isFirst, amount) => {
         }
     } catch (error) {
         console.log(error);
+    }
+}
+
+const updateBetResult = async (isWin) => {
+    try {
+        const statistic = await Statistics.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+        if (statistic) {
+            if (isWin)
+                statistic.daily_wins++;
+            if (!isWin)
+                statistic.daily_loss++;
+            await statistic.save();
+            await newstatistic.save();
+        }
+    } catch (error) {
+        console.log(error.message);
     }
 }
 
@@ -203,5 +228,6 @@ module.exports = {
     updateBetWithDaily,
     updateBetWithNew,
     getTotalUserWithBet,
-    getUserBetStats
+    getUserBetStats,
+    updateBetResult
 }

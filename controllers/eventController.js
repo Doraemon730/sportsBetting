@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Team = require('../models/Team');
 const Bet = require('../models/Bet');
 const { updateCapital } = require('./capitalController');
+const {updateBetResult} = require('./statisticsController');
 require('../utils/log');
 const request = require('request')
 const {
@@ -506,7 +507,7 @@ const isJSON = (str) => {
 const getLiveDataByEvent = async () => {
     try {
         let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
-        // console.log(events.length);
+        console.log(events.length);
         for (const event of events) {
             url = ""
             let sportType = ""
@@ -565,6 +566,7 @@ const getLiveDataByEvent = async () => {
                         if (detailData.hasOwnProperty('player')) {
                             if (sportType == "NFL") {
                                 broadcastingData.player = getNFLData(detailData);
+                                console.log(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
                             // if (sportType == "NHL") {
@@ -573,6 +575,7 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "MLB") {
                                 if (detailData.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData);
+                                    console.log(broadcastingData)
                                     global.io.sockets.emit('broadcast', { broadcastingData });
                                 }
                             }
@@ -988,9 +991,10 @@ const updateNFLBet = async (event) => {
                         user.wins += 1;
                     }
                     await user.save();
+                    await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
-                    
+                    await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
             }
@@ -1234,8 +1238,10 @@ const updateMLBBet = async (event) => {
                         user.wins += 1;
                     }
                     await user.save();
+                    await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
+                    await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
                 await bet.save();
@@ -1261,8 +1267,7 @@ const updateSoccerBet = async (event) => {
         if (!data.hasOwnProperty('statistics'))
             return;
         let statistics = data.statistics;
-        console.log(statistics);
-        console.log("asdf1111");        
+        console.log(statistics);  
         let players = getSoccerPlayers(statistics);
         for (const bet of event.participants) {
             if (bet.status != 'pending')
@@ -1439,8 +1444,10 @@ const updateSoccerBet = async (event) => {
 
                     }
                     await user.save();
+                    await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
                 } else {
+                    await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
             }

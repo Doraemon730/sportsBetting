@@ -10,7 +10,7 @@ const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
-const { updateBetWithNew, updateBetWithDaily } = require("../controllers/statisticsController")
+const { updateBetWithNew, updateBetWithDaily} = require("../controllers/statisticsController")
 
 const startBetting = async (req, res) => {
     try {
@@ -73,9 +73,10 @@ const startBetting = async (req, res) => {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
 
-            event.participants.push(myBet._id);
-            event.participants = [...new Set(event.participants)];
-            await event.save();
+            if (event.participants.includes(myBet._id)) {
+                event.participants.push(myBet._id);
+                await event.save();
+            }
         }
         user.ETH_balance -= entryFeeEther;
         user.totalBetAmount += parseFloat(entryFeeSave);
@@ -156,9 +157,10 @@ const startFirstFreeBetting = async (req, res) => {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
 
-            event.participants.push(myBet._id);
-            event.participants = [...new Set(event.participants)];
-            await event.save();
+            if (event.participants.includes(myBet._id)) {
+                event.participants.push(myBet._id);
+                await event.save();
+            }
         }
 
         user.freeSix = -1;
@@ -241,9 +243,10 @@ const startWednesdayFreeBetting = async (req, res) => {
             if (!event) {
                 return res.status(400).send({ message: "Invalid Contest." });
             }
-            event.participants.push(myBet._id);
-            event.participants = [...new Set(event.participants)];
-            await event.save();
+            if (event.participants.includes(myBet._id)) {
+                event.participants.push(myBet._id);
+                await event.save();
+            }
         }
 
         user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
