@@ -8,6 +8,7 @@ const {
 const axios = require('axios');
 const Fs = require('fs');
 const Path = require('path');
+require('../utils/log');
 const apiKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
 const apiImageKey = process.env.NFL_HEAD_KEY;
@@ -36,7 +37,7 @@ const fetchPlayerProfile = async (playerId) => {
       }
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -52,7 +53,7 @@ const fetchNFLPlayerProfile = async (playerId) => {
       }
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -66,7 +67,7 @@ const fetchSoccerPlayerProfile = async (srId) => {
      
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -80,7 +81,7 @@ const fetchPlayerNumber = async (playerId) => {
       return parseInt(response.data.jersey_number);
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -92,7 +93,7 @@ const fetchPlayerManifest = async () => {
       return response.data;
     })
     .catch(error => {
-      console.log(error.message);
+      console.log(error);
       //throw new Error('Error retrieving player Info:', error);
     });
 }
@@ -120,7 +121,7 @@ const fetchPlayerImage = async (asset_id, fileName) => {
   //  return response.data;
   // })
   // .catch(error => {
-  //   console.log(error.message);
+  //   console.log(error);
   //   //throw new Error('Error retrieving player Info:', error);
   // });
 }

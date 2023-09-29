@@ -1,4 +1,5 @@
 const Bonus = require('../models/Bonus');
+require('../utils/log');
 const { ObjectId } = require("mongodb");
 
 const getReferralBonusByReferralId = async (req, res) => {

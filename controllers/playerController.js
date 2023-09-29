@@ -4,6 +4,7 @@ const Discount = require("../models/Discount");
 const Event = require('../models/Event');
 const Prop = require('../models/Prop');
 const fs = require('fs');
+require('../utils/log');
 const {
   ObjectId
 } = require("mongodb");
@@ -380,7 +381,7 @@ const getPlayerById = async (playerId) => {
     }
     return player;
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     //throw new Error(`Error getting player by ID: ${error.message}`);
   }
 };
@@ -398,7 +399,7 @@ const updateNBAPlayers = async () => {
       }
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 }
 const addNFLPlayersToDatabase = async (req, res) => {

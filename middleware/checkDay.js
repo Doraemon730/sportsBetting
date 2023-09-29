@@ -1,3 +1,4 @@
+require('../utils/log');
 const checkWednesday = (req, res, next) => {
     const today = new Date();
     const dayOfWeek = today.getDay();

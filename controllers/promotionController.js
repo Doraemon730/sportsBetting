@@ -1,5 +1,5 @@
 const Promotion = require('../models/Promotion')
-
+require('../utils/log');
 const addPromotion = async (req, res) => {
     try {
         const { title, description, approach } = req.body;

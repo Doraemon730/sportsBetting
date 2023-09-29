@@ -2,6 +2,7 @@ const Transaction = require('../models/Transaction');
 const Ethereum = require('../models/Ethereum');
 const Capital = require('../models/Capital');
 const User = require('../models/User');
+require('../utils/log');
 const {
     updateCapital
 } = require('../controllers/capitalController');
@@ -173,7 +174,7 @@ const getETHPriceFromMarket = async () => {
         console.log("Etherium price:" + price);
 
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 

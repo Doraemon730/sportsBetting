@@ -1,5 +1,5 @@
 const Configure = require('../models/Configure');
-
+require('../utils/log');
 const setBetAmountLimit = async (req, res) => {
     const { minBetAmount, maxBetAmount } = req.body;
     if (!minBetAmount || !maxBetAmount) {

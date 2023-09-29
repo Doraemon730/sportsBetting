@@ -1,5 +1,6 @@
 const Contest = require('../models/Contest');
 const User = require('../models/User');
+require('../utils/log');
 const {
   ObjectId
 } = require('mongodb');
@@ -291,7 +292,7 @@ const updateBetfromContest = async (gameId) => {
       };
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 }
 module.exports = {

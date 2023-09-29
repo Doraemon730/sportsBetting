@@ -1,5 +1,5 @@
 const { check, validationResult } = require('express-validator');
-
+require('../utils/log');
 const checkRegister = [
   check('email', 'Please include a valid email').isEmail(),
   check('firstName', 'First Name is required').notEmpty(),

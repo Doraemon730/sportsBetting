@@ -1,6 +1,6 @@
 const Prop = require('../models/Prop');
 const { ObjectId } = require("mongodb");
-
+require('../utils/log');
 const addProp = async (req, res) => {
     try {
         const {
@@ -29,7 +29,7 @@ const getPropsBySport = async (sportId) => {
         });
         return props;
     } catch (error) {
-        console.log(error.message);
+        console.log(error);
     }
 }
 

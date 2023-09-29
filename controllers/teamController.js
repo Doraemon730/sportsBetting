@@ -5,6 +5,7 @@ const {
     fetchNHLTeams,
     fetchMLBTeams
 } = require('../services/teamService');
+require('../utils/log');
 const {
     ObjectId
 } = require('mongodb');
