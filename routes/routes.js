@@ -252,7 +252,7 @@ router.post('/admin/remoevNHLPlayers', playerController.remove);
 router.post('/admin/removeWeekSchedueMLB', eventController.remove);
 router.post('/admin/getWeeklyScheduleSoccer', eventController.getWeeklyEventsSoccer);
 router.post('/admin/resetOdds', playerController.resetOdds);
-
+router.post('/admin/updateMLB', playerController.updateMLBPlayers);
 router.post('/admin/testBet', eventController.testBet);
 router.post('/admin/addSoccerTeam', teamController.addSoccerTeam);
 module.exports = router;

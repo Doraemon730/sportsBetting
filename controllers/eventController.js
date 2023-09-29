@@ -59,6 +59,13 @@ const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
 
+let players = [];
+
+const playerMapping = async ()=> {
+    players = await fetchPlayerMapping(0);    
+    players = players.concat(await fetchPlayerMapping(30001));
+    return;
+}
 const getWeeklyEventsNFL = async () => {
     try {
         const mappings = await fetchEventMapping();
@@ -156,22 +163,18 @@ const getWeeklyEventsMLB = async () => {
             console.log('No mappings');
             return;
         }
-        //console.log(mappings);        
-        let players = await fetchPlayerMapping(0);
-        players.concat(await fetchPlayerMapping(1000));
-        players.concat(await fetchPlayerMapping(2000));
-        if (!players || !Array.isArray(players)) {
-            console.log('No player mapping');
-            return;
-        }
-
+        //console.log(mappings);
+        if(players.length === 0)        
+            await playerMapping();        
+        console.log(JSON.stringify(players[0]));
+        
         let events = await fetchWeeklyEventsMLB();
         let now = new Date();
         events = events.filter(item => new Date(item.sport_event.start_time) > now);
         console.log("MLB events count = " + events.length);
         for (const event of events) {
 
-            const myEvent = new Event({
+            let myEvent = new Event({
                 id: event.sport_event.id,
                 startTime: event.sport_event.start_time,
                 sportId: new ObjectId('65108fcf4fa2698548371fc0')
@@ -188,13 +191,13 @@ const getWeeklyEventsMLB = async () => {
             }
             myEvent.name = alias[0] + " vs " + alias[1];
 
-            const mapping = mappings.find(item => item.id === event.sport_event.id);
+            let mapping = mappings.find(item => item.id === event.sport_event.id);
             if (mapping)
                 myEvent.matchId = mapping.external_id;
 
 
-            const playerProps = await fetchEventPlayerProps(event.sport_event.id);
-            const existingEvent = await Event.findOne({ sportId: new ObjectId('65108fcf4fa2698548371fc0'), id: event.sport_event.id });
+            let playerProps = await fetchEventPlayerProps(event.sport_event.id);
+            let existingEvent = await Event.findOne({ sportId: new ObjectId('65108fcf4fa2698548371fc0'), id: event.sport_event.id });
             if (existingEvent) {
                 myEvent = existingEvent;
                 existingEvent.startTime = myEvent.startTime;
@@ -213,15 +216,16 @@ const getWeeklyEventsMLB = async () => {
                 console.log(playerProp.player.id, true);
                 console.log(playerProp.player.name, true);
                 const play = players.find(item => String(item.id) === String(playerProp.player.id));
+                
                 if (!play)
                     continue;
                 const player = await Player.findOne({
-                    remoteId: play.external_id,
+                    remoteId: play.us_id,
                     sportId: new ObjectId('65108fcf4fa2698548371fc0')
                 });
                 if (!player)
                     continue;
-                console.log(player, true);
+                console.log(player);
                 for (const market of playerProp.markets) {
                     const prop = await Prop.findOne({
                         srId: market.id
