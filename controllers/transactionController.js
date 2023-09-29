@@ -24,6 +24,7 @@ const {
     join
 } = require('path');
 const { Web3 } = require('web3');
+const { updateTotalBalanceAndCredits } = require('../controllers/statisticsController');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const mainWalletAddress = process.env.MAIN_WALLET_ADDRESS;
@@ -76,13 +77,16 @@ const depositBalance = async (req, res) => {
         });
 
         user.ETH_balance += parseFloat(amountETH);
+        await updateTotalBalanceAndCredits(amountETH, 0);
 
         if (amountUSD >= 25 && user.freeSix == 0)
             user.freeSix = 1;
 
         if (user.level === "") {
             user.level = "Unranked";
-            user.credits += parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
+            let credits = parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
+            user.credits += credits;
+            await updateTotalBalanceAndCredits(0, credits);
             user.firstDepositAmount = parseFloat(amountUSD);
         }
 
@@ -153,6 +157,7 @@ const withdrawBalance = async (req, res) => {
         });
 
         user.ETH_balance -= parseFloat(amountETH);
+        await updateTotalBalanceAndCredits(0 - amountETH, 0);
         await transaction.save();
         await user.save();
         await updateCapital(1, parseFloat(amountETH));
@@ -194,6 +199,7 @@ const addPrizeTransaction = async (userId, amount) => {
             _id: userId
         });
         user.ETH_balance += amountETH;
+        await updateTotalBalanceAndCredits(amountETH, 0);
         await user.save();
         const trans = new Transaction({
             userId,
