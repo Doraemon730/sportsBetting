@@ -114,7 +114,8 @@ const getWeeklyEventsNFL = async () => {
                 if(!playerProp.player.id)
                     continue;
                 const player = await Player.findOne({
-                    srId: playerProp.player.id
+                    srId: playerProp.player.id,
+                    sportId: new ObjectId('650e0b6fb80ab879d1c142c8')
                 });
                 if (!player)
                     continue;
@@ -215,7 +216,8 @@ const getWeeklyEventsMLB = async () => {
                 if (!play)
                     continue;
                 const player = await Player.findOne({
-                    remoteId: play.external_id
+                    remoteId: play.external_id,
+                    sportId: new ObjectId('65108fcf4fa2698548371fc0')
                 });
                 if (!player)
                     continue;
@@ -345,7 +347,7 @@ const processSoccerEvents = async (mappings, events) => {
                 console.log(play.player_id, true);                
                 if(!play || !play.player_id)
                     return;
-                let player = await Player.findOne({ srId: play.player_id });
+                let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7')});
                 if (!player) {
 
                     const profile = await fetchSoccerPlayerProfile(play.player_id);
