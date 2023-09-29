@@ -111,6 +111,8 @@ const getWeeklyEventsNFL = async () => {
             //await myEvent.save();
             for (const playerProp of playerProps) {
                 //console.log(playerProp.player.id);
+                if(!playerProp.player.id)
+                    continue;
                 const player = await Player.findOne({
                     srId: playerProp.player.id
                 });
@@ -207,8 +209,8 @@ const getWeeklyEventsMLB = async () => {
                 continue;
 
             for (const playerProp of playerProps) {
-                console.log(playerProp.player.id);
-                console.log(playerProp.player.name);
+                console.log(playerProp.player.id, true);
+                console.log(playerProp.player.name, true);
                 const play = players.find(item => String(item.id) === String(playerProp.player.id));
                 if (!play)
                     continue;
@@ -217,7 +219,7 @@ const getWeeklyEventsMLB = async () => {
                 });
                 if (!player)
                     continue;
-                console.log(player);
+                console.log(player, true);
                 for (const market of playerProp.markets) {
                     const prop = await Prop.findOne({
                         srId: market.id
@@ -297,11 +299,11 @@ const teamDraft = [
 ]
 const processSoccerEvents = async (mappings, events) => {
     try {
-
-        console.log("MLB events count = " + events.length);
+        console.log("process Soccer Events");
+        console.log("Soccer events count = " + events.length, true);
         let now = new Date();
         let eventes = events.filter(item => new Date(item.sport_event.start_time) > now);
-        console.log("MLB events count = " + eventes.length);
+        console.log("Soccer events count = " + eventes.length, true);
         for (const event of eventes) {
             let competitors = event.sport_event.competitors;
 
@@ -324,13 +326,13 @@ const processSoccerEvents = async (mappings, events) => {
                 myEvent.matchId = mapping.external_id;
 
             const markets = await fetchSoccerPlayerProps(event.sport_event.id);
-            //console.log(markets);
-            //const market = markets.find(item => item.name ==="anytime goalscorer");
             if (!markets)
                 continue;
+            console.log(markets, true);
             const existingEvent = await Event.findOne({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id: event.sport_event.id });
             if (existingEvent) {
                 // Event already exists, update it
+                console.log("event already exist", true)
                 myEvent = existingEvent;
                 existingEvent.startTime = myEvent.startTime;
                 await existingEvent.save();
@@ -340,6 +342,9 @@ const processSoccerEvents = async (mappings, events) => {
                 console.log('Soccer New event inserted! id = ' + myEvent.id);
             }
             for (const play of markets[0].books[0].outcomes) {
+                console.log(play.player_id, true);                
+                if(!play || !play.player_id)
+                    return;
                 let player = await Player.findOne({ srId: play.player_id });
                 if (!player) {
 
@@ -351,7 +356,7 @@ const processSoccerEvents = async (mappings, events) => {
                         if (i === -1)
                             i = competitiorDraft.indexOf(profile.competitors[1].id)
 
-                        console.log("asdf" + profile.player.name);
+                        console.log(profile.player.name, true);
                         player = new Player({
                             sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
                             name: profile.player.name,
@@ -370,6 +375,7 @@ const processSoccerEvents = async (mappings, events) => {
                     }
                 }
                 else {
+                    console.log(player.name);
                     if (player.odds.length) {
                         player.odds[0].event = myEvent._id;
                         player.odds[0].value = 0.5;
@@ -747,20 +753,20 @@ const summarizeStatsByPlayer = (data, category) => {
 
 const updateNFLBet = async (event) => {
     try {
-        console.log(event.matchId);
+        console.log(event.matchId, true);
         const statistics = await fetchNFLGameSummary(event.matchId);
-        console.log("summaryNFL", event._id);
-        console.log(statistics.status);
+        console.log("summaryNFL" + event._id, true);
+        console.log(statistics.status, true);
         if (statistics.status != "closed" && statistics.status != "complete")
             return;
-        console.log("asdfasdf");
+        
         const rushingStats = summarizeStatsByPlayer(statistics, 'rushing');
         const receivingStats = summarizeStatsByPlayer(statistics, 'receiving');
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
         const fieldGoalStats = summarizeStatsByPlayer(statistics, 'field_goals');
-        const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
-
-        console.log("bets " + event.participants);
+        const defenseStats = summarizeStatsByPlayer(statistics, 'defense');      
+        
+        console.log("bets "+ event.participants, true);
         for (const betId of event.participants) {
             let bet = await Bet.findById(betId);
             //const pick = bet.picks.find(item => item.contestId === event._id);
