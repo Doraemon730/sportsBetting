@@ -77,7 +77,7 @@ const registerUser = async (req, res) => {
     jwt.sign(
       payload,
       config.get('jwtSecret'),
-      { expiresIn: '24 hours' },
+      { expiresIn: '365 days' },
       (err, token) => {
         if (err) throw err;
         res.json({ token });
