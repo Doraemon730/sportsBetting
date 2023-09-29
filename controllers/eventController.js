@@ -1031,8 +1031,9 @@ const updateMLBBet = async (event) => {
         if (!summary || summary.game.status != 'closed')
             return;
         const players = summarizeMLBStatsByPlayer(summary);
-        for (const bet of event.participants) {
+        for (const betId of event.participants) {
             //const pick = bet.picks.find(item => item.contestId === event._id);
+            let bet = await Bet.findById(betId);
             if (!bet || bet.status != 'pending')
                 continue;
             let finished = 0, win = 0, refund = 0;
@@ -1271,24 +1272,31 @@ const getSoccerPlayers = (data) => {
 const updateSoccerBet = async (event) => {
     try {
         let data = await fetchSoccerEventSummary(event.id);
-        console.log("update Soccer ");
-        //console.log(data);
-        if (!data.hasOwnProperty('statistics'))
+        console.log("update Soccer " + event.participants);
+        console.log(JSON.stringify(data), true);
+        if (!data.hasOwnProperty('statistics') )
             return;
+        //if( !data.statistics.)
         let statistics = data.statistics;
-        console.log(statistics);
+        //console.log(statistics);
         let players = getSoccerPlayers(statistics);
-        for (const bet of event.participants) {
-            if (bet.status != 'pending')
+        //console.log(JSON.stringify(players));
+        for (const betId of event.participants) {
+            console.log(betId);
+            let bet = await Bet.findById(betId);
+            if (!bet || bet.status != 'pending')
                 continue;
+            console.log(bet.entryFee);
             let finished = 0, win = 0, refund = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) === String(event._id)) {
                     let result, play;
+                    console.log("1292");
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id === player.srId && item.starter === true);
                     if (play) {
-                        result = player.statistics.goals_scored;
+                        result = play.statistics.goals_scored;
+                        console.log(result);
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else
@@ -1460,6 +1468,7 @@ const updateSoccerBet = async (event) => {
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
             }
+            console.log("1468")
             await bet.save();
         }
         event.state = 3;
@@ -1473,7 +1482,7 @@ const updateBet = async (eventId) => {
     try {
         const event = await Event.findOne({
             _id: eventId
-        }).populate('participants');
+        });
         console.log(event);
         if (!event)
             return;
@@ -1515,18 +1524,19 @@ const getWeekEventAll = async () => {
 const checkEvents = async () => {
     try {
         let events = await Event.find({ state: 2 });
+        console.log("checkEvents");
         for (let event of events) {
             if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
-                console.log("NFL ", event._id);
-                updateNFLBet(event);
+                console.log("NFL " + event._id);
+                await updateNFLBet(event);
             }
-            if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
-                console.log("MLB ", event._id);
-                updateMLBBet(event);
+            else if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
+                console.log("MLB " + event._id);
+                await updateMLBBet(event);
             }
-            if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
-                console.log("Soccer ", event._id);
-                updateSoccerBet(event);
+            else if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
+                console.log("Soccer " + event._id);
+                await updateSoccerBet(event);
             }
         }
     } catch (error) {
