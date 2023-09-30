@@ -64,6 +64,7 @@ let players = [];
 const playerMapping = async () => {
     players = await fetchPlayerMapping(0);
     players = players.concat(await fetchPlayerMapping(30001));
+    players = players.concat(await fetchPlayerMapping(60001));
     return;
 }
 const getWeeklyEventsNFL = async () => {
@@ -1032,6 +1033,7 @@ const summarizeMLBStatsByPlayer = (data, category) => {
 };
 const updateMLBBet = async (event) => {
     try {
+        console.log(event);
         const summary = await fetchMLBGameSummary(event.matchId);
         if (!summary || summary.game.status != 'closed')
             return;
@@ -1051,6 +1053,7 @@ const updateMLBBet = async (event) => {
                         continue;
                     console.log(pick.prop.propName);
                     console.log(play.statistics.hitting);
+                    console.log(play.statistics.pitching);
                     switch (pick.prop.propName) {
                         case 'Pitcher Strikeouts':
                             if (play.statistics.hitting)
@@ -1099,6 +1102,7 @@ const updateMLBBet = async (event) => {
                     if (!play)
                         refund = 1;
                     else {
+                        console.log(result);
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     }
@@ -1259,9 +1263,9 @@ const updateMLBBet = async (event) => {
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                }
-                await bet.save();
+                }                
             }
+            await bet.save();
         }
         event.state = 3;
         await event.save();

@@ -41,10 +41,10 @@ const fetchEventMapping = async () => {
 }
 
 const fetchPlayerMapping = async (start) => {
-    //return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/players/mappings.json?api_key=${apiOddsKey}&start=${start}`)
+    //return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/players/mappings.json?api_key=${apiOddsKey}&start=${start}&limit=1000`)
     return axios.get(`${ODDS_COM_API_BASEURL}/${LOCALE}/us/players/id_mappings.json?api_key=8wrcd5tcqhpdw77fwp2qnv3t&start=${start}&limit=30000`)
     .then(response => {
-        const mappings = response.data.player_mappings;
+        const mappings = response.data.player_mappings;//;
         console.log(mappings.length);
         return mappings;
     })
