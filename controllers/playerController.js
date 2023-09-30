@@ -13,7 +13,8 @@ const {
   fetchPlayerNumber,
   fetchPlayerProfile,
   fetchPlayerManifest,
-  fetchPlayerImage
+  fetchPlayerImage,
+  fetchMLBPlayerNumber
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
@@ -38,13 +39,13 @@ const getTopPlayerBy = async (req, res) => {
     }
 
     sportId = new ObjectId(sportId);
-    const props = await Prop.find({
+    let props = await Prop.find({
       sportId: sportId
     }).select('_id displayName');
     if (props.length == 0)
       return res.status(404).json("There is not props");
     const result = {};
-    result.props = props.map((prop) => prop.displayName);
+    
 
 
 
@@ -140,12 +141,14 @@ const getTopPlayerBy = async (req, res) => {
         }
       }
       ]);
+    props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
+    result.props = props.map((prop) => prop.displayName);;
     for (const prop of props) {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
       if (prop.displayName === "Rush+Rec Yards")
-        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
+        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");      
 
       now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
@@ -471,8 +474,7 @@ const addMLBPlayersToDatabase = async (req, res) => {
           remoteId: player.id,
           teamId: team._id,
           position: player.position,
-          jerseyNumber: player.jersey,
-          srId: player.sr_id
+          jerseyNumber: player.jersey_number,
         });
         await newPlayer.save();
       }
@@ -484,6 +486,22 @@ const addMLBPlayersToDatabase = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send("Server Error");
+  }
+}
+const updateMLBPlayers = async () => {
+  try {
+    const players = await Player.find({sportId:new ObjectId("65108fcf4fa2698548371fc0")});
+    for (const player of players) {
+      if (!player.jerseyNumber) {
+        const playerNumber = await fetchMLBPlayerNumber(player.remoteId);
+        if (playerNumber) {
+          player.jerseyNumber = playerNumber;
+          await player.save();
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 const addNBAPlayersToDatabase = async (req, res) => {
@@ -556,12 +574,12 @@ const getPlayerManifest = async (req, res) => {
   }
 }
 const remove = async (req, res) => {
-  await Player.deleteMany({ sportId: new ObjectId("650e0b6fb80ab879d1c142c8") });
+  await Player.deleteMany({ sportId: new ObjectId("65108fcf4fa2698548371fc0") });
   res.json("Success");
 }
 
 const resetOdds = async (req, res) => {
-  await Player.updateMany({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8') }, { headshot: undefined });
+  await Player.updateMany({ sportId: new ObjectId('65108fcf4fa2698548371fc0') }, { headshot: undefined });
   res.json("Success");
 }
 
@@ -577,5 +595,6 @@ module.exports = {
   addNHLPlayersToDatabase,
   addMLBPlayersToDatabase,
   remove,
-  resetOdds
+  resetOdds,
+  updateMLBPlayers
 };

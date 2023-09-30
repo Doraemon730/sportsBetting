@@ -11,6 +11,7 @@ const Path = require('path');
 require('../utils/log');
 const apiKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
+const apiMLBKey = process.env.MLB_API_KEY;
 const apiImageKey = process.env.NFL_HEAD_KEY;
 const apiSoccerKey = process.env.SOCCER_API_KEY;
 const {
@@ -21,7 +22,8 @@ const {
   NFL_IMAGE_PROVIDER,
   NFL_IMAGE_TYPE,
   YEAR,
-  SOCCER_API_BASEURL
+  SOCCER_API_BASEURL,
+  MLB_API_BASEURL
 } = require('../config/constant');
 
 
@@ -86,6 +88,19 @@ const fetchPlayerNumber = async (playerId) => {
     });
 }
 
+const fetchMLBPlayerNumber = async (playerId) => {
+
+  return axios.get(`${MLB_API_BASEURL}/${LOCALE}/players/${playerId}/profile.json?api_key=${apiMLBKey}`)
+    .then(response => {
+      if (!response.data.player.jersey_number)
+        return null;
+      return parseInt(response.data.player.jersey_number);
+    })
+    .catch(error => {
+      console.log(error);
+      //throw new Error('Error retrieving player Info:', error);
+    });
+}
 const fetchPlayerManifest = async () => {
   return axios.get(`${NFL_IMAGE_BASEURL}/${NFL_IMAGE_PROVIDER}/${NFL_IMAGE_TYPE}/players/${YEAR}/manifest.json?api_key=${apiImageKey}`)
     .then(response => {
@@ -135,5 +150,6 @@ module.exports = {
   fetchNFLPlayerProfile,
   fetchPlayerManifest,
   fetchPlayerImage,
-  fetchSoccerPlayerProfile
+  fetchSoccerPlayerProfile,
+  fetchMLBPlayerNumber
 };

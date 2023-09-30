@@ -16,6 +16,7 @@ const NBA_API_BASEURL = "https://api.sportradar.us/nba/trial/v8"
 const NFL_API_BASEURL = "https://api.sportradar.us/nfl/official/trial/v7"
 const LOCALE = "en"
 const ODDS_API_BASEURL = "https://api.sportradar.us/oddscomparison-player-props/trial/v2"
+const ODDS_COM_API_BASEURL = "https://api.sportradar.us/oddscomparison-ust1"
 const AMERICAN_URN_SPORT = "sr:sport:16"
 const NFL_COMPETITION_ID = "sr:competition:31"
 
@@ -85,5 +86,6 @@ module.exports = {
     BUNDESLIGA_COMPETITION_ID,
     MLS_COMPETITION_ID,
     SAUDI_COMPETITION_ID,
-    SOCCER_API_BASEURL
+    SOCCER_API_BASEURL,
+    ODDS_COM_API_BASEURL
 }
