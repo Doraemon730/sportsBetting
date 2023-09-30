@@ -342,17 +342,16 @@ const getWalletBalance = async (req, res) => {
 
 const addBalanceAndCredits = async (req, res) => {
   try {
-    const { balance, credits, userId } = req.body;
+    let { balance, credits, userId } = req.body;
 
     const user = await User.findById({ _id: userId });
-    const amountETH = await USD2Ether(balance);
+    let amountETH = await USD2Ether(balance);
 
     if (!balance && !credits) {
       return res.status(400).json({ errors: [{ msg: 'Please provide balance or credits!' }] });
     }
-
     amountETH = amountETH ? parseFloat(amountETH) : 0;
-    balance = balance ? parseFloat(balance) : 0;
+    credits = credits ? parseFloat(credits) : 0;
     user.ETH_balance += amountETH;
     user.credits += parseFloat(credits);
     await updateTotalBalanceAndCredits(amountETH, credits);
