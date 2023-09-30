@@ -3,6 +3,7 @@ const Bet = require('../models/Bet');
 const User = require('../models/User');
 require('../utils/log');
 const Transaction = require('../models/Transaction');
+const { USD2Ether } = require('../utils/util');
 const updateTotal = async () => {
     try {
         const now = new Date();
@@ -43,6 +44,7 @@ const updateTotal = async () => {
         console.log(error);
     }
 }
+
 const updateBetWithNew = async (amount) => {
     try {
         const now = new Date();
@@ -222,6 +224,23 @@ const getUserBetStats = async (req, res) => {
     }
 }
 
+const updateTotalBalanceAndCredits = async (ETH_balance, credits) => {
+
+    try {
+        const statistic = await Statistics.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+        const creditsETH = await USD2Ether(credits);
+        statistic.total += creditsETH + ETH_balance;
+        await statistic.save();
+    } catch (error) {
+        console.log(error);
+    }
+
+}
+
 module.exports = {
     getStatistics,
     updateTotal,
@@ -229,5 +248,6 @@ module.exports = {
     updateBetWithNew,
     getTotalUserWithBet,
     getUserBetStats,
-    updateBetResult
+    updateBetResult,
+    updateTotalBalanceAndCredits
 }

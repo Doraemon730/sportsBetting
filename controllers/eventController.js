@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Team = require('../models/Team');
 const Bet = require('../models/Bet');
 const { updateCapital } = require('./capitalController');
-const { updateBetResult } = require('./statisticsController');
+const { updateBetResult, updateTotalBalanceAndCredits } = require('./statisticsController');
 require('../utils/log');
 const request = require('request')
 const {
@@ -347,7 +347,7 @@ const processSoccerEvents = async (mappings, events) => {
                 console.log(play.player_id, true);
                 if (!play || !play.player_id)
                     return;
-                let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7')});
+                let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7') });
                 if (!player) {
 
                     const profile = await fetchSoccerPlayerProfile(play.player_id);
@@ -859,6 +859,7 @@ const updateNFLBet = async (event) => {
                     user.credits += bet.credit;
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                 user.ETH_balance += entryETH;
+                await updateTotalBalanceAndCredits(entryETH, bet.credit);
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
@@ -1112,6 +1113,7 @@ const updateMLBBet = async (event) => {
                     user.credits += bet.credit;
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                 user.ETH_balance += entryETH;
+                await updateTotalBalanceAndCredits(entryETH, bet.credit);
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
@@ -1274,9 +1276,9 @@ const updateSoccerBet = async (event) => {
         let data = await fetchSoccerEventSummary(event.id);
         console.log("update Soccer " + event.participants);
         console.log(JSON.stringify(data), true);
-        if (!data.hasOwnProperty('statistics') )
+        if (!data.hasOwnProperty('statistics'))
             return;
-        if( data.sport_event_status.status !== "ended")
+        if (data.sport_event_status.status !== "ended")
             return;
         let statistics = data.statistics;
         //console.log(statistics);
@@ -1317,6 +1319,7 @@ const updateSoccerBet = async (event) => {
                     user.credits += bet.credit;
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                 user.ETH_balance += entryETH;
+                await updateTotalBalanceAndCredits(entryETH, bet.credit);
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
