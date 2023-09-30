@@ -10,7 +10,7 @@ const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
-const { updateBetWithNew, updateBetWithDaily } = require("../controllers/statisticsController")
+const { updateBetWithNew, updateBetWithDaily, updateTotalBalanceAndCredits } = require("../controllers/statisticsController")
 
 const startBetting = async (req, res) => {
     try {
@@ -81,6 +81,7 @@ const startBetting = async (req, res) => {
         user.ETH_balance -= entryFeeEther;
         user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
+        await updateTotalBalanceAndCredits(0 - entryFeeEther, 0 - creditSave);
 
         await myBet.save();
         await user.save();
@@ -435,6 +436,7 @@ const cancelBet = async (req, res) => {
                     user.credits += bet.credit;
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                 user.ETH_balance += entryETH;
+                await updateTotalBalanceAndCredits(entryETH, bet.credit);
             }
             user.totalBetAmount -= bet.entryFee
             user = setUserLevel(user);
@@ -477,6 +479,8 @@ const getRewards = async (days) => {
             continue;
         const percentage = getRewardsPercentage(user.level);
         user.credits += weeklyBet.totalLost * percentage * 0.01;
+
+        await updateTotalBalanceAndCredits(0, weeklyBet.totalLost * percentage * 0.01);
         await user.save();
     }
 }

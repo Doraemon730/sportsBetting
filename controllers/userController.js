@@ -5,17 +5,14 @@ const User = require('../models/User');
 const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
 const Recovery = require('../models/Recovery');
-
 const { Web3 } = require('web3');
-
-
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
 const { generateReferralCode, sendEmail } = require('../utils/util');
 const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty, USD2Ether } = require('../utils/util');
-
 const { addUserWallet } = require('../services/webSocketService'); // Import your WebSocket service
+const { updateTotalBalanceAndCredits } = require('../controllers/statisticsController');
 
 const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
@@ -354,20 +351,15 @@ const addBalanceAndCredits = async (req, res) => {
       return res.status(400).json({ errors: [{ msg: 'Please provide balance or credits!' }] });
     }
 
-    if (balance) {
-      user.ETH_balance += amountETH;
-    }
-    if (credits) {
-      user.credits += parseFloat(credits);
-    }
-
+    amountETH = amountETH ? parseFloat(amountETH) : 0;
+    balance = balance ? parseFloat(balance) : 0;
+    user.ETH_balance += amountETH;
+    user.credits += parseFloat(credits);
+    await updateTotalBalanceAndCredits(amountETH, credits);
     await user.save();
-
     user.password = undefined;
     user.privateKey = undefined;
-
     return res.json(user);
-
   } catch (error) {
     res.status(500).send('Server error');
   }
