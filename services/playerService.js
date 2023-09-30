@@ -92,9 +92,10 @@ const fetchMLBPlayerNumber = async (playerId) => {
 
   return axios.get(`${MLB_API_BASEURL}/${LOCALE}/players/${playerId}/profile.json?api_key=${apiMLBKey}`)
     .then(response => {
+      //console.log(JSON.stringify(response.data.player));
       if (!response.data.player.jersey_number)
         return null;
-      return parseInt(response.data.player.jersey_number);
+      return response.data.player.jersey_number;
     })
     .catch(error => {
       console.log(error);

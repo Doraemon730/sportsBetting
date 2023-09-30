@@ -136,7 +136,7 @@ const updateBetResult = async (isWin) => {
             if (!isWin)
                 statistic.daily_loss++;
             await statistic.save();
-            await newstatistic.save();
+            
         }
     } catch (error) {
         console.log(error.message);
