@@ -45,7 +45,7 @@ const getTopPlayerBy = async (req, res) => {
     if (props.length == 0)
       return res.status(404).json("There is not props");
     const result = {};
-    
+
 
 
 
@@ -116,6 +116,7 @@ const getTopPlayerBy = async (req, res) => {
             $push: {
               playerId: '$_id',
               playerName: '$name',
+              remoteId: '$remoteId',
               playerPosition: '$position',
               contestId: '$odds.event',
               playerNumber: '$jerseyNumber',
@@ -148,7 +149,7 @@ const getTopPlayerBy = async (req, res) => {
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
       if (prop.displayName === "Rush+Rec Yards")
-        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");      
+        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
 
       now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
@@ -490,7 +491,7 @@ const addMLBPlayersToDatabase = async (req, res) => {
 }
 const updateMLBPlayers = async () => {
   try {
-    const players = await Player.find({sportId:new ObjectId("65108fcf4fa2698548371fc0")});
+    const players = await Player.find({ sportId: new ObjectId("65108fcf4fa2698548371fc0") });
     for (const player of players) {
       if (!player.jerseyNumber) {
         const playerNumber = await fetchMLBPlayerNumber(player.remoteId);

@@ -33,6 +33,10 @@ const BetSchema = new mongoose.Schema({
       ref: 'player',
       required: true
     },
+    remoteId: {
+      type: String,
+      required: true
+    },
     contestId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'event',

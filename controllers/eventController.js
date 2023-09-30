@@ -662,7 +662,7 @@ const getLiveDataByEvent = async () => {
 
 const getNFLData = (detailData) => {
     const player = {
-        id: detailData.id,
+        remoteId: detailData.id,
         name: detailData.name
     }
     if (detailData.hasOwnProperty('rushing')) {
@@ -715,7 +715,7 @@ const getNFLData = (detailData) => {
 
 const getMLBData = (detailData) => {
     const player = {
-        id: detailData.id,
+        remoteId: detailData.id,
         name: detailData.first_name + " " + detailData.last_name
     }
     if (detailData.statistics.hasOwnProperty('hitting')) {
