@@ -61,8 +61,8 @@ const NHL_API_KEY = process.env.NHL_API_KEY;
 
 let players = [];
 
-const playerMapping = async ()=> {
-    players = await fetchPlayerMapping(0);    
+const playerMapping = async () => {
+    players = await fetchPlayerMapping(0);
     players = players.concat(await fetchPlayerMapping(30001));
     return;
 }
@@ -164,10 +164,10 @@ const getWeeklyEventsMLB = async () => {
             return;
         }
         //console.log(mappings);
-        if(players.length === 0)        
-            await playerMapping();        
+        if (players.length === 0)
+            await playerMapping();
         console.log(JSON.stringify(players[0]));
-        
+
         let events = await fetchWeeklyEventsMLB();
         let now = new Date();
         events = events.filter(item => new Date(item.sport_event.start_time) > now);
@@ -216,7 +216,7 @@ const getWeeklyEventsMLB = async () => {
                 console.log(playerProp.player.id, true);
                 console.log(playerProp.player.name, true);
                 const play = players.find(item => String(item.id) === String(playerProp.player.id));
-                
+
                 if (!play)
                     continue;
                 const player = await Player.findOne({
@@ -519,7 +519,7 @@ const isJSON = (str) => {
 
 const getLiveDataByEvent = async () => {
     try {
-        let events = await Event.find({ state: 1, startTime: { $lte: new Date().getTime() } });
+        let events = await Event.find({ state: 0, startTime: { $lte: new Date().getTime() } });
         for (const event of events) {
             url = ""
             let sportType = ""
