@@ -500,6 +500,7 @@ const updateMLBPlayers = async () => {
         }
       }
     }
+    res.json("success");
   } catch (error) {
     console.log(error);
   }
