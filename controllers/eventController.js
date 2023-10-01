@@ -726,6 +726,8 @@ const getMLBData = (detailData) => {
             detailData.statistics.hitting.overall.onbase.tb : 0;
         player['Earned Runs'] = detailData.statistics.hitting.overall.runs.earned ?
             detailData.statistics.hitting.overall.runs.earned : 0;
+        player['Total Hits'] = detailData.statistics.hitting.overall.onbase.h ?
+            detailData.statistics.hitting.overall.onbase.h : 0;
         player['Total Runs'] = detailData.statistics.hitting.overall.runs.total ?
             detailData.statistics.hitting.overall.runs.total : 0;
     }
@@ -1555,6 +1557,10 @@ const checkEvents = async () => {
         console.log(error);
     }
 }
+
+const changeEventState = async () => {
+    await Event.updateMany({ state: 1 }, { $set: { state: 0 } });
+}
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,
@@ -1563,5 +1569,6 @@ module.exports = {
     getWeekEventAll,
     remove,
     testBet,
-    checkEvents
+    checkEvents,
+    changeEventState
 }
