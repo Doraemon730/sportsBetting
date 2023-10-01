@@ -579,7 +579,7 @@ const getLiveDataByEvent = async () => {
                         const detailData = jsonData['payload'];
                         if (detailData.hasOwnProperty('player')) {
                             if (sportType == "NFL") {
-                                broadcastingData.player = getNFLData(detailData.player);
+                                broadcastingData.player = getNFLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
@@ -663,8 +663,8 @@ const getLiveDataByEvent = async () => {
 
 const getNFLData = (detailData) => {
     const player = {
-        remoteId: detailData.id,
-        name: detailData.name
+        remoteId: detailData.player.id,
+        name: detailData.player.name
     }
     if (detailData.hasOwnProperty('rushing')) {
         player['Rush Yards'] = detailData.rushing.yards;
