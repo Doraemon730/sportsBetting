@@ -853,7 +853,7 @@ const updateNFLBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     }
                 }
-                if (pick.result) {
+                if ('result' in pick) {
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1112,7 +1112,7 @@ const updateMLBBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     
                 }
-                if (pick.result) {
+                if ('result' in pick) {
                     finished += 1;
                     if (pick.overUnder === "over" && pick.result > pick.prop.odds ||
                         pick.overUnder === "under" && pick.result < pick.prop.odds) {
@@ -1312,7 +1312,7 @@ const updateSoccerBet = async (event) => {
                     const player = await Player.findById(pick.playerId);
                     if(!player)
                         continue;
-                    play = players.find(item => item.id === player.srId && item.starter === true);
+                    play = players.find(item => item.id === player.srId);
                     if (play) {
                         result = play.statistics.goals_scored;
                         console.log(result);
@@ -1325,7 +1325,9 @@ const updateSoccerBet = async (event) => {
                         break;
                     }
                 }
-                if (pick.result) {
+                
+                if ('result' in pick) {
+                    console.log(pick.result);
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1335,6 +1337,8 @@ const updateSoccerBet = async (event) => {
             }
             if (refund) {
                 const user = await User.findById(bet.userId);
+                if(!user)
+                    continue;
                 if (bet.credit > 0)
                     user.credits += bet.credit;
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
@@ -1345,8 +1349,9 @@ const updateSoccerBet = async (event) => {
                 await bet.save();
                 continue;
             }
+            console.log(finished);
             if (finished == bet.picks.length) {
-
+                console.log("1351");
                 switch (finished) {
                     case 2:
                         if (win == 2) {
