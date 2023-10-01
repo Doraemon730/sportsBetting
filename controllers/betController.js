@@ -485,6 +485,27 @@ const getRewards = async (days) => {
     }
 }
 
+const udpateEventsByBet = async (req, res) => {
+    try{
+        const bets = await Bet.find({status:"pending"});
+        for(let bet of bets){
+            for(let pick of bet.picks){
+                if(!pick.result){
+                const event = await Event.findById(pick.contestId);
+                if(event && event.state === 3) {
+                    event.state = 2;
+                    await event.save();
+                }
+                }
+            }
+        }
+        res.send("Success")
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Server Error");
+    }
+}
+
 const getRewardsPercentage = (level) => {
     percentage = 0;
     switch (level) {
@@ -545,5 +566,6 @@ module.exports = {
     cancelBet,
     getRewards,
     startFirstFreeBetting,
-    startWednesdayFreeBetting
+    startWednesdayFreeBetting,
+    udpateEventsByBet
 }
