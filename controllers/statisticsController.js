@@ -1,4 +1,5 @@
 const Statistics = require('../models/Statistics');
+const Capital = require('../models/Capital');
 const Bet = require('../models/Bet');
 const User = require('../models/User');
 require('../utils/log');
@@ -136,7 +137,7 @@ const updateBetResult = async (isWin) => {
             if (!isWin)
                 statistic.daily_loss++;
             await statistic.save();
-            
+
         }
     } catch (error) {
         console.log(error.message);
@@ -227,7 +228,7 @@ const getUserBetStats = async (req, res) => {
 const updateTotalBalanceAndCredits = async (ETH_balance, credits) => {
 
     try {
-        const statistic = await Statistics.findOne({}, {}, {
+        const statistic = await Capital.findOne({}, {}, {
             sort: {
                 _id: -1
             }

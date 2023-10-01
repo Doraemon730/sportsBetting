@@ -2,6 +2,7 @@ const Referral = require('../models/Referral');
 const User = require('../models/User');
 const Bonus = require('../models/Bonus');
 const { ObjectId } = require("mongodb");
+const { updateTotalBalanceAndCredits } = require('../controllers/statisticsController')
 require('../utils/log');
 const setReferral = async (req, res) => {
     try {
@@ -140,6 +141,7 @@ const getReferralPrize = async (invitedUserId, betAmount) => {
     referral.invitesList = updatedList;
     checkUserLevel();
     user.ETH_balance += betAmount * referral.commission * 0.01;
+    await updateTotalBalanceAndCredits(betAmount * referral.commission * 0.01, 0);
 
     let bonus = new Bonus({
         userId: user._id,

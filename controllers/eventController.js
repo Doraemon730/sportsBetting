@@ -529,7 +529,7 @@ const getLiveDataByEvent = async () => {
                     _id: event._id
                 }, {
                     $set: {
-                        state: 3
+                        state: 2
                     }
                 })
                 continue;
@@ -579,7 +579,7 @@ const getLiveDataByEvent = async () => {
                         const detailData = jsonData['payload'];
                         if (detailData.hasOwnProperty('player')) {
                             if (sportType == "NFL") {
-                                broadcastingData.player = getNFLData(detailData.player);
+                                broadcastingData.player = getNFLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
@@ -663,8 +663,8 @@ const getLiveDataByEvent = async () => {
 
 const getNFLData = (detailData) => {
     const player = {
-        remoteId: detailData.id,
-        name: detailData.name
+        remoteId: detailData.player.id,
+        name: detailData.player.name
     }
     if (detailData.hasOwnProperty('rushing')) {
         player['Rush Yards'] = detailData.rushing.yards;
@@ -1263,7 +1263,7 @@ const updateMLBBet = async (event) => {
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                }                
+                }
             }
             await bet.save();
         }
