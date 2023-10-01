@@ -286,9 +286,8 @@ const getTransactionsByUserId = async (req, res) => {
 }
 
 const checkWithdraw = (user) => {
-    const firstDeposit = user.firstDepositAmount;
     const firstCredit = firstDeposit > 100 ? 100 : firstDeposit;
-    if (user.totalBetAmount >= firstDeposit + firstCredit && firstDeposit > 0)
+    if (user.totalBetAmount >= firstCredit * 2)
         return true
     return false
 }
