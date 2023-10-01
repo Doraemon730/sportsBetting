@@ -529,7 +529,7 @@ const getLiveDataByEvent = async () => {
                     _id: event._id
                 }, {
                     $set: {
-                        state: 3
+                        state: 2
                     }
                 })
                 continue;
@@ -1263,7 +1263,7 @@ const updateMLBBet = async (event) => {
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                }                
+                }
             }
             await bet.save();
         }
