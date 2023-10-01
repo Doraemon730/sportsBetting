@@ -455,7 +455,7 @@ const cancelBet = async (req, res) => {
 
 const getRewards = async (days) => {
     const daysAgo = new Date();
-    daysAgo.setDate(sevenDaysAgo.getDate() - days);
+    daysAgo.setDate(daysAgo.getDate() - days);
     const weeklyBets = await Bet.aggregate([
         {
             $match: {
