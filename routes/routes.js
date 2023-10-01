@@ -257,4 +257,5 @@ router.post('/admin/resetOdds', playerController.resetOdds);
 router.post('/admin/updateMLB', playerController.updateMLBPlayers);
 router.post('/admin/testBet', eventController.testBet);
 router.post('/admin/addSoccerTeam', teamController.addSoccerTeam);
+router.post('/admin/bet/updateEvents', betController.udpateEventsByBet);
 module.exports = router;

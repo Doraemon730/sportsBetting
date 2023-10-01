@@ -788,6 +788,7 @@ const updateNFLBet = async (event) => {
                 if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
+                    
                     console.log("player", player);
                     switch (pick.prop.propName) {
                         case 'Rush Yards':
@@ -845,13 +846,16 @@ const updateNFLBet = async (event) => {
                     console.log("play " + play);
                     console.log("result " + result);
                     if (!play)
+                    {
                         refund = 1;
+                        break;
+                    }
                     else {
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     }
                 }
-                if (pick.result) {
+                if ('result' in pick) {
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1052,7 +1056,10 @@ const updateMLBBet = async (event) => {
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id === player.remoteId);
                     if (!play)
-                        continue;
+                    {
+                        refund = 1;
+                        break;
+                    }    
                     console.log(pick.prop.propName);
                     console.log(play.statistics.hitting);
                     console.log(play.statistics.pitching);
@@ -1101,15 +1108,13 @@ const updateMLBBet = async (event) => {
                                     play.statistics.pitching.overall.runs.total : 0;
                             break;
                     }
-                    if (!play)
-                        refund = 1;
-                    else {
+                    
                         console.log(result);
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
-                    }
+                    
                 }
-                if (pick.result) {
+                if ('result' in pick) {
                     finished += 1;
                     if (pick.overUnder === "over" && pick.result > pick.prop.odds ||
                         pick.overUnder === "under" && pick.result < pick.prop.odds) {
@@ -1118,6 +1123,7 @@ const updateMLBBet = async (event) => {
                 }
             }
             if (refund) {
+                console.log("Refund");
                 const user = await User.findById(bet.userId);
                 if (bet.credit > 0)
                     user.credits += bet.credit;
@@ -1288,7 +1294,7 @@ const updateSoccerBet = async (event) => {
         console.log(JSON.stringify(data), true);
         if (!data.hasOwnProperty('statistics'))
             return;
-        if (data.sport_event_status.status !== "ended")
+        if (data.sport_event_status.match_status !== "ended")
             return;
         let statistics = data.statistics;
         //console.log(statistics);
@@ -1306,16 +1312,24 @@ const updateSoccerBet = async (event) => {
                     let result, play;
                     console.log("1292");
                     const player = await Player.findById(pick.playerId);
-                    play = players.find(item => item.id === player.srId && item.starter === true);
+                    if(!player)
+                        continue;
+                    play = players.find(item => item.id === player.srId);
                     if (play) {
                         result = play.statistics.goals_scored;
                         console.log(result);
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
-                    } else
+                    } 
+                    else
+                    {
                         refund = 1;
+                        break;
+                    }
                 }
-                if (pick.result) {
+                
+                if ('result' in pick) {
+                    console.log(pick.result);
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1325,6 +1339,8 @@ const updateSoccerBet = async (event) => {
             }
             if (refund) {
                 const user = await User.findById(bet.userId);
+                if(!user)
+                    continue;
                 if (bet.credit > 0)
                     user.credits += bet.credit;
                 let entryETH = await USD2Ether(bet.entryFee - bet.credit);
@@ -1335,8 +1351,9 @@ const updateSoccerBet = async (event) => {
                 await bet.save();
                 continue;
             }
+            console.log(finished);
             if (finished == bet.picks.length) {
-
+                console.log("1351");
                 switch (finished) {
                     case 2:
                         if (win == 2) {
@@ -1504,10 +1521,10 @@ const updateBet = async (eventId) => {
         if (String(event.sportId) === '650e0b6fb80ab879d1c142c8') {
             updateNFLBet(event);
         }
-        if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
+        else if (String(event.sportId) === String('65108fcf4fa2698548371fc0')) {
             updateMLBBet(event);
         }
-        if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
+        else if (String(event.sportId) === '65131974db50d0c2c8bf7aa7') {
             updateSoccerBet(event);
         }
     } catch (error) {

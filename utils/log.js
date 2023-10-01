@@ -21,7 +21,7 @@ console.log = function(message, onlyFile = false) {
     // Create an Error object to capture the stack trace
     const error = new Error();
     // Parse the stack trace to get the function name and code line
-    const stackLines = error.stack.split('\n');
+    const stackLines = error.stack.split('\n');    
     const callerLine = stackLines[2].trim();
     const callerFunction = callerLine.substring(
       callerLine.lastIndexOf('at ') + 3,
