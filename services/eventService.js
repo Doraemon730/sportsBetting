@@ -192,6 +192,7 @@ const fetchWeeklyEventsMLS = async () => {
 };
 
 const fetchSoccerPlayerProps = async (event) => {
+    console.log(event);
     return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/sport_events/${event}/players_props.json?api_key=${apiOddsKey}`)
   .then(response => {
     const markets = response.data.sport_event_players_props.players_markets.markets;
