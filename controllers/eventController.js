@@ -1052,51 +1052,59 @@ const updateMLBBet = async (event) => {
                         break;
                     }
                     console.log(pick.prop.propName);
-                    console.log(play.statistics.hitting);
+                    //console.log(play.statistics.hitting);
                     console.log(play.statistics.pitching);
                     switch (pick.prop.propName) {
                         case 'Pitcher Strikeouts':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.outs.ktotal ?
-                                    play.statistics.hitting.overall.outs.ktotal : 0;
-                            else if (play.statistics.pitching)
+                            // if (play.statistics.hitting)
+                            //     result = play.statistics.hitting.overall.outs.ktotal ?
+                            //         play.statistics.hitting.overall.outs.ktotal : 0;
+                            // else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.outs.ktotal ?
                                     play.statistics.pitching.overall.outs.ktotal : 0;
                             break;
                         case 'Total Bases':
-                            console.log(play.statistics.hitting);
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.tb ?
-                                    play.statistics.hitting.overall.onbase.tb : 0;
-                            else if (play.statistics.pitching)
+                            // console.log(play.statistics.hitting);
+                            // if (play.statistics.hitting)
+                            //     result = play.statistics.hitting.overall.onbase.tb ?
+                            //         play.statistics.hitting.overall.onbase.tb : 0;
+                            // else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.tb ?
                                     play.statistics.pitching.overall.onbase.tb : 0;
                             break;
                         case 'Earned Runs':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.earned ?
-                                    play.statistics.hitting.overall.runs.earned : 0;
-                            else if (play.statistics.pitching)
+                            // if (play.statistics.hitting)
+                            //     result = play.statistics.hitting.overall.runs.earned ?
+                            //         play.statistics.hitting.overall.runs.earned : 0;
+                            // else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.earned ?
                                     play.statistics.pitching.overall.runs.earned : 0;
                             break;
                         case 'Total Hits':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h ?
-                                    play.statistics.hitting.overall.onbase.h : 0;
-                            else if (play.statistics.pitching)
+                            // if (play.statistics.hitting)
+                            //     result = play.statistics.hitting.overall.onbase.h ?
+                            //         play.statistics.hitting.overall.onbase.h : 0;
+                            // else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.h ?
                                     play.statistics.pitching.overall.onbase.h : 0;
                             break;
 
                         case 'Total Runs':
                             //play = passingStats.find(item=> item.id === player.remoteId);
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.total ?
-                                    play.statistics.hitting.overall.runs.total : 0;
-                            else if (play.statistics.pitching)
+                            // if (play.statistics.hitting)
+                            //     result = play.statistics.hitting.overall.runs.total ?
+                            //         play.statistics.hitting.overall.runs.total : 0;
+                            // else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.total ?
                                     play.statistics.pitching.overall.runs.total : 0;
+                            break;
+                        case 'Hits Allowed':
+                            result = play.statistics.pitching.overall.onbase.h ?
+                            play.statistics.pitching.overall.onbase.h: 0;
+                            break;
+                        case 'Pitching Outs':
+                            detailData.statistics.pitching.overall.ip_1 ?
+                                detailData.statistics.pitching.overall.ip_1 : 0;
                             break;
                     }
 
