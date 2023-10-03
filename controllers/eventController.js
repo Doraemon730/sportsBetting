@@ -614,7 +614,7 @@ const getLiveDataByEvent = async () => {
                     }
                     if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
                         failCount++;
-                        if (failCount > 100) {
+                        if (failCount > 300) {
                             await Event.updateOne({
                                 _id: event._id
                             }, {
@@ -730,9 +730,9 @@ const getMLBData = (detailData) => {
             detailData.statistics.pitching.overall.onbase.h : 0;
         player['Total Runs'] = detailData.statistics.pitching.overall.runs.total ?
             detailData.statistics.pitching.overall.runs.total : 0;
-        player['Total Hits Allowed'] = detailData.statistics.pitching.overall.onbase.h ?
+        player['Hits Allowed'] = detailData.statistics.pitching.overall.onbase.h ?
             detailData.statistics.pitching.overall.onbase.h : 0;
-        player['Total Pitcher Outs'] = detailData.statistics.pitching.overall.ip_1 ?
+        player['Pitching Outs'] = detailData.statistics.pitching.overall.ip_1 ?
             detailData.statistics.pitching.overall.ip_1 : 0;
     }
 
@@ -1060,6 +1060,7 @@ const updateMLBBet = async (event) => {
                             //     result = play.statistics.hitting.overall.outs.ktotal ?
                             //         play.statistics.hitting.overall.outs.ktotal : 0;
                             // else if (play.statistics.pitching)
+                            if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.outs.ktotal ?
                                     play.statistics.pitching.overall.outs.ktotal : 0;
                             break;
@@ -1068,7 +1069,7 @@ const updateMLBBet = async (event) => {
                             // if (play.statistics.hitting)
                             //     result = play.statistics.hitting.overall.onbase.tb ?
                             //         play.statistics.hitting.overall.onbase.tb : 0;
-                            // else if (play.statistics.pitching)
+                            if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.tb ?
                                     play.statistics.pitching.overall.onbase.tb : 0;
                             break;
@@ -1076,7 +1077,7 @@ const updateMLBBet = async (event) => {
                             // if (play.statistics.hitting)
                             //     result = play.statistics.hitting.overall.runs.earned ?
                             //         play.statistics.hitting.overall.runs.earned : 0;
-                            // else if (play.statistics.pitching)
+                            if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.earned ?
                                     play.statistics.pitching.overall.runs.earned : 0;
                             break;
@@ -1084,7 +1085,7 @@ const updateMLBBet = async (event) => {
                             // if (play.statistics.hitting)
                             //     result = play.statistics.hitting.overall.onbase.h ?
                             //         play.statistics.hitting.overall.onbase.h : 0;
-                            // else if (play.statistics.pitching)
+                            if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.h ?
                                     play.statistics.pitching.overall.onbase.h : 0;
                             break;
@@ -1094,17 +1095,19 @@ const updateMLBBet = async (event) => {
                             // if (play.statistics.hitting)
                             //     result = play.statistics.hitting.overall.runs.total ?
                             //         play.statistics.hitting.overall.runs.total : 0;
-                            // else if (play.statistics.pitching)
+                            if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.total ?
                                     play.statistics.pitching.overall.runs.total : 0;
                             break;
                         case 'Hits Allowed':
-                            result = play.statistics.pitching.overall.onbase.h ?
-                            play.statistics.pitching.overall.onbase.h: 0;
+                            if (play.statistics.pitching)
+                                result = play.statistics.pitching.overall.onbase.h ?
+                                    play.statistics.pitching.overall.onbase.h : 0;
                             break;
                         case 'Pitching Outs':
-                            detailData.statistics.pitching.overall.ip_1 ?
-                                detailData.statistics.pitching.overall.ip_1 : 0;
+                            if (play.statistics.pitching)
+                                detailData.statistics.pitching.overall.ip_1 ?
+                                    detailData.statistics.pitching.overall.ip_1 : 0;
                             break;
                     }
 
