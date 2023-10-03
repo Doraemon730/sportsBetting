@@ -614,7 +614,7 @@ const getLiveDataByEvent = async () => {
                     }
                     if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
                         failCount++;
-                        if (failCount > 100) {
+                        if (failCount > 300) {
                             await Event.updateOne({
                                 _id: event._id
                             }, {
