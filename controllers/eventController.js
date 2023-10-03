@@ -735,6 +735,22 @@ const getMLBData = (detailData) => {
         player['Pitching Outs'] = detailData.statistics.pitching.overall.ip_1 ?
             detailData.statistics.pitching.overall.ip_1 : 0;
     }
+    if (detailData.statistics.hasOwnProperty('hitting')) {
+        player['Pitcher Strikeouts'] = detailData.statistics.hitting.overall.outs.ktotal ?
+            detailData.statistics.hitting.overall.outs.ktotal : 0;
+        player['Total Bases'] = detailData.statistics.hitting.overall.onbase.tb ?
+            detailData.statistics.hitting.overall.onbase.tb : 0;
+        player['Earned Runs'] = detailData.statistics.hitting.overall.runs.earned ?
+            detailData.statistics.hitting.overall.runs.earned : 0;
+        player['Total Hits'] = detailData.statistics.hitting.overall.onbase.h ?
+            detailData.statistics.hitting.overall.onbase.h : 0;
+        player['Total Runs'] = detailData.statistics.hitting.overall.runs.total ?
+            detailData.statistics.hitting.overall.runs.total : 0;
+        player['Hits Allowed'] = detailData.statistics.hitting.overall.onbase.h ?
+            detailData.statistics.hitting.overall.onbase.h : 0;
+        player['Pitching Outs'] = detailData.statistics.hitting.overall.ip_1 ?
+            detailData.statistics.hitting.overall.ip_1 : 0;
+    }
 
     return player;
 };
