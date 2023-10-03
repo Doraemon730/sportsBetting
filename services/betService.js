@@ -13,7 +13,7 @@ const cronEtherPriceSchedule = '* * * * *';
 const cronMatchSchedule = '*/5 * * * *'; //Runs every half an hour
 const cronWeeklySchedule = '0 0 * * 1'; //Runs every Monday
 const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
-const cronWeekEventSchedule = '0 */3 * * *';
+const cronWeekEventSchedule = '10 * * * *';
 const cronCheckResultSchedule = '*/15 * * * *'; // Runs every hour
 // Define the function to be executed by the cron job
 const cronWednesdayJob = () => {
