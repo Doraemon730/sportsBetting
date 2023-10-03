@@ -142,8 +142,8 @@ const getTopPlayerBy = async (req, res) => {
         }
       }
       ]);
-    props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
-    result.props = props.map((prop) => prop.displayName);;
+    //props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
+    result.props = props.map((prop) => prop.displayName);
     for (const prop of props) {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
