@@ -238,6 +238,8 @@ router.post('/user/getbalance', auth, userController.getWalletBalance);
 router.post('/test/changeEventState', admin, eventController.changeEventState);
 // router.post('/test', betController.test);
 
+router.post('/admin/getTotalBalance', admin, userController.getTotalBalance);
+
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
 router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
