@@ -882,7 +882,7 @@ const updateNFLBet = async (event) => {
                     case 3:
                         switch (win) {
                             case 2:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -891,7 +891,7 @@ const updateNFLBet = async (event) => {
                                 }
                                 break;
                             case 3:
-                                if (bet.betType.equals("high"))
+                                if (bet.betType === "high")
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                 else
                                     bet.prize = bet.entryFee * BET_3_3_LOW;
@@ -906,7 +906,7 @@ const updateNFLBet = async (event) => {
                     case 4:
                         switch (win) {
                             case 3:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -915,7 +915,7 @@ const updateNFLBet = async (event) => {
                                 }
                                 break;
                             case 4:
-                                if (bet.betType.equals("high"))
+                                if (bet.betType === "high")
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                 else
                                     bet.prize = bet.entryFee * BET_4_4_LOW;
@@ -930,7 +930,7 @@ const updateNFLBet = async (event) => {
                     case 5:
                         switch (win) {
                             case 3:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -939,7 +939,7 @@ const updateNFLBet = async (event) => {
                                 }
                                 break;
                             case 4:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -948,7 +948,7 @@ const updateNFLBet = async (event) => {
                                 }
                                 break;
                             case 5:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -965,7 +965,7 @@ const updateNFLBet = async (event) => {
                     case 6:
                         switch (win) {
                             case 4:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -974,7 +974,7 @@ const updateNFLBet = async (event) => {
                                 }
                                 break;
                             case 5:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -997,7 +997,7 @@ const updateNFLBet = async (event) => {
                 }
                 console.log("status + ", bet.status);
                 if (bet.status === "win")
-                    await addPrizeTransaction(bet.userId, bet.prize, 'win');
+                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
                 if (bet.status === 'win') {
                     const user = await User.findById(bet.userId);
                     if (user) {
@@ -1152,7 +1152,7 @@ const updateMLBBet = async (event) => {
                     case 3:
                         switch (win) {
                             case 2:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1161,7 +1161,7 @@ const updateMLBBet = async (event) => {
                                 }
                                 break;
                             case 3:
-                                if (bet.betType.equals("high"))
+                                if (bet.betType === "high")
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                 else
                                     bet.prize = bet.entryFee * BET_3_3_LOW;
@@ -1176,7 +1176,7 @@ const updateMLBBet = async (event) => {
                     case 4:
                         switch (win) {
                             case 3:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1185,7 +1185,7 @@ const updateMLBBet = async (event) => {
                                 }
                                 break;
                             case 4:
-                                if (bet.betType.equals("high"))
+                                if (bet.betType === "high")
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                 else
                                     bet.prize = bet.entryFee * BET_4_4_LOW;
@@ -1200,7 +1200,7 @@ const updateMLBBet = async (event) => {
                     case 5:
                         switch (win) {
                             case 3:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1209,7 +1209,7 @@ const updateMLBBet = async (event) => {
                                 }
                                 break;
                             case 4:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1230,7 +1230,7 @@ const updateMLBBet = async (event) => {
                     case 6:
                         switch (win) {
                             case 4:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1239,7 +1239,7 @@ const updateMLBBet = async (event) => {
                                 }
                                 break;
                             case 5:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1261,7 +1261,7 @@ const updateMLBBet = async (event) => {
                         break;
                 }
                 if (bet.status === "win") {
-                    await addPrizeTransaction(bet.userId, bet.prize, 'win');
+                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
                 }
                 if (bet.status == 'win') {
                     const user = await User.findById(bet.userId);
@@ -1370,7 +1370,7 @@ const updateSoccerBet = async (event) => {
                     case 3:
                         switch (win) {
                             case 2:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1381,7 +1381,7 @@ const updateSoccerBet = async (event) => {
                                 bet.status = "win"
                                 break;
                             case 3:
-                                if (bet.betType.equals("high"))
+                                if (bet.betType === "high")
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                 else
                                     bet.prize = bet.entryFee * BET_3_3_LOW;
@@ -1396,7 +1396,7 @@ const updateSoccerBet = async (event) => {
                     case 4:
                         switch (win) {
                             case 3:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1405,7 +1405,7 @@ const updateSoccerBet = async (event) => {
                                 }
                                 break;
                             case 4:
-                                if (bet.betType.equals("high"))
+                                if (bet.betType === "high")
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                 else
                                     bet.prize = bet.entryFee * BET_4_4_LOW;
@@ -1420,7 +1420,7 @@ const updateSoccerBet = async (event) => {
                     case 5:
                         switch (win) {
                             case 3:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1429,7 +1429,7 @@ const updateSoccerBet = async (event) => {
                                 }
                                 break;
                             case 4:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1438,7 +1438,7 @@ const updateSoccerBet = async (event) => {
                                 }
                                 break;
                             case 5:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1455,7 +1455,7 @@ const updateSoccerBet = async (event) => {
                     case 6:
                         switch (win) {
                             case 4:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1464,7 +1464,7 @@ const updateSoccerBet = async (event) => {
                                 }
                                 break;
                             case 5:
-                                if (bet.betType.equals("high")) {
+                                if (bet.betType === "high") {
                                     bet.prize = 0;
                                     bet.status = "lost"
                                 } else {
@@ -1486,7 +1486,7 @@ const updateSoccerBet = async (event) => {
                         break;
                 }
                 if (bet.status == "win")
-                    await addPrizeTransaction(bet.userId, bet.prize, 'win');
+                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
 
                 if (bet.status == 'win') {
                     const user = await User.findById(bet.userId);
