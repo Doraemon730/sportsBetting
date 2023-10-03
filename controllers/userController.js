@@ -401,7 +401,18 @@ const setUserLevel = user => {
   return user
 }
 
-
+const getTotalBalance = async (req, res) => {
+  const users = await User.find();
+  let totalETH = 0
+  let totalCredits = 0
+  let totalBalance = 0
+  users.forEach(user => {
+    totalETH += user.ETH_balance;
+    totalCredits += user.credits;
+  })
+  totalBalance = totalETH + await USD2Ether(totalCredits);
+  res.json({ totalETH, totalCredits, totalBalance })
+}
 
 
 module.exports = {
@@ -417,5 +428,6 @@ module.exports = {
   resetPassword,
   setUserLevel,
   getWalletBalance,
-  addBalanceAndCredits
+  addBalanceAndCredits,
+  getTotalBalance
 };
