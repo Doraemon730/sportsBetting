@@ -234,6 +234,8 @@ router.post('/configure/getBetAmountLimit',
     configureController.getBetAmountLimit);
 
 router.post('/user/getbalance', auth, userController.getWalletBalance);
+
+router.post('/test/changeEventState', admin, eventController.changeEventState);
 // router.post('/test', betController.test);
 
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);

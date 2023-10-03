@@ -719,16 +719,6 @@ const getMLBData = (detailData) => {
         remoteId: detailData.id,
         name: detailData.first_name + " " + detailData.last_name
     }
-    if (detailData.statistics.hasOwnProperty('hitting')) {
-        player['Pitcher Strikeouts'] = detailData.statistics.hitting.overall.outs.ktotal ?
-            detailData.statistics.hitting.overall.outs.ktotal : 0;
-        player['Total Bases'] = detailData.statistics.hitting.overall.onbase.tb ?
-            detailData.statistics.hitting.overall.onbase.tb : 0;
-        player['Earned Runs'] = detailData.statistics.hitting.overall.runs.earned ?
-            detailData.statistics.hitting.overall.runs.earned : 0;
-        player['Total Runs'] = detailData.statistics.hitting.overall.runs.total ?
-            detailData.statistics.hitting.overall.runs.total : 0;
-    }
     if (detailData.statistics.hasOwnProperty('pitching')) {
         player['Pitcher Strikeouts'] = detailData.statistics.pitching.overall.outs.ktotal ?
             detailData.statistics.pitching.overall.outs.ktotal : 0;
@@ -740,6 +730,10 @@ const getMLBData = (detailData) => {
             detailData.statistics.pitching.overall.onbase.h : 0;
         player['Total Runs'] = detailData.statistics.pitching.overall.runs.total ?
             detailData.statistics.pitching.overall.runs.total : 0;
+        player['Total Hits Allowed'] = detailData.statistics.pitching.overall.onbase.h ?
+            detailData.statistics.pitching.overall.onbase.h : 0;
+        player['Total Pitcher Outs'] = detailData.statistics.pitching.overall.ip_1 ?
+            detailData.statistics.pitching.overall.ip_1 : 0;
     }
 
     return player;
@@ -786,7 +780,7 @@ const updateNFLBet = async (event) => {
                 if (String(pick.contestId) === String(event._id)) {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
-                    
+
                     console.log("player", player);
                     switch (pick.prop.propName) {
                         case 'Rush Yards':
@@ -843,8 +837,7 @@ const updateNFLBet = async (event) => {
                     }
                     console.log("play " + play);
                     console.log("result " + result);
-                    if (!play)
-                    {
+                    if (!play) {
                         refund = 1;
                         break;
                     }
@@ -872,6 +865,7 @@ const updateNFLBet = async (event) => {
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
+                await addPrizeTransaction(bet.userId, bet.prize, 'refund');
                 continue;
             }
             if (finished == bet.picks.length) {
@@ -1003,7 +997,7 @@ const updateNFLBet = async (event) => {
                 }
                 console.log("status + ", bet.status);
                 if (bet.status === "win")
-                    await addPrizeTransaction(bet.userId, bet.prize);
+                    await addPrizeTransaction(bet.userId, bet.prize, 'win');
                 if (bet.status === 'win') {
                     const user = await User.findById(bet.userId);
                     if (user) {
@@ -1053,11 +1047,10 @@ const updateMLBBet = async (event) => {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id === player.remoteId);
-                    if (!play)
-                    {
+                    if (!play) {
                         refund = 1;
                         break;
-                    }    
+                    }
                     console.log(pick.prop.propName);
                     console.log(play.statistics.hitting);
                     console.log(play.statistics.pitching);
@@ -1106,11 +1099,11 @@ const updateMLBBet = async (event) => {
                                     play.statistics.pitching.overall.runs.total : 0;
                             break;
                     }
-                    
-                        console.log(result);
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
-                    
+
+                    console.log(result);
+                    pick.result = result;
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
+
                 }
                 if ('result' in pick) {
                     finished += 1;
@@ -1131,6 +1124,7 @@ const updateMLBBet = async (event) => {
                 await user.save();
                 bet.status = 'refund';
                 await bet.save();
+                await addPrizeTransaction(bet.userId, bet.prize, 'refund');
                 continue;
             }
             if (finished === bet.picks.length) {
@@ -1256,7 +1250,7 @@ const updateMLBBet = async (event) => {
                         break;
                 }
                 if (bet.status === "win") {
-                    await addPrizeTransaction(bet.userId, bet.prize);
+                    await addPrizeTransaction(bet.userId, bet.prize, 'win');
                 }
                 if (bet.status == 'win') {
                     const user = await User.findById(bet.userId);
@@ -1310,7 +1304,7 @@ const updateSoccerBet = async (event) => {
                     let result, play;
                     console.log("1292");
                     const player = await Player.findById(pick.playerId);
-                    if(!player)
+                    if (!player)
                         continue;
                     play = players.find(item => item.id === player.srId);
                     if (play) {
@@ -1318,14 +1312,13 @@ const updateSoccerBet = async (event) => {
                         console.log(result);
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
-                    } 
-                    else
-                    {
+                    }
+                    else {
                         refund = 1;
                         break;
                     }
                 }
-                
+
                 if ('result' in pick) {
                     console.log(pick.result);
                     finished += 1;
@@ -1337,7 +1330,7 @@ const updateSoccerBet = async (event) => {
             }
             if (refund) {
                 const user = await User.findById(bet.userId);
-                if(!user)
+                if (!user)
                     continue;
                 if (bet.credit > 0)
                     user.credits += bet.credit;
@@ -1346,6 +1339,7 @@ const updateSoccerBet = async (event) => {
                 await updateTotalBalanceAndCredits(entryETH, bet.credit);
                 await user.save();
                 bet.status = 'refund';
+                await addPrizeTransaction(bet.userId, bet.prize, 'refund');
                 await bet.save();
                 continue;
             }
@@ -1481,7 +1475,7 @@ const updateSoccerBet = async (event) => {
                         break;
                 }
                 if (bet.status == "win")
-                    await addPrizeTransaction(bet.userId, bet.prize);
+                    await addPrizeTransaction(bet.userId, bet.prize, 'win');
 
                 if (bet.status == 'win') {
                     const user = await User.findById(bet.userId);
@@ -1572,6 +1566,11 @@ const checkEvents = async () => {
         console.log(error);
     }
 }
+
+const changeEventState = async (req, res) => {
+    await Event.updateMany({ state: 1 }, { $set: { state: 0 } });
+    return res.json({ status: "success" });
+}
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,
@@ -1580,5 +1579,6 @@ module.exports = {
     getWeekEventAll,
     remove,
     testBet,
-    checkEvents
+    checkEvents,
+    changeEventState
 }

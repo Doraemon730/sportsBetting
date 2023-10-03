@@ -18,6 +18,7 @@ const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, referralCode } = req.body;
+  console.log("EMAIL: " + email + ",Password: " + password);
 
   try {
     let user = await User.findOne({ email });

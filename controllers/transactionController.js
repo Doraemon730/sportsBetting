@@ -192,7 +192,7 @@ const getETHPrice = async (req, res) => {
     }
 }
 
-const addPrizeTransaction = async (userId, amount) => {
+const addPrizeTransaction = async (userId, amount, type) => {
     try {
         const amountETH = await USD2Ether(amount);
         const user = await User.findOne({
@@ -203,7 +203,7 @@ const addPrizeTransaction = async (userId, amount) => {
         await user.save();
         const trans = new Transaction({
             userId,
-            transactionType: 'prize',
+            transactionType: type,
             amountUSD: amount,
             amountETH: amountETH
         })
@@ -286,9 +286,8 @@ const getTransactionsByUserId = async (req, res) => {
 }
 
 const checkWithdraw = (user) => {
-    const firstDeposit = user.firstDepositAmount;
     const firstCredit = firstDeposit > 100 ? 100 : firstDeposit;
-    if (user.totalBetAmount >= firstDeposit + firstCredit && firstDeposit > 0)
+    if (user.totalBetAmount >= firstCredit * 2)
         return true
     return false
 }
@@ -375,8 +374,8 @@ const getRevenue = async (req, res) => {
         for (let i = 0; i < data_1.length; i++) {
             if (data_1[i]._id == 'bet')
                 betAmount = data_1[i].amount;
-            if (data_1[i]._id == 'prize')
-                prizeAmount = data_1[i].amount;
+            if (data_1[i]._id == 'prize' || data_1[i]._id == 'refund')
+                prizeAmount += data_1[i].amount;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
