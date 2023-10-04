@@ -135,19 +135,22 @@ const getWeeklyEventsNFL = async () => {
                     let outcomes = market.books[0].outcomes;
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
-                    if(odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){
                     const index = player.odds.findIndex(odd => String(odd.id) === String(prop._id));
-                    //console.log(market);
-                    if (index !== -1) {
-                        player.odds[index].value = outcomes[0].open_total;
-                        player.odds[index].event = myEvent._id;
-                    } else {
-                        player.odds.push({
-                            id: prop._id,
-                            value: outcomes[0].open_total,
-                            event: myEvent._id
-                        });
-                    }
+                    if(odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){                        
+                        //console.log(market);
+                        console.log(playerProp.player.name);
+                        if (index !== -1) {
+                                player.odds[index].value = outcomes[0].open_total;
+                                player.odds[index].event = myEvent._id;
+                        } else {
+                            player.odds.push({
+                                id: prop._id,
+                                value: outcomes[0].open_total,
+                                event: myEvent._id
+                            });
+                        }
+                    } else if (index != -1){
+                        player.odds.splice(index, 1);
                     }
                 }
                 await player.save();
@@ -238,11 +241,15 @@ const getWeeklyEventsMLB = async () => {
                     });
                     if (!prop) continue;
                     const index = player.odds.findIndex((odd) => String(odd.id) === String(prop._id));
-                    console.log(market);
+                    console.log(JSON.stringify(market));
                     let outcomes = market.books[0].outcomes;
+                    console.log(playerProp.player.name);
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    console.log(odd1);
+                    console.log(odd2);
                     if (odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){
+                        console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
                             player.odds[index].event = myEvent._id;
@@ -253,6 +260,8 @@ const getWeeklyEventsMLB = async () => {
                                 event: myEvent._id
                             });
                         }
+                    } else if (index != -1){
+                        player.odds.splice(index, 1);
                     }
                     
                 }
