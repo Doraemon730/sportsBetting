@@ -24,14 +24,15 @@ const updateTotal = async () => {
             await newstatistic.save();
         }
         else {
+            const totalUsers = await User.countDocuments();
             if (now.getDate() === statistic.date.getDate()) {
-                statistic.total_users++;
+                statistic.total_users = totalUsers;
                 statistic.daily_users++;
                 await statistic.save();
             } else {
                 const newstatistic = new Statistics({
                     date: now,
-                    total_users: statistic.total_users + 1,
+                    total_users: totalUsers,
                     daily_users: 1,
                     total_bet_amount: statistic.total_bet_amount,
                     total_bet_users: statistic.total_bet_users,
