@@ -143,16 +143,40 @@ const getTopPlayerBy = async (req, res) => {
       }
       ]);
     //props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
-    props = props.filter(item => item.displayName !== "Total Hits");
+    //props = props.filter(item => item.displayName !== "Total Hits");
+    let tackles = ["DE", "DL", "LE", "RE", "DT", "NT", "LB", "MLB", "ILB", "OLB", "LOLB", "ROLB", "SLB", "WLB", "DB", "CB", "S", "SS", "FS"];
     result.props = props.map((prop) => prop.displayName);
     for (const prop of props) {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
-      if (prop.displayName === "Rush+Rec Yards")
-        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
-      else if(prop.displayName === "Pass Yards")
-        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");
+      switch(prop.displayName){
+        case "Rush+Rec Yards":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
+          break;
+        case "Pass Yards":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");  
+          break;
+        case "Push Yards":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB" || item.playerPosition === "RB");
+          break;
+        case "Receiving Yards":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "WR" || item.playerPosition === "RB");
+          break;
+        case "Receptions":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "WR" || item.playerPosition === "RB");
+          break;
+        case "INT":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");
+          break;
+        case "Tackles+Ast":
+          result[prop.displayName] = result[prop.displayName].filter(item => tackles.includes(item.playerPosition));//DE, DL, DT, LB, CB, LB, OLB, S
+          break;
+        case "FG Made":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "K");
+          break;
+      }
+      
       now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
         let discountPlayer = await Discount.findOne({
@@ -584,7 +608,7 @@ const remove = async (req, res) => {
 }
 
 const resetOdds = async (req, res) => {
-  await Player.updateMany({ sportId: new ObjectId('65108fcf4fa2698548371fc0') }, { headshot: undefined });
+  await Player.updateMany({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7') }, { odds: [] });
   res.json("Success");
 }
 
