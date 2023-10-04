@@ -109,6 +109,15 @@ const withdrawBalance = async (req, res) => {
             _id: userId
         });
 
+        if (user.isPending) {
+            return res.status(400).json({
+                message: "You can't withdraw now!"
+            })
+        }
+
+        user.isPending = true;
+        await user.save();
+
         const { amountUsd, toAddress } = req.body;
         const amountETH = await USD2Ether(amountUsd)
 
@@ -157,6 +166,7 @@ const withdrawBalance = async (req, res) => {
         });
 
         user.ETH_balance -= parseFloat(amountETH);
+        user.isPending = false;
         await updateTotalBalanceAndCredits(0 - amountETH, 0);
         await transaction.save();
         await user.save();
