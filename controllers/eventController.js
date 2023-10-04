@@ -1055,7 +1055,7 @@ const updateMLBBet = async (event) => {
         for (const betId of event.participants) {
             //const pick = bet.picks.find(item => item.contestId === event._id);
             let bet = await Bet.findById(betId);
-            if (!bet || bet.status != 'pending')
+            if (!bet )//|| bet.status != 'pending'
                 continue;
             let finished = 0, win = 0, refund = 0;
             for (const pick of bet.picks) {
@@ -1143,6 +1143,7 @@ const updateMLBBet = async (event) => {
                     }
                 }
             }
+            console.log("1146:  " + finished);
             if (refund) {
                 console.log("Refund");
                 const user = await User.findById(bet.userId);
