@@ -160,7 +160,14 @@ const startFirstFreeBetting = async (req, res) => {
 
             const event = await Event.findById(eventId);
             if (!event) {
+                user.isPending = false;
+                await user.save();
                 return res.status(400).send({ message: "Invalid Contest." });
+            }
+            if (event.startTime <= new Date().getTime()) {
+                user.isPending = false;
+                await user.save();
+                return res.status(400).send({ message: "Contest has already started." });
             }
 
             if (!event.participants.includes(myBet._id)) {
