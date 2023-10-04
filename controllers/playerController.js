@@ -151,7 +151,8 @@ const getTopPlayerBy = async (req, res) => {
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
       if (prop.displayName === "Rush+Rec Yards")
         result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
-
+      else if(prop.displayName === "Pass Yards")
+        result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");
       now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
         let discountPlayer = await Discount.findOne({
