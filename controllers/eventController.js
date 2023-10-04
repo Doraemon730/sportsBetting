@@ -1055,8 +1055,9 @@ const updateMLBBet = async (event) => {
         for (const betId of event.participants) {
             //const pick = bet.picks.find(item => item.contestId === event._id);
             let bet = await Bet.findById(betId);
-            if (!bet )//|| bet.status != 'pending'
+            if (!bet || bet.status != 'pending')//
                 continue;
+            console.log(betId);
             let finished = 0, win = 0, refund = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) === String(event._id)) {
@@ -1131,8 +1132,10 @@ const updateMLBBet = async (event) => {
                     }
 
                     console.log(result);
-                    pick.result = result;
-                    bet.picks[bet.picks.indexOf(pick)] = pick;
+                    if(result) {
+                        pick.result = result;
+                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                    }
 
                 }
                 if ('result' in pick) {
@@ -1159,6 +1162,7 @@ const updateMLBBet = async (event) => {
                 continue;
             }
             if (finished === bet.picks.length) {
+                console.log("finished : " + finished);
                 switch (finished) {
                     case 2:
                         if (win == 2) {
@@ -1297,9 +1301,11 @@ const updateMLBBet = async (event) => {
                 }
             }
             await bet.save();
+            console.log("Bet udpated : " + JSON.stringify(bet));
         }
         event.state = 3;
         await event.save();
+        console.log("Update Bets from MLB Event finished at " + new Date().toString() + " Id: " + event._id);
     } catch (error) {
         console.log(error);
     }
