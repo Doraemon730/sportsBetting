@@ -65,6 +65,12 @@ const playerMapping = async () => {
     players = await fetchPlayerMapping(0);
     players = players.concat(await fetchPlayerMapping(30001));
     players = players.concat(await fetchPlayerMapping(60001));
+    players = players.concat(await fetchPlayerMapping(90001));
+    players = players.concat(await fetchPlayerMapping(120001));
+    players = players.concat(await fetchPlayerMapping(150001));
+    players = players.concat(await fetchPlayerMapping(180001));
+    players = players.concat(await fetchPlayerMapping(210001));
+    players = players.concat(await fetchPlayerMapping(240001));
     return;
 }
 const getWeeklyEventsNFL = async () => {
@@ -116,6 +122,8 @@ const getWeeklyEventsNFL = async () => {
                 await myEvent.save();
                 console.log('NFL New event inserted! _id=' + myEvent.id);
             }
+            if('markets' in playerProps)
+                continue;
             //await myEvent.save();
             for (const playerProp of playerProps) {
                 //console.log(playerProp.player.id);
