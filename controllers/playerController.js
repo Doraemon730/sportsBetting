@@ -537,6 +537,7 @@ const addNBAPlayersToDatabase = async (req, res) => {
       message: 'NBA players added to the database.'
     });
   } catch (error) {
+    console.log(error);
     throw new Error(`Error adding NBA contests to the database: ${error.message}`);
   }
 };
