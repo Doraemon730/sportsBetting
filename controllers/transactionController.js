@@ -108,6 +108,7 @@ const withdrawBalance = async (req, res) => {
         const user = await User.findOne({
             _id: userId
         });
+        console.log(user.isPending)
 
         if (user.isPending) {
             return res.status(400).json({

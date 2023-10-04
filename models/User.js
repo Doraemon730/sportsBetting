@@ -76,6 +76,10 @@ const UserSchema = new mongoose.Schema({
   freeSix: {
     type: Number,
     default: 0
+  },
+  isPending: {
+    type: Boolean,
+    default: false
   }
 });
 
