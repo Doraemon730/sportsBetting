@@ -182,7 +182,7 @@ const getTopPlayerBy = async (req, res) => {
           break;
         case "Total Bases":
         case "Total Runs":
-        case "Hits Allowed":
+        case "Total Hits":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition != "P" && item.playerPosition != "C");
           break;
       }
