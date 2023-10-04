@@ -163,6 +163,7 @@ const withdrawBalance = async (req, res) => {
         await updateCapital(1, parseFloat(amountETH));
         res.json({ message: "Wihdraw Success!" })
     } catch (error) {
+        console.log(error)
         res.status(500).send('Server error');
     }
 }
@@ -286,7 +287,7 @@ const getTransactionsByUserId = async (req, res) => {
 }
 
 const checkWithdraw = (user) => {
-    const firstCredit = firstDeposit > 100 ? 100 : firstDeposit;
+    const firstCredit = user.firstDeposit > 100 ? 100 : user.firstDeposit;
     if (user.totalBetAmount >= firstCredit * 2)
         return true
     return false
