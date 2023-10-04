@@ -351,9 +351,9 @@ const processSoccerEvents = async (mappings, events) => {
                 competitors: competitors
             });
             let index = competitiorDraft.indexOf(competitors[0].id);
-            if (index == -1)
+            if (index == undefined || index == -1)
                 index = competitiorDraft.indexOf(competitors[1].id);
-            if (index == -1)
+            if (index == undefined || index == -1)
                 continue;
 
             myEvent.name = competitors[0].abbreviation + " vs " + competitors[1].abbreviation;
@@ -836,7 +836,7 @@ const updateNFLBet = async (event) => {
 
                     console.log("player", player);
                     let index = player.odds.find(item=> String(item.event) == String(event._id));
-                    if(index == -1)
+                    if(index == undefined || index == -1)
                     {
                         refund = 1;
                         break;
@@ -1088,6 +1088,16 @@ const summarizeMLBStatsByPlayer = (data, category) => {
     return [...homeStats, ...awayStats];
 
 };
+
+const test = async(req, res) => {
+    const player = await Player.findById(new ObjectId("65174eba8348bc70ea29d814"));
+    console.log(player);
+    let index = player.odds.find(item => String(item.event) == String(new ObjectId("651cad6d59935df26a9c2024")));
+    console.log(index);
+    if(index == undefined)
+        console.log("asdf");
+    res.json(index);
+}
 const updateMLBBet = async (event) => {
     try {
         console.log(event);
@@ -1111,8 +1121,8 @@ const updateMLBBet = async (event) => {
                         refund = 1;
                         break;
                     }
-                    let index = player.odds.find(item=> String(item.event) == String(event._id));
-                    if(index == -1)
+                    let index = player.odds.find(item => String(item.event) == String(event._id));
+                    if(index == undefined || index == -1)
                     {
                         refund = 1;
                         break;
@@ -1393,6 +1403,7 @@ const updateSoccerBet = async (event) => {
                     if (!player)
                         continue;
                     play = players.find(item => item.id == player.srId);
+                    
                     if (play) {
                         result = play.statistics.goals_scored;
                         console.log(result);
@@ -1666,5 +1677,6 @@ module.exports = {
     remove,
     testBet,
     checkEvents,
-    changeEventState
+    changeEventState,
+    test
 }
