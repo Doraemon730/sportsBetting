@@ -155,25 +155,35 @@ const getTopPlayerBy = async (req, res) => {
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
           break;
         case "Pass Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");  
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");  
           break;
         case "Push Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB" || item.playerPosition === "RB");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB" || item.playerPosition == "RB");
           break;
         case "Receiving Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "WR" || item.playerPosition === "RB");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
           break;
         case "Receptions":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "WR" || item.playerPosition === "RB");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
           break;
         case "INT":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
           break;
         case "Tackles+Ast":
           result[prop.displayName] = result[prop.displayName].filter(item => tackles.includes(item.playerPosition));//DE, DL, DT, LB, CB, LB, OLB, S
           break;
         case "FG Made":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "K");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "K");
+          break;
+        case "Pitcher Strikeouts":
+        case "Hits Allowed":
+        case "Pitching Outs":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "P");
+          break;
+        case "Total Bases":
+        case "Total Runs":
+        case "Hits Allowed":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition != "P" && item.playerPosition != "C");
           break;
       }
       

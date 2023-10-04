@@ -256,7 +256,7 @@ const getWeeklyEventsMLB = async () => {
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){
+                    if (odd1 >= 100 && odd1 <= 140 && odd2 >= 100 && odd2 <= 140){
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
