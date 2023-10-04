@@ -120,6 +120,11 @@ const startFirstFreeBetting = async (req, res) => {
         }
 
         let user = await User.findOne({ _id: userId });
+        if (user.isPending) {
+            return res.status(400).json({ message: "You are pending." });
+        }
+        user.isPending = true;
+        await user.save();
 
         if (currencyType === "ETH") {
             entryFee = await Ether2USD(entryFee);
@@ -155,7 +160,14 @@ const startFirstFreeBetting = async (req, res) => {
 
             const event = await Event.findById(eventId);
             if (!event) {
+                user.isPending = false;
+                await user.save();
                 return res.status(400).send({ message: "Invalid Contest." });
+            }
+            if (event.startTime <= new Date().getTime()) {
+                user.isPending = false;
+                await user.save();
+                return res.status(400).send({ message: "Contest has already started." });
             }
 
             if (!event.participants.includes(myBet._id)) {
@@ -167,6 +179,8 @@ const startFirstFreeBetting = async (req, res) => {
         user.freeSix = -1;
         user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
+
+        user.isPending = false;
 
         await myBet.save();
         await user.save();
@@ -486,16 +500,16 @@ const getRewards = async (days) => {
 }
 
 const udpateEventsByBet = async (req, res) => {
-    try{
-        const bets = await Bet.find({status:"pending"});
-        for(let bet of bets){
-            for(let pick of bet.picks){
-                if(!pick.result){
-                const event = await Event.findById(pick.contestId);
-                if(event && event.state === 3) {
-                    event.state = 2;
-                    await event.save();
-                }
+    try {
+        const bets = await Bet.find({ status: "pending" });
+        for (let bet of bets) {
+            for (let pick of bet.picks) {
+                if (!pick.result) {
+                    const event = await Event.findById(pick.contestId);
+                    if (event && event.state === 3) {
+                        event.state = 2;
+                        await event.save();
+                    }
                 }
             }
         }
