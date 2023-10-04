@@ -17,6 +17,7 @@ const getIdfromRemoteId = async (remoteId) => {
         });
         return team._id;
     } catch (error) {
+        console.log(error);
         throw new Error(`Error retrieving Get ID: ${error.message}`);
     }
 }

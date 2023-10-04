@@ -143,6 +143,7 @@ const getTopPlayerBy = async (req, res) => {
       }
       ]);
     //props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
+    props = props.filter(item => item.displayName !== "Total Hits");
     result.props = props.map((prop) => prop.displayName);
     for (const prop of props) {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
@@ -537,6 +538,7 @@ const addNBAPlayersToDatabase = async (req, res) => {
       message: 'NBA players added to the database.'
     });
   } catch (error) {
+    console.log(error);
     throw new Error(`Error adding NBA contests to the database: ${error.message}`);
   }
 };
