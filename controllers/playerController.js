@@ -584,7 +584,7 @@ const remove = async (req, res) => {
 }
 
 const resetOdds = async (req, res) => {
-  await Player.updateMany({ sportId: new ObjectId('65108fcf4fa2698548371fc0') }, { headshot: undefined });
+  await Player.updateMany({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7') }, { odds: [] });
   res.json("Success");
 }
 

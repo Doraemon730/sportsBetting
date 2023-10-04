@@ -132,17 +132,22 @@ const getWeeklyEventsNFL = async () => {
                         srId: market.id
                     });
                     if (!player || !prop) continue;
+                    let outcomes = market.books[0].outcomes;
+                    let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                    let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    if(odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){
                     const index = player.odds.findIndex(odd => String(odd.id) === String(prop._id));
                     //console.log(market);
                     if (index !== -1) {
-                        player.odds[index].value = market.books[0].outcomes[0].open_total;
+                        player.odds[index].value = outcomes[0].open_total;
                         player.odds[index].event = myEvent._id;
                     } else {
                         player.odds.push({
                             id: prop._id,
-                            value: market.books[0].outcomes[0].open_total,
+                            value: outcomes[0].open_total,
                             event: myEvent._id
                         });
+                    }
                     }
                 }
                 await player.save();
@@ -234,16 +239,22 @@ const getWeeklyEventsMLB = async () => {
                     if (!prop) continue;
                     const index = player.odds.findIndex((odd) => String(odd.id) === String(prop._id));
                     console.log(market);
-                    if (index !== -1) {
-                        player.odds[index].value = market.books[0].outcomes[0].open_total;
-                        player.odds[index].event = myEvent._id;
-                    } else {
-                        player.odds.push({
-                            id: prop._id,
-                            value: market.books[0].outcomes[0].open_total,
-                            event: myEvent._id
-                        });
+                    let outcomes = market.books[0].outcomes;
+                    let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                    let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    if (odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){
+                        if (index !== -1) {
+                            player.odds[index].value = outcomes[0].open_total;
+                            player.odds[index].event = myEvent._id;
+                        } else {
+                            player.odds.push({
+                                id: prop._id,
+                                value: outcomes[0].open_total,
+                                event: myEvent._id
+                            });
+                        }
                     }
+                    
                 }
                 await player.save();
             }
@@ -336,6 +347,10 @@ const processSoccerEvents = async (mappings, events) => {
             if (!markets)
                 continue;
             console.log(markets, true);
+            const market = markets.find(item => item.name ==="anytime goalscorer");
+            if (!market)
+                continue;
+            console.log(market, true);
             const existingEvent = await Event.findOne({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7'), id: event.sport_event.id });
             if (existingEvent) {
                 // Event already exists, update it
@@ -348,10 +363,13 @@ const processSoccerEvents = async (mappings, events) => {
                 await myEvent.save();
                 console.log('Soccer New event inserted! id = ' + myEvent.id);
             }
-            for (const play of markets[0].books[0].outcomes) {
+            for (const play of market.books[0].outcomes) {
                 console.log(play.player_id, true);
                 if (!play || !play.player_id)
                     return;
+                let odds = Math.abs(parseInt(play.odds_american));
+                if( odds < 100 || odds > 125)
+                    continue; 
                 let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7') });
                 if (!player) {
 
