@@ -235,7 +235,7 @@ const updateTotalBalanceAndCredits = async (ETH_balance, credits) => {
             }
         });
         const creditsETH = await USD2Ether(credits);
-        statistic.total += creditsETH + ETH_balance;
+        statistic.total += (creditsETH + ETH_balance);
         await statistic.save();
     } catch (error) {
         console.log(error);
