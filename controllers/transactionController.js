@@ -77,7 +77,7 @@ const depositBalance = async (req, res) => {
         });
 
         user.ETH_balance += parseFloat(amountETH);
-        await updateTotalBalanceAndCredits(amountETH, 0);
+        // await updateTotalBalanceAndCredits(amountETH, 0);
 
         if (amountUSD >= 25 && user.freeSix == 0)
             user.freeSix = 1;
@@ -86,7 +86,7 @@ const depositBalance = async (req, res) => {
             user.level = "Unranked";
             let credits = parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
             user.credits += credits;
-            await updateTotalBalanceAndCredits(0, credits);
+            // await updateTotalBalanceAndCredits(0, credits);
             user.firstDepositAmount = parseFloat(amountUSD);
         }
 
@@ -173,7 +173,7 @@ const withdrawBalance = async (req, res) => {
 
             user.ETH_balance -= parseFloat(amountETH);
             user.isPending = false;
-            await updateTotalBalanceAndCredits(0 - amountETH, 0);
+            // await updateTotalBalanceAndCredits(0 - amountETH, 0);
             await transaction.save();
             await user.save();
             await updateCapital(1, parseFloat(amountETH));
