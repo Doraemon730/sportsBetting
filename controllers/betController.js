@@ -23,6 +23,11 @@ const startBetting = async (req, res) => {
         }
 
         let user = await User.findOne({ _id: userId });
+        if (user.isPending) {
+            return res.status(400).json({ message: "You are pending." });
+        }
+        user.isPending = true;
+        await user.save();
 
         if (currencyType === "ETH") {
             entryFee = await Ether2USD(entryFee);
@@ -70,7 +75,15 @@ const startBetting = async (req, res) => {
 
             const event = await Event.findById(eventId);
             if (!event) {
+                user.isPending = false;
+                await user.save();
                 return res.status(400).send({ message: "Invalid Contest." });
+            }
+
+            if (event.startTime <= new Date().getTime()) {
+                user.isPending = false;
+                await user.save();
+                return res.status(400).send({ message: "Contest has already started." });
             }
 
             if (!event.participants.includes(myBet._id)) {
@@ -221,6 +234,11 @@ const startWednesdayFreeBetting = async (req, res) => {
         }
 
         let user = await User.findOne({ _id: userId });
+        if (user.isPending) {
+            return res.status(400).json({ message: "You are pending." });
+        }
+        user.isPending = true;
+        await user.save();
 
         if (currencyType === "ETH") {
             entryFee = await Ether2USD(entryFee);
@@ -256,7 +274,15 @@ const startWednesdayFreeBetting = async (req, res) => {
 
             const event = await Event.findById(eventId);
             if (!event) {
+                user.isPending = false;
+                await user.save();
                 return res.status(400).send({ message: "Invalid Contest." });
+            }
+
+            if (event.startTime <= new Date().getTime()) {
+                user.isPending = false;
+                await user.save();
+                return res.status(400).send({ message: "Contest has already started." });
             }
 
             if (!event.participants.includes(myBet._id)) {
