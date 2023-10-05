@@ -144,7 +144,7 @@ const getWeeklyEventsNFL = async () => {
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     const index = player.odds.findIndex(odd => String(odd.id) == String(prop._id));
-                    if(odd1 >= 100 && odd1 <= 125 && odd2 >= 100 && odd2 <= 125){                        
+                    if(odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130){                        
                         //console.log(market);
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -256,7 +256,7 @@ const getWeeklyEventsMLB = async () => {
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 140 && odd2 >= 100 && odd2 <= 140){
+                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130){
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
@@ -387,7 +387,7 @@ const processSoccerEvents = async (mappings, events) => {
                 if (!play || !play.player_id)
                     return;
                 let odds = Math.abs(parseInt(play.odds_american));
-                if( odds < 100 || odds > 125)
+                if( odds < 100 || odds > 130)
                     continue; 
                 let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7') });
                 if (!player) {
@@ -846,7 +846,6 @@ const updateNFLBet = async (event) => {
                             play = rushingStats.find(item => item.id == player.remoteId);
                             if (play)
                                 result = play.yards;
-
                             break;
                         case 'Pass Yards':
                             play = passingStats.find(item => item.id == player.remoteId);
@@ -905,7 +904,7 @@ const updateNFLBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     }
                 }
-                if ('result' in pick) {
+                if (pick.result != undefined) {
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1114,7 +1113,7 @@ const updateMLBBet = async (event) => {
             let finished = 0, win = 0, refund = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
-                    let result, play;
+                    let result = -1, play;
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id == player.remoteId);
                     if (!play) {
@@ -1151,53 +1150,55 @@ const updateMLBBet = async (event) => {
                         case 'Earned Runs':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.runs.earned ?
-                                    play.statistics.hitting.overall.runs.earned : 0;
+                                    play.statistics.hitting.overall.runs.earned : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.earned ?
-                                    play.statistics.pitching.overall.runs.earned : 0;
+                                    play.statistics.pitching.overall.runs.earned : -1;
                             break;
                         case 'Total Hits':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.h ?
-                                    play.statistics.hitting.overall.onbase.h : 0;
+                                    play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.h ?
-                                    play.statistics.pitching.overall.onbase.h : 0;
+                                    play.statistics.pitching.overall.onbase.h : -1;
                             break;
                         case 'Total Runs':                            
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.runs.total ?
-                                    play.statistics.hitting.overall.runs.total : 0;
+                                    play.statistics.hitting.overall.runs.total : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.runs.total ?
-                                    play.statistics.pitching.overall.runs.total : 0;
+                                    play.statistics.pitching.overall.runs.total : -1;
                             break;
                         case 'Hits Allowed':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.h ?
-                                play.statistics.hitting.overall.onbase.h : 0;
+                                play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.h ?
-                                    play.statistics.pitching.overall.onbase.h : 0;
+                                    play.statistics.pitching.overall.onbase.h : -1;
                             break;
                         case 'Pitching Outs':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.ip_1 ?
-                                    play.statistics.hitting.overall.ip_1 : 0;
+                                    play.statistics.hitting.overall.ip_1 : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.ip_1 ?
-                                    play.statistics.pitching.overall.ip_1 : 0;
+                                    play.statistics.pitching.overall.ip_1 : -1;
                             break;
                     }
 
                     console.log(result);
-                    if(result) {
+                    if(result != undefined && result != -1) {
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
+                    } else {
+                        refund = 1;
+                        break;
                     }
-
                 }
-                if ('result' in pick) {
+                if (pick.result != undefined) {
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
@@ -1416,7 +1417,7 @@ const updateSoccerBet = async (event) => {
                     }
                 }
 
-                if ('result' in pick) {
+                if (pick.result != undefined) {
                     console.log(pick.result);
                     finished += 1;
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
