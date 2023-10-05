@@ -895,7 +895,7 @@ const updateNFLBet = async (event) => {
                     }
                     console.log("play " + play);
                     console.log("result " + result);
-                    if (!play) {
+                    if (!play || result == undefined) {
                         refund = 1;
                         break;
                     }
