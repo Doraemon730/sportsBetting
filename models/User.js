@@ -80,6 +80,9 @@ const UserSchema = new mongoose.Schema({
   isPending: {
     type: Boolean,
     default: false
+  },
+  userIP: {
+    type: String
   }
 });
 

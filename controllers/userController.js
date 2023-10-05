@@ -21,6 +21,7 @@ const registerUser = async (req, res) => {
   console.log("EMAIL: " + email + ",Password: " + password);
 
   try {
+    const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     let user = await User.findOne({ email });
     if (user) {
       return res
@@ -40,7 +41,8 @@ const registerUser = async (req, res) => {
       myReferralCode,
       referralCode,
       walletAddress,
-      privateKey: wallet.privateKey
+      privateKey: wallet.privateKey,
+      userIP: userIP
     });
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
@@ -92,6 +94,7 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const user = await User.findOne({ email });
     if (!user) {
       return res
@@ -121,6 +124,7 @@ const loginUser = async (req, res) => {
       await updateTotal();
     }
     user.lastlogin = now;
+    user.userIP = userIP;
 
     await user.save();
 
