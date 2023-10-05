@@ -124,11 +124,15 @@ const withdrawBalance = async (req, res) => {
             const amountETH = await USD2Ether(amountUsd)
 
             if (amountETH > user.ETH_balance) {
+                user.isPending = false;
+                await user.save();
                 return res.status(400).json({
                     message: "You don't have enough balance"
                 });
             }
             if (!checkWithdraw(user)) {
+                user.isPending = false;
+                await user.save();
                 return res.status(400).json({
                     message: "You can't withdraw now!"
                 })
@@ -175,6 +179,12 @@ const withdrawBalance = async (req, res) => {
             await updateCapital(1, parseFloat(amountETH));
             res.json({ message: "Wihdraw Success!" })
         } catch (error) {
+            const userId = new ObjectId(req.user.id);
+            const user = await User.findOne({
+                _id: userId
+            });
+            user.isPending = false;
+            await user.save();
             console.log(error)
             res.status(500).send('Server error');
         }
