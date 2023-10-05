@@ -8,7 +8,15 @@ const getReferralBonusByReferralId = async (req, res) => {
         const limit = parseInt(req.body.limit) || 10;
         const userId = req.user.id;
 
-        const count = await Bonus.countDocuments({ userId: new ObjectId(userId) });
+        const bonus = await Bonus.find({ userId: new ObjectId(userId) });
+        let total = 0
+
+        bonus.forEach(item => {
+            total += item.commission;
+        })
+
+        let count = bonus.length;
+
         const totalPages = Math.ceil(count / limit);
 
         const startIndex = (page - 1) * limit;
@@ -32,6 +40,7 @@ const getReferralBonusByReferralId = async (req, res) => {
 
         results.totalPages = totalPages;
         results.results = await Bonus.find({ userId: new ObjectId(userId) }).skip(startIndex).limit(limit);
+        results.totalCommission = total;
         res.json(results);
     } catch (error) {
         res.status(500).send('Server error');
