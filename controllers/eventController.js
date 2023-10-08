@@ -828,7 +828,7 @@ const updateNFLBet = async (event) => {
             if (!bet || bet.status != 'pending')
                 continue;
             console.log("id" + bet._id);
-            let finished = 0, win = 0, refund = 0;
+            let finished = 0, win = 0, refund = 0, lost = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
                     let result, play;
@@ -909,11 +909,13 @@ const updateNFLBet = async (event) => {
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
                         win += 1;
+                    } else {
+                        lost += 1;
                     }
                 }
             }
             if (refund) {
-                if (bet.betType == "high") {
+                if (bet.betType == "high" && lost > 0) {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
@@ -1118,7 +1120,7 @@ const updateMLBBet = async (event) => {
             if (!bet || bet.status != 'pending')//
                 continue;
             console.log(betId);
-            let finished = 0, win = 0, refund = 0;
+            let finished = 0, win = 0, refund = 0, lost = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
                     let result = -1, play;
@@ -1211,12 +1213,14 @@ const updateMLBBet = async (event) => {
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
                         win += 1;
+                    } else {
+                        lost += 1;
                     }
                 }
             }
             console.log("1146:  " + finished);
             if (refund) {
-                if (bet.betType == "high") {
+                if (bet.betType == "high" && lost > 0) {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
@@ -1411,7 +1415,7 @@ const updateSoccerBet = async (event) => {
             if (!bet || bet.status != 'pending')
                 continue;
             console.log(bet.entryFee);
-            let finished = 0, win = 0, refund = 0;
+            let finished = 0, win = 0, refund = 0, lost = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
                     let result, play;
@@ -1439,14 +1443,17 @@ const updateSoccerBet = async (event) => {
                     if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                         pick.overUnder == "under" && pick.result < pick.prop.odds) {
                         win += 1;
+                    } else {
+                        lost += 1;
                     }
                 }
             }
+            console.log("win: " + win + " lost: " + lost);
             if (refund) {
                 const user = await User.findById(bet.userId);
                 if (!user)
                     continue;
-                    if(bet.betType == "high") {
+                    if(bet.betType == "high" && lost > 0) {
                         console.log("lost");
                         bet.prize = 0;
                         bet.status = "lost";
