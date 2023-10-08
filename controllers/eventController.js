@@ -835,12 +835,12 @@ const updateNFLBet = async (event) => {
                     const player = await Player.findById(pick.playerId);
 
                     console.log("player", player);
-                    let index = player.odds.find(item=> String(item.event) == String(event._id));
-                    if(index == undefined || index == -1)
-                    {
-                        refund = 1;
-                        break;
-                    }
+                    // let index = player.odds.find(item=> String(item.event) == String(event._id));
+                    // if(index == undefined || index == -1)
+                    // {
+                    //     refund = 1;
+                    //     break;
+                    // }
                     switch (pick.prop.propName) {
                         case 'Rush Yards':
                             play = rushingStats.find(item => item.id == player.remoteId);
@@ -913,17 +913,25 @@ const updateNFLBet = async (event) => {
                 }
             }
             if (refund) {
-                console.log('refund');
-                const user = await User.findById(bet.userId);
-                if (bet.credit > 0)
-                    user.credits += bet.credit;
-                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                user.ETH_balance += entryETH;
-                await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                await user.save();
-                bet.status = 'refund';
-                await bet.save();
-                await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                if(bet.betType == "high") {
+                    console.log("lost");
+                    bet.prize = 0;
+                    bet.status = "lost";
+                    await updateBetResult(false);
+                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                } else {
+                    console.log('refund');
+                    const user = await User.findById(bet.userId);
+                    if (bet.credit > 0)
+                        user.credits += bet.credit;
+                    let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                    user.ETH_balance += entryETH;
+                    await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                    await user.save();
+                    bet.status = 'refund';
+                    await bet.save();
+                    await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                }
                 continue;
             }
             if (finished == bet.picks.length) {
@@ -1120,12 +1128,12 @@ const updateMLBBet = async (event) => {
                         refund = 1;
                         break;
                     }
-                    let index = player.odds.find(item => String(item.event) == String(event._id));
-                    if(index == undefined || index == -1)
-                    {
-                        refund = 1;
-                        break;
-                    }
+                    // let index = player.odds.find(item => String(item.event) == String(event._id));
+                    // if(index == undefined || index == -1)
+                    // {
+                    //     refund = 1;
+                    //     break;
+                    // }
                     console.log(pick.prop.propName);
                     //console.log(play.statistics.hitting);
                     console.log(play.statistics.pitching);
@@ -1133,19 +1141,19 @@ const updateMLBBet = async (event) => {
                         case 'Pitcher Strikeouts':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.outs.ktotal ?
-                                    play.statistics.hitting.overall.outs.ktotal : 0;
+                                    play.statistics.hitting.overall.outs.ktotal : -1;
                             else if (play.statistics.pitching)                            
                                 result = play.statistics.pitching.overall.outs.ktotal ?
-                                    play.statistics.pitching.overall.outs.ktotal : 0;
+                                    play.statistics.pitching.overall.outs.ktotal : -1;
                             break;
                         case 'Total Bases':
                             console.log(play.statistics.hitting);
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.tb ?
-                                    play.statistics.hitting.overall.onbase.tb : 0;
+                                    play.statistics.hitting.overall.onbase.tb : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.tb ?
-                                    play.statistics.pitching.overall.onbase.tb : 0;
+                                    play.statistics.pitching.overall.onbase.tb : -1;
                             break;
                         case 'Earned Runs':
                             if (play.statistics.hitting)
@@ -1208,18 +1216,26 @@ const updateMLBBet = async (event) => {
             }
             console.log("1146:  " + finished);
             if (refund) {
-                console.log("Refund");
-                const user = await User.findById(bet.userId);
-                if (bet.credit > 0)
-                    user.credits += bet.credit;
-                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                user.ETH_balance += entryETH;
-                await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                await user.save();
-                bet.status = 'refund';
-                await bet.save();
-                await addPrizeTransaction(bet.userId, bet.prize, 'refund');
-                continue;
+                if(bet.betType == "high") {
+                    console.log("lost");
+                    bet.prize = 0;
+                    bet.status = "lost";
+                    await updateBetResult(false);
+                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                } else {
+                    console.log("Refund");
+                    const user = await User.findById(bet.userId);
+                    if (bet.credit > 0)
+                        user.credits += bet.credit;
+                    let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                    user.ETH_balance += entryETH;
+                    await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                    await user.save();
+                    bet.status = 'refund';
+                    await bet.save();
+                    await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                    continue;
+                }
             }
             if (finished == bet.picks.length) {
                 console.log("finished : " + finished);
