@@ -96,6 +96,8 @@ const startBetting = async (req, res) => {
         user = setUserLevel(user);
         await updateTotalBalanceAndCredits(0 - entryFeeEther, 0 - creditSave);
 
+        user.isPending = false;
+
         await myBet.save();
         await user.save();
 
@@ -294,6 +296,8 @@ const startWednesdayFreeBetting = async (req, res) => {
         user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
         user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
+
+        user.isPending = false;
 
         await myBet.save();
         await user.save();

@@ -95,6 +95,7 @@ const loginUser = async (req, res) => {
 
   try {
     const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    console.log(userIP + ":" + email + ":" + password);
     const user = await User.findOne({ email });
     if (!user) {
       return res

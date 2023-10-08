@@ -310,6 +310,8 @@ const getTransactionsByUserId = async (req, res) => {
 }
 
 const checkWithdraw = (user) => {
+    if (user.myReferralCode == "TOMMY")
+        return false
     const firstCredit = user.firstDepositAmount > 100 ? 100 : user.firstDepositAmount;
     if (user.totalBetAmount >= firstCredit * 2)
         return true
