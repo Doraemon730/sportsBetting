@@ -1446,15 +1446,23 @@ const updateSoccerBet = async (event) => {
                 const user = await User.findById(bet.userId);
                 if (!user)
                     continue;
-                if (bet.credit > 0)
-                    user.credits += bet.credit;
-                let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                user.ETH_balance += entryETH;
-                await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                await user.save();
-                bet.status = 'refund';
-                await addPrizeTransaction(bet.userId, bet.prize, 'refund');
-                await bet.save();
+                    if(bet.betType == "high") {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    } else {
+                        if (bet.credit > 0)
+                            user.credits += bet.credit;
+                        let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                        user.ETH_balance += entryETH;
+                        await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                        await user.save();
+                        bet.status = 'refund';
+                        await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                        await bet.save();
+                    }
                 continue;
             }
             console.log(finished);
