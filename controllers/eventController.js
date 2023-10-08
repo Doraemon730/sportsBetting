@@ -122,7 +122,7 @@ const getWeeklyEventsNFL = async () => {
                 await myEvent.save();
                 console.log('NFL New event inserted! _id=' + myEvent.id);
             }
-            if('markets' in playerProps)
+            if ('markets' in playerProps)
                 continue;
             //await myEvent.save();
             for (const playerProp of playerProps) {
@@ -144,12 +144,12 @@ const getWeeklyEventsNFL = async () => {
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     const index = player.odds.findIndex(odd => String(odd.id) == String(prop._id));
-                    if(odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130){                        
+                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130) {
                         //console.log(market);
                         console.log(playerProp.player.name);
                         if (index !== -1) {
-                                player.odds[index].value = outcomes[0].open_total;
-                                player.odds[index].event = myEvent._id;
+                            player.odds[index].value = outcomes[0].open_total;
+                            player.odds[index].event = myEvent._id;
                         } else {
                             player.odds.push({
                                 id: prop._id,
@@ -157,7 +157,7 @@ const getWeeklyEventsNFL = async () => {
                                 event: myEvent._id
                             });
                         }
-                    } else if (index != -1){
+                    } else if (index != -1) {
                         player.odds.splice(index, 1);
                     }
                 }
@@ -256,7 +256,7 @@ const getWeeklyEventsMLB = async () => {
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130){
+                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
@@ -268,10 +268,10 @@ const getWeeklyEventsMLB = async () => {
                                 event: myEvent._id
                             });
                         }
-                    } else if (index != -1){
+                    } else if (index != -1) {
                         player.odds.splice(index, 1);
                     }
-                    
+
                 }
                 await player.save();
             }
@@ -335,7 +335,7 @@ const teamDraft = [
 const processSoccerEvents = async (mappings, events) => {
     try {
         console.log("process Soccer Events");
-        if(!events)
+        if (!events)
             return;
         console.log("Soccer events count = " + events.length, true);
         let now = new Date();
@@ -366,7 +366,7 @@ const processSoccerEvents = async (mappings, events) => {
             if (!markets)
                 continue;
             console.log(markets, true);
-            const market = markets.find(item => item.name =="anytime goalscorer");
+            const market = markets.find(item => item.name == "anytime goalscorer");
             if (!market)
                 continue;
             console.log(market, true);
@@ -387,8 +387,8 @@ const processSoccerEvents = async (mappings, events) => {
                 if (!play || !play.player_id)
                     return;
                 let odds = Math.abs(parseInt(play.odds_american));
-                if( odds < 100 || odds > 130)
-                    continue; 
+                if (odds < 100 || odds > 130)
+                    continue;
                 let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7') });
                 if (!player) {
 
@@ -913,7 +913,7 @@ const updateNFLBet = async (event) => {
                 }
             }
             if (refund) {
-                if(bet.betType == "high") {
+                if (bet.betType == "high") {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
@@ -930,7 +930,7 @@ const updateNFLBet = async (event) => {
                     await user.save();
                     bet.status = 'refund';
                     await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                    await addPrizeTransaction(bet.userId, bet.entryFee, 'refund');
                 }
                 continue;
             }
@@ -1096,12 +1096,12 @@ const summarizeMLBStatsByPlayer = (data, category) => {
 
 };
 
-const test = async(req, res) => {
+const test = async (req, res) => {
     const player = await Player.findById(new ObjectId("65174eba8348bc70ea29d814"));
     console.log(player);
     let index = player.odds.find(item => String(item.event) == String(new ObjectId("651cad6d59935df26a9c2024")));
     console.log(index);
-    if(index == undefined)
+    if (index == undefined)
         console.log("asdf");
     res.json(index);
 }
@@ -1142,7 +1142,7 @@ const updateMLBBet = async (event) => {
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.outs.ktotal ?
                                     play.statistics.hitting.overall.outs.ktotal : -1;
-                            else if (play.statistics.pitching)                            
+                            else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.outs.ktotal ?
                                     play.statistics.pitching.overall.outs.ktotal : -1;
                             break;
@@ -1171,7 +1171,7 @@ const updateMLBBet = async (event) => {
                                 result = play.statistics.pitching.overall.onbase.h ?
                                     play.statistics.pitching.overall.onbase.h : -1;
                             break;
-                        case 'Total Runs':                            
+                        case 'Total Runs':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.runs.total ?
                                     play.statistics.hitting.overall.runs.total : -1;
@@ -1182,7 +1182,7 @@ const updateMLBBet = async (event) => {
                         case 'Hits Allowed':
                             if (play.statistics.hitting)
                                 result = play.statistics.hitting.overall.onbase.h ?
-                                play.statistics.hitting.overall.onbase.h : -1;
+                                    play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
                                 result = play.statistics.pitching.overall.onbase.h ?
                                     play.statistics.pitching.overall.onbase.h : -1;
@@ -1198,7 +1198,7 @@ const updateMLBBet = async (event) => {
                     }
 
                     console.log(result);
-                    if(result != undefined && result != -1) {
+                    if (result != undefined && result != -1) {
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else {
@@ -1216,7 +1216,7 @@ const updateMLBBet = async (event) => {
             }
             console.log("1146:  " + finished);
             if (refund) {
-                if(bet.betType == "high") {
+                if (bet.betType == "high") {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
@@ -1233,7 +1233,7 @@ const updateMLBBet = async (event) => {
                     await user.save();
                     bet.status = 'refund';
                     await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                    await addPrizeTransaction(bet.userId, bet.entryFee, 'refund');
                     continue;
                 }
             }
@@ -1420,7 +1420,7 @@ const updateSoccerBet = async (event) => {
                     if (!player)
                         continue;
                     play = players.find(item => item.id == player.srId);
-                    
+
                     if (play) {
                         result = play.statistics.goals_scored;
                         console.log(result);
