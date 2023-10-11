@@ -926,13 +926,13 @@ const updateNFLBet = async (event) => {
                     const user = await User.findById(bet.userId);
                     if (bet.credit > 0)
                         user.credits += bet.credit;
-                    let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                    user.ETH_balance += entryETH;
-                    await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                    //user.ETH_balance += entryETH;
+                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
                     await user.save();
                     bet.status = 'refund';
                     await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.entryFee, 'refund');
+                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
                 }
                 continue;
             }
@@ -1137,70 +1137,75 @@ const updateMLBBet = async (event) => {
                     //     break;
                     // }
                     console.log(pick.prop.propName);
-                    //console.log(play.statistics.hitting);
-                    console.log(play.statistics.pitching);
+                    console.log(JSON.stringify(play.statistics.hitting));
+                    console.log(JSON.stringify(play.statistics.pitching));
                     switch (pick.prop.propName) {
                         case 'Pitcher Strikeouts':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.outs.ktotal ?
+                                result = play.statistics.hitting.overall.outs.ktotal != undefined?
                                     play.statistics.hitting.overall.outs.ktotal : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.outs.ktotal ?
+                                result = play.statistics.pitching.overall.outs.ktotal != undefined?
                                     play.statistics.pitching.overall.outs.ktotal : -1;
                             break;
                         case 'Total Bases':
                             console.log(play.statistics.hitting);
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.tb ?
+                                result = play.statistics.hitting.overall.onbase.tb != undefined?
                                     play.statistics.hitting.overall.onbase.tb : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.tb ?
+                                result = play.statistics.pitching.overall.onbase.tb != undefined?
                                     play.statistics.pitching.overall.onbase.tb : -1;
                             break;
                         case 'Earned Runs':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.earned ?
+                                result = play.statistics.hitting.overall.runs.earned != undefined?
                                     play.statistics.hitting.overall.runs.earned : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.earned ?
+                                result = play.statistics.pitching.overall.runs.earned != undefined?
                                     play.statistics.pitching.overall.runs.earned : -1;
                             break;
                         case 'Total Hits':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h ?
+                                result = play.statistics.hitting.overall.onbase.h != undefined?
                                     play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h ?
+                                result = play.statistics.pitching.overall.onbase.h != undefined?
                                     play.statistics.pitching.overall.onbase.h : -1;
                             break;
                         case 'Total Runs':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.total ?
+                            console.log(JSON.stringify(play.statistics));
+                            if (play.statistics.hitting){
+                                console.log(play.statistics.hitting.overall.runs.total);
+                                result = play.statistics.hitting.overall.runs.total != undefined?
                                     play.statistics.hitting.overall.runs.total : -1;
+                            }
+                                
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.total ?
+                                result = play.statistics.pitching.overall.runs.total != undefined?
                                     play.statistics.pitching.overall.runs.total : -1;
+                            console.log(result);
                             break;
                         case 'Hits Allowed':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h ?
+                                result = play.statistics.hitting.overall.onbase.h != undefined?
                                     play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h ?
+                                result = play.statistics.pitching.overall.onbase.h != undefined?
                                     play.statistics.pitching.overall.onbase.h : -1;
                             break;
                         case 'Pitching Outs':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.ip_1 ?
+                                result = play.statistics.hitting.overall.ip_1 != undefined?
                                     play.statistics.hitting.overall.ip_1 : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.ip_1 ?
+                                result = play.statistics.pitching.overall.ip_1 != undefined?
                                     play.statistics.pitching.overall.ip_1 : -1;
                             break;
                     }
 
                     console.log(result);
-                    if (result != undefined && result != -1) {
+                    if (result !== undefined && result != -1) {
                         pick.result = result;
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else {
@@ -1231,13 +1236,13 @@ const updateMLBBet = async (event) => {
                     const user = await User.findById(bet.userId);
                     if (bet.credit > 0)
                         user.credits += bet.credit;
-                    let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                    user.ETH_balance += entryETH;
-                    await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                    //user.ETH_balance += entryETH;
+                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
                     await user.save();
                     bet.status = 'refund';
                     await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.entryFee, 'refund');
+                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
                     continue;
                 }
             }
@@ -1462,12 +1467,12 @@ const updateSoccerBet = async (event) => {
                     } else {
                         if (bet.credit > 0)
                             user.credits += bet.credit;
-                        let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                        user.ETH_balance += entryETH;
-                        await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                        //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                        //user.ETH_balance += entryETH;
+                        //await updateTotalBalanceAndCredits(entryETH, bet.credit);
                         await user.save();
                         bet.status = 'refund';
-                        await addPrizeTransaction(bet.userId, bet.prize, 'refund');
+                        await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
                         await bet.save();
                     }
                 continue;
