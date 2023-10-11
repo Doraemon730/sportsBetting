@@ -216,6 +216,7 @@ const getETHPrice = async (req, res) => {
     }
 }
 
+
 const addPrizeTransaction = async (userId, amount, type) => {
     try {
         const amountETH = await USD2Ether(amount);
