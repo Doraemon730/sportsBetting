@@ -131,8 +131,8 @@ httpServer.listen(PORT, () => {
   ThursdayJob.start();
   EtherJob.start();
   MatchJob.start();
-  WeeklyRewardJob.start();
-  MonthlyRewardJob.start();
+  // WeeklyRewardJob.start();
+  // MonthlyRewardJob.start();
   WeekEventJob.start();
   CheckResultJob.start();
   //walletMonitor.start();

@@ -236,7 +236,7 @@ router.post('/configure/getBetAmountLimit',
 router.post('/user/getbalance', auth, userController.getWalletBalance);
 
 router.post('/test/changeEventState', admin, eventController.changeEventState);
-// router.post('/test', betController.test);
+router.post('/admin/giveRewards', admin, betController.giveRewards);
 
 router.post('/admin/getTotalBalance', admin, userController.getTotalBalance);
 
