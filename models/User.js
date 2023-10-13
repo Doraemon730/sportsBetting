@@ -83,6 +83,15 @@ const UserSchema = new mongoose.Schema({
   },
   userIP: {
     type: String
+  },
+  weeklyRewards: {
+    amount: {
+      type: Number,
+      default: 0
+    },
+    receiveDate: {
+      type: Date
+    }
   }
 });
 

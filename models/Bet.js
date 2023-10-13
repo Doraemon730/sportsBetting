@@ -64,7 +64,10 @@ const BetSchema = new mongoose.Schema({
     result: {
       type: Number
     },
-
+    liveData: {
+      type: Number,
+      default: 0
+    }
   }],
   status: {
     type: String,

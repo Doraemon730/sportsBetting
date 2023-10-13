@@ -602,6 +602,41 @@ const getRewardsPercentage = (level) => {
     return percentage;
 }
 
+const giveRewards = async (req, res) => {
+    const { userId, days } = req.body;
+
+    let daysAgo = new Date();
+    daysAgo.setDate(daysAgo.getDate() - days);
+    const user = await User.findOne({ _id: userId });
+    if (user.weeklyRewards == undefined ||
+        user.weeklyRewards.receiveDate == undefined ||
+        user.weeklyRewards.receiveDate < daysAgo) {
+        const weeklyBets = await Bet.find({
+            userId: userId,
+            status: 'lost',
+            createdAt: {
+                $gte: daysAgo
+            }
+        });
+        const totalLost = weeklyBets.reduce((sum, bet) => sum + bet.entryFee, 0);
+        console.log(totalLost)
+        const percentage = getRewardsPercentage(user.level);
+
+        console.log(percentage)
+        if (user.weeklyRewards == undefined) {
+            user.weeklyRewards.amount = totalLost * percentage * 0.01;
+            user.weeklyRewards.receiveDate = new Date();
+        } else {
+            user.weeklyRewards.amount += totalLost * percentage * 0.01;
+            user.weeklyRewards.receiveDate = new Date();
+        }
+        // await updateTotalBalanceAndCredits(0, weeklyBet.totalLost * percentage * 0.01);
+        await user.save();
+        return res.json(user)
+    }
+    return res.json("You have already given the rewards")
+}
+
 module.exports = {
     startBetting,
     getAllBets,
@@ -611,5 +646,6 @@ module.exports = {
     getRewards,
     startFirstFreeBetting,
     startWednesdayFreeBetting,
-    udpateEventsByBet
+    udpateEventsByBet,
+    giveRewards
 }

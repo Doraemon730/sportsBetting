@@ -618,6 +618,7 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "NFL") {
                                 broadcastingData.player = getNFLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
+                                setLiveDatatoDB(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
                             // if (sportType == "NHL") {
@@ -626,6 +627,7 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "MLB") {
                                 if (detailData.player.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData.player);
+                                    setLiveDatatoDB(broadcastingData)
                                     console.log(JSON.stringify(broadcastingData))
                                     global.io.sockets.emit('broadcast', { broadcastingData });
                                 }
@@ -695,6 +697,22 @@ const getLiveDataByEvent = async () => {
     } catch (error) {
         //throw new Error(error.message);
         console.log(error);
+    }
+}
+
+const setLiveDatatoDB = async (broadcastingData) => {
+    let bets = await Bet.find({
+        status: 'pending',
+        'picks.remoteId': broadcastingData.player.remoteId
+    });
+
+    for (let bet of bets) {
+        let index = bet.picks.findIndex(item => item.remoteId == broadcastingData.player.remoteId)
+        let propName = bet.picks[index].prop.propName;
+        if (broadcastingData.player[propName] != undefined) {
+            bet.picks[index].liveData = broadcastingData.player[propName]
+            await bet.save();
+        }
     }
 }
 
@@ -1142,64 +1160,64 @@ const updateMLBBet = async (event) => {
                     switch (pick.prop.propName) {
                         case 'Pitcher Strikeouts':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.outs.ktotal != undefined?
+                                result = play.statistics.hitting.overall.outs.ktotal != undefined ?
                                     play.statistics.hitting.overall.outs.ktotal : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.outs.ktotal != undefined?
+                                result = play.statistics.pitching.overall.outs.ktotal != undefined ?
                                     play.statistics.pitching.overall.outs.ktotal : -1;
                             break;
                         case 'Total Bases':
                             console.log(play.statistics.hitting);
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.tb != undefined?
+                                result = play.statistics.hitting.overall.onbase.tb != undefined ?
                                     play.statistics.hitting.overall.onbase.tb : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.tb != undefined?
+                                result = play.statistics.pitching.overall.onbase.tb != undefined ?
                                     play.statistics.pitching.overall.onbase.tb : -1;
                             break;
                         case 'Earned Runs':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.earned != undefined?
+                                result = play.statistics.hitting.overall.runs.earned != undefined ?
                                     play.statistics.hitting.overall.runs.earned : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.earned != undefined?
+                                result = play.statistics.pitching.overall.runs.earned != undefined ?
                                     play.statistics.pitching.overall.runs.earned : -1;
                             break;
                         case 'Total Hits':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h != undefined?
+                                result = play.statistics.hitting.overall.onbase.h != undefined ?
                                     play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h != undefined?
+                                result = play.statistics.pitching.overall.onbase.h != undefined ?
                                     play.statistics.pitching.overall.onbase.h : -1;
                             break;
                         case 'Total Runs':
                             console.log(JSON.stringify(play.statistics));
-                            if (play.statistics.hitting){
+                            if (play.statistics.hitting) {
                                 console.log(play.statistics.hitting.overall.runs.total);
-                                result = play.statistics.hitting.overall.runs.total != undefined?
+                                result = play.statistics.hitting.overall.runs.total != undefined ?
                                     play.statistics.hitting.overall.runs.total : -1;
                             }
-                                
+
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.total != undefined?
+                                result = play.statistics.pitching.overall.runs.total != undefined ?
                                     play.statistics.pitching.overall.runs.total : -1;
                             console.log(result);
                             break;
                         case 'Hits Allowed':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h != undefined?
+                                result = play.statistics.hitting.overall.onbase.h != undefined ?
                                     play.statistics.hitting.overall.onbase.h : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h != undefined?
+                                result = play.statistics.pitching.overall.onbase.h != undefined ?
                                     play.statistics.pitching.overall.onbase.h : -1;
                             break;
                         case 'Pitching Outs':
                             if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.ip_1 != undefined?
+                                result = play.statistics.hitting.overall.ip_1 != undefined ?
                                     play.statistics.hitting.overall.ip_1 : -1;
                             else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.ip_1 != undefined?
+                                result = play.statistics.pitching.overall.ip_1 != undefined ?
                                     play.statistics.pitching.overall.ip_1 : -1;
                             break;
                     }
@@ -1458,23 +1476,23 @@ const updateSoccerBet = async (event) => {
                 const user = await User.findById(bet.userId);
                 if (!user)
                     continue;
-                    if(bet.betType == "high" && lost > 0) {
-                        console.log("lost");
-                        bet.prize = 0;
-                        bet.status = "lost";
-                        await updateBetResult(false);
-                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                    } else {
-                        if (bet.credit > 0)
-                            user.credits += bet.credit;
-                        //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                        //user.ETH_balance += entryETH;
-                        //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                        await user.save();
-                        bet.status = 'refund';
-                        await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
-                        await bet.save();
-                    }
+                if (bet.betType == "high" && lost > 0) {
+                    console.log("lost");
+                    bet.prize = 0;
+                    bet.status = "lost";
+                    await updateBetResult(false);
+                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                } else {
+                    if (bet.credit > 0)
+                        user.credits += bet.credit;
+                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                    //user.ETH_balance += entryETH;
+                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                    await user.save();
+                    bet.status = 'refund';
+                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await bet.save();
+                }
                 continue;
             }
             console.log(finished);
