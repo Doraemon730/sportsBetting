@@ -608,9 +608,9 @@ const giveRewards = async (req, res) => {
     let daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - days);
     const user = await User.findOne({ _id: userId });
-    if (user.weeklyRewards == undefined ||
-        user.weeklyRewards.receiveDate == undefined ||
-        user.weeklyRewards.receiveDate < daysAgo) {
+    if (user.rewards == undefined ||
+        user.rewards.receiveDate == undefined ||
+        user.rewards.receiveDate < daysAgo) {
         const weeklyBets = await Bet.find({
             userId: userId,
             status: 'lost',
@@ -623,12 +623,12 @@ const giveRewards = async (req, res) => {
         const percentage = getRewardsPercentage(user.level);
 
         console.log(percentage)
-        if (user.weeklyRewards == undefined) {
-            user.weeklyRewards.amount = totalLost * percentage * 0.01;
-            user.weeklyRewards.receiveDate = new Date();
+        if (user.rewards == undefined) {
+            user.rewards.amount = totalLost * percentage * 0.01;
+            user.rewards.receiveDate = new Date();
         } else {
-            user.weeklyRewards.amount += totalLost * percentage * 0.01;
-            user.weeklyRewards.receiveDate = new Date();
+            user.rewards.amount += totalLost * percentage * 0.01;
+            user.rewards.receiveDate = new Date();
         }
         // await updateTotalBalanceAndCredits(0, weeklyBet.totalLost * percentage * 0.01);
         await user.save();
