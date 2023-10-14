@@ -422,10 +422,17 @@ const getTotalBalance = async (req, res) => {
 const claimRewards = async (req, res) => {
   try {
     const id = req.user.id;
+    const { type } = req.body
     const user = await User.findById(id);
-    user.credits += user.rewards.amount;
-    await updateTotalBalanceAndCredits(0, user.rewards.amount);
-    user.rewards.amount = 0;
+    if (type == 'weekly') {
+      user.credits += user.weeklyRewards.amount;
+      await updateTotalBalanceAndCredits(0, user.weeklyRewards.amount);
+      user.weeklyRewards.amount = 0;
+    } else if (type == 'monthly') {
+      user.credits += user.monthlyRewards.amount;
+      await updateTotalBalanceAndCredits(0, user.monthlyRewards.amount);
+      user.monthlyRewards.amount = 0;
+    }
     await user.save();
     user.password = undefined;
     user.privateKey = undefined;
