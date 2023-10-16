@@ -150,12 +150,21 @@ const getTopPlayerBy = async (req, res) => {
       const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
-      switch(prop.displayName){
+      switch (prop.displayName) {
         case "Rush+Rec Yards":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
           break;
         case "Pass Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");  
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+          break;
+        case "Pass Completions":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+          break;
+        case "Pass TDs":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+          break;
+        case "Pass Attempts":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
           break;
         case "Push Yards":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB" || item.playerPosition == "RB");
@@ -186,7 +195,7 @@ const getTopPlayerBy = async (req, res) => {
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition != "P" && item.playerPosition != "C");
           break;
       }
-      
+
       now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
         let discountPlayer = await Discount.findOne({

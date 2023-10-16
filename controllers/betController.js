@@ -608,9 +608,9 @@ const giveRewards = async (req, res) => {
     let daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - days);
     const user = await User.findOne({ _id: userId });
-    if (user.weeklyRewards == undefined ||
-        user.weeklyRewards.receiveDate == undefined ||
-        user.weeklyRewards.receiveDate < daysAgo) {
+    if (user.rewards == undefined ||
+        user.rewards.receiveDate == undefined ||
+        user.rewards.receiveDate < daysAgo) {
         const weeklyBets = await Bet.find({
             userId: userId,
             status: 'lost',
@@ -619,16 +619,23 @@ const giveRewards = async (req, res) => {
             }
         });
         const totalLost = weeklyBets.reduce((sum, bet) => sum + bet.entryFee, 0);
-        console.log(totalLost)
         const percentage = getRewardsPercentage(user.level);
-
-        console.log(percentage)
-        if (user.weeklyRewards == undefined) {
-            user.weeklyRewards.amount = totalLost * percentage * 0.01;
-            user.weeklyRewards.receiveDate = new Date();
-        } else {
-            user.weeklyRewards.amount += totalLost * percentage * 0.01;
-            user.weeklyRewards.receiveDate = new Date();
+        if (days == 7) {
+            if (user.weeklyRewards == undefined) {
+                user.weeklyRewards.amount = totalLost * percentage * 0.01;
+                user.weeklyRewards.receiveDate = new Date();
+            } else {
+                user.weeklyRewards.amount += totalLost * percentage * 0.01;
+                user.weeklyRewards.receiveDate = new Date();
+            }
+        } else if (days == 30) {
+            if (user.monthlyRewards == undefined) {
+                user.monthlyRewards.amount = totalLost * percentage * 0.01;
+                user.monthlyRewards.receiveDate = new Date();
+            } else {
+                user.monthlyRewards.amount += totalLost * percentage * 0.01;
+                user.monthlyRewards.receiveDate = new Date();
+            }
         }
         // await updateTotalBalanceAndCredits(0, weeklyBet.totalLost * percentage * 0.01);
         await user.save();
