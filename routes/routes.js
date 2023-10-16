@@ -20,6 +20,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
 const { checkWednesday } = require('../middleware/checkDay');
+const checkWithdraw = require('../middleware/checkWithdraw');
 //User routes
 router.post(
     '/users/register',
@@ -126,6 +127,7 @@ router.post(
 router.post(
     '/transaction/withdraw',
     auth,
+    checkWithdraw,
     transactionController.withdrawBalance
 );
 
