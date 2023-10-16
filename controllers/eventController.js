@@ -701,18 +701,27 @@ const getLiveDataByEvent = async () => {
 }
 
 const setLiveDatatoDB = async (broadcastingData) => {
-    let bets = await Bet.find({
-        status: 'pending',
-        'picks.remoteId': broadcastingData.player.remoteId
-    });
+    try {
+        let bets = await Bet.find({
+            status: 'pending',
+            'picks.remoteId': broadcastingData.player.remoteId
+        });
 
-    for (let bet of bets) {
-        let index = bet.picks.findIndex(item => item.remoteId == broadcastingData.player.remoteId)
-        let propName = bet.picks[index].prop.propName;
-        if (broadcastingData.player[propName] != undefined) {
-            bet.picks[index].liveData = broadcastingData.player[propName]
-            await bet.save();
+        for (let bet of bets) {
+            let index = bet.picks.findIndex(item => item.remoteId == broadcastingData.player.remoteId)
+            console.log(bet)
+            console.log(broadcastingData.player.remoteId)
+            console.log(index)
+            if (index >= 0) {
+                let propName = bet.picks[index].prop.propName;
+                if (broadcastingData.player[propName] != undefined) {
+                    bet.picks[index].liveData = broadcastingData.player[propName]
+                    await bet.save();
+                }
+            }
         }
+    } catch (error) {
+        console.log(error);
     }
 }
 

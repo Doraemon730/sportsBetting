@@ -64,6 +64,11 @@ router.post('/users/getReferralBonus',
     bonusController.getReferralBonusByReferralId
 )
 
+router.post('/users/claimRewards',
+    auth,
+    userController.claimRewards
+)
+
 // Betting routes
 router.post('/bet/getPlayersBySports',
     //   [
