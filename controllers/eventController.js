@@ -852,7 +852,7 @@ const updateNFLBet = async (event) => {
                     let result, play;
                     const player = await Player.findById(pick.playerId);
 
-                    console.log("player", player);
+                    console.log("player " + player);
                     // let index = player.odds.find(item=> String(item.event) == String(event._id));
                     // if(index == undefined || index == -1)
                     // {
@@ -937,6 +937,7 @@ const updateNFLBet = async (event) => {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
+                    await bet.save();
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 } else {
@@ -1247,6 +1248,7 @@ const updateMLBBet = async (event) => {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
+                    await bet.save();
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 } else {
@@ -1480,6 +1482,7 @@ const updateSoccerBet = async (event) => {
                     console.log("lost");
                     bet.prize = 0;
                     bet.status = "lost";
+                    await bet.save();
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 } else {
