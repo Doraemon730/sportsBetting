@@ -160,6 +160,12 @@ const getTopPlayerBy = async (req, res) => {
         case "Pass Completions":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
           break;
+        case "Pass TDs":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+          break;
+        case "Pass Attempts":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+          break;
         case "Push Yards":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB" || item.playerPosition == "RB");
           break;
