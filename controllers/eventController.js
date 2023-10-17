@@ -144,7 +144,7 @@ const getWeeklyEventsNFL = async () => {
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     const index = player.odds.findIndex(odd => String(odd.id) == String(prop._id));
-                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130) {
+                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
                         //console.log(market);
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -256,7 +256,7 @@ const getWeeklyEventsMLB = async () => {
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130) {
+                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
@@ -387,7 +387,7 @@ const processSoccerEvents = async (mappings, events) => {
                 if (!play || !play.player_id)
                     return;
                 let odds = Math.abs(parseInt(play.odds_american));
-                if (odds < 100 || odds > 130)
+                if (odds < 100 || odds > 120)
                     continue;
                 let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7') });
                 if (!player) {
@@ -576,10 +576,10 @@ const getLiveDataByEvent = async () => {
                 url = `${NFL_LIVEDATA_BASEURL}=${NFL_API_KEY}&match=sd:match:${event.matchId}`
                 sportType = "NFL"
             }
-            // if (event.sportId == '65108faf4fa2698548371fbd') {
-            //     url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
-            //     sportType = "NHL"
-            // }
+            if (event.sportId == '65108faf4fa2698548371fbd') {
+                url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
+                sportType = "NHL"
+            }
             else if (event.sportId == '65108fcf4fa2698548371fc0') {
                 url = `${MLB_LIVEDATA_BASEURL}=${MLB_API_KEY}&match=sd:match:${event.matchId}`
                 sportType = "MLB"
@@ -621,9 +621,12 @@ const getLiveDataByEvent = async () => {
                                 setLiveDatatoDB(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
-                            // if (sportType == "NHL") {
-                            //     broadcastingData.player = getNHLData(detailData);
-                            // }
+                            if (sportType == "NHL") {
+                                broadcastingData.player = getNHLData(detailData);
+                                console.log(JSON.stringify(broadcastingData))
+                                setLiveDatatoDB(broadcastingData)
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                            }
                             if (sportType == "MLB") {
                                 if (detailData.player.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData.player);
@@ -753,30 +756,17 @@ const getNFLData = (detailData) => {
     return player;
 }
 
-// const getNHLData = (detailData) => {
-//     const player = { id: detailData.player.id, name: detailData.player.name }
-//     if (detailData.hasOwnProperty('rushing')) {
-//         player['Rush Yards'] = detailData.rushing.yards;
-//     }
-//     if (detailData.hasOwnProperty('passing')) {
-//         player['Pass Yards'] = detailData.passing.yards;
-//         player['Pass Attempts'] = detailData.passing.attempts;
-//         player['Pass Completions'] = detailData.passing.completions;
-//         player['Pass TDs'] = detailData.passing.touchdowns;
-//         player['INT'] = detailData.passing.interceptions;
-//     }
-//     if (detailData.hasOwnProperty('receiving')) {
-//         player['Receving Yards'] = detailData.receiving.yards;
-//         player['Receptions'] = detailData.receiving.receptions;
-//     }
-//     if (detailData.hasOwnProperty('field-goals')) {
-//         player['FG Made'] = detailData.field_goals.made;
-//     }
-//     if (detailData.hasOwnProperty('defense')) {
-//         player['Tackles+Ast'] = detailData.defense.tackles + detailData.defense.assists;
-//     }
-//     return player;
-// }
+const getNHLData = (detailData) => {
+    const player = {
+        remoteId: detailData.player.id,
+        name: detailData.player.full_name
+    }
+    player['Total Shots'] = detailData.player.statistics.total.shots;
+    player['Total Assists'] = detailData.player.statistics.total.assists;
+    player['Total Points'] = detailData.player.statistics.total.points;
+    player['Total Power Play Points'] = detailData.player.statistics.powerplay.goals;
+    return player;
+}
 
 const getMLBData = (detailData) => {
     const player = {
