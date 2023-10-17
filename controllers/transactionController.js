@@ -324,10 +324,12 @@ const checkWithdraw = (user) => {
 
 const getRevenue = async (req, res) => {
     try {
+        const now = new Date();
+        now.setUTCHours(0, 0, 0, 0);
         const data_1 = await Transaction.aggregate([{
             $match: {
                 createdAt: {
-                    $gte: new Date().setUTCHours(0, 0, 0, 0),
+                    $gte: now,
                     $lte: new Date(Date.now())
                 }
             }
