@@ -1554,19 +1554,19 @@ const updateNHLBet = async (event) => {
                     console.log(pick.prop.propName);
                     
                     switch (pick.prop.propName) {
-                        case 'Shots':                        
+                        case 'Total Shots':                        
                             result = play.statistics.total.shots != undefined ?
                                 play.statistics.total.shots : -1;                        
                             break;
-                        case 'Assists':
+                        case 'Total Assists':
                             result = play.statistics.total.assists != undefined ?
                                 play.statistics.total.assists : -1;                        
                             break;
-                        case 'Points':
+                        case 'Total Points':
                             result = play.statistics.total.points != undefined ?
                                 play.statistics.total.points : -1;                        
                             break;
-                        case 'Power Play Points':
+                        case 'Total Power Play Points':
                             result = play.statistics.powerplay.goals != undefined ?
                                 play.statistics.powerplay.goals : -1;                        
                             break;                        
