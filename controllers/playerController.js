@@ -492,7 +492,7 @@ const addNHLPlayersToDatabase = async (req, res) => {
           remoteId: player.id,
           teamId: team._id,
           position: player.position,
-          jerseyNumber: player.jersey,
+          jerseyNumber: player.jersey_number,
           srId: player.sr_id
         });
         await newPlayer.save();
