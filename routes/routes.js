@@ -252,6 +252,7 @@ router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
 router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
 router.post('/admin/getWeeklyScheduleNFL', eventController.getWeeklyEventsNFL);
 router.post('/admin/getWeeklyScheduleMLB', eventController.getWeeklyEventsMLB);
+router.post('/admin/getWeeklyScheduleNHL', eventController.getWeeklyEventsNHL);
 router.post('/admin/player', playerController.getPlayerManifest);
 router.post('/admin/addSport', sportsController.addSport);
 router.post('/admin/getNHLTeams', teamController.addNHLTeamsToDatabase);
