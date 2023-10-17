@@ -102,8 +102,8 @@ const depositBalance = async (req, res) => {
     }
 }
 
-const withdrawBalance = async (req, res) => {  
-    
+const withdrawBalance = async (req, res) => {
+
     setTimeout(async function () {
         try {
             const userId = new ObjectId(req.user.id);
@@ -327,7 +327,7 @@ const getRevenue = async (req, res) => {
         const data_1 = await Transaction.aggregate([{
             $match: {
                 createdAt: {
-                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1),
+                    $gte: new Date().setUTCHours(0, 0, 0, 0),
                     $lte: new Date(Date.now())
                 }
             }
