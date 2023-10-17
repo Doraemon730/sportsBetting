@@ -144,7 +144,7 @@ const getWeeklyEventsNFL = async () => {
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     const index = player.odds.findIndex(odd => String(odd.id) == String(prop._id));
-                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130) {
+                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
                         //console.log(market);
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -256,7 +256,7 @@ const getWeeklyEventsMLB = async () => {
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 130 && odd2 >= 100 && odd2 <= 130) {
+                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
@@ -387,7 +387,7 @@ const processSoccerEvents = async (mappings, events) => {
                 if (!play || !play.player_id)
                     return;
                 let odds = Math.abs(parseInt(play.odds_american));
-                if (odds < 100 || odds > 130)
+                if (odds < 100 || odds > 120)
                     continue;
                 let player = await Player.findOne({ srId: play.player_id, sportId: new ObjectId('65131974db50d0c2c8bf7aa7') });
                 if (!player) {
