@@ -102,7 +102,8 @@ const depositBalance = async (req, res) => {
     }
 }
 
-const withdrawBalance = async (req, res) => {
+const withdrawBalance = async (req, res) => {  
+    
     setTimeout(async function () {
         try {
             const userId = new ObjectId(req.user.id);
@@ -177,6 +178,7 @@ const withdrawBalance = async (req, res) => {
             await transaction.save();
             await user.save();
             await updateCapital(1, parseFloat(amountETH));
+            req.release();
             res.json({ message: "Wihdraw Success!" })
         } catch (error) {
             const userId = new ObjectId(req.user.id);
@@ -185,7 +187,8 @@ const withdrawBalance = async (req, res) => {
             });
             user.isPending = false;
             await user.save();
-            console.log(error)
+            console.log(error);
+            req.release();
             res.status(500).send('Server error');
         }
     }, 1000);
