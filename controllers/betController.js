@@ -47,6 +47,8 @@ const startBetting = async (req, res) => {
         const entryFeeEther = await USD2Ether(entryFee);
 
         if (!user || user.ETH_balance < entryFeeEther) {
+            user.isPending = false;
+            await user.save();
             return res.status(400).json({ message: "Insufficient Balance." });
         }
 
