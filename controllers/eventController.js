@@ -2068,6 +2068,10 @@ const checkEvents = async () => {
                 console.log("Soccer " + event._id);
                 await updateSoccerBet(event);
             }
+            else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
+                console.log("NHL " + event._id);
+                await updateNHLBet(event);
+            }
         }
     } catch (error) {
         console.log(error);
