@@ -51,7 +51,8 @@ const addNBATeamsToDatabase = async (req, res) => {
             message: 'NBA Teams added to the database.'
         });
     } catch (error) {
-        throw new Error(`Error adding NBA contests to the database: ${error.message}`);
+        console.log(error);
+        res.status(500).send(`Error adding NBA contests to the database: ${error.message}`);
     }
 };
 const addNFLTeamsToDatabase = async (req, res) => {
@@ -138,6 +139,18 @@ const addMLBTeamsToDatabase = async (req, res) => {
     }
 }
 
+
+const addCFBTeamToDatabase = async (req, res) => {
+    try{
+        const team = new Team({
+            name: req.body.name,
+            sportId: new ObjectId("652f31fdfb0c776ae3db47e1")
+        })   
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(`Error adding CFB contests to the database: ${error.message}`);
+    }
+}
 
 const remove = async (req, res) => {
     await Team.deleteMany({sportId: new ObjectId("65108fcf4fa2698548371fc0")});

@@ -52,6 +52,7 @@ const fetchNFLTeams = async () => {
       throw new Error('Error retrieving NHL schedule:', error);
     });
 }
+
 const fetchNFLTeamsFromRemoteId = async (remoteId) => {
 
   return axios.get(`${NFL_API_BASEURL}/${LOCALE}/teams/${remoteId}/profile.json?api_key=${apiNFLKey}`)
@@ -110,6 +111,32 @@ const fetchMLBTeamsFromRemoteId = async (remoteId) => {
       throw new Error('Error retrieving NFL TeamProfile:', error);
     })
 }
+
+
+// CFB
+const fetchCFBTeams = async () => {
+
+  return axios.get(`${NHL_API_BASEURL}/${LOCALE}/league/hierarchy.json?api_key=${apiNHLKey}`)
+    .then(response => {
+      const conferences = response.data.conferences;
+      //console.log(conferences);
+      return conferences;
+    })
+    .catch(error => {
+      throw new Error('Error retrieving NBA schedule:', error);
+    });
+}
+const fetchCFBTeamsFromRemoteId = async (remoteId) => {
+
+  return axios.get(`${NHL_API_BASEURL}/${LOCALE}/teams/${remoteId}/profile.json?api_key=${apiNHLKey}`)
+    .then(response => {
+      const team = response.data;
+      return team;
+    }).catch(error => {
+      throw new Error('Error retrieving NFL TeamProfile:', error);
+    })
+}
+
 module.exports = {
   fetchNBATeamsFromRemoteId,
   fetchNBATeams,

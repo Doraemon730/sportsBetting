@@ -113,7 +113,7 @@ const fetchNFLGameSummary = async (matchId) => {
 }
 
 const fetchNHLGameSummary = async (matchId) => {
-    return axios.get(`${NHL_API_BASEURL}/${LOCALE}/games/${matchId}/statistics.json?api_key=${apiNHLKey}`)
+    return axios.get(`${NHL_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiNHLKey}`)
     .then(response => {
         const statistics = response.data;
         return statistics;
