@@ -1567,8 +1567,8 @@ const updateNHLBet = async (event) => {
                                 play.statistics.total.points : -1;                        
                             break;
                         case 'Total Power Play Points':
-                            result = play.statistics.powerplay.goals != undefined ?
-                                play.statistics.powerplay.goals : -1;                        
+                            result = play.statistics.powerplay != undefined ?
+                                play.statistics.powerplay.goals + play.statistics.powerplay.assists: -1;                        
                             break;                        
                         }
 
