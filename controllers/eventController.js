@@ -719,19 +719,19 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "NFL") {
                                 broadcastingData.player = getNFLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
-                                setLiveDatatoDB(broadcastingData)
+                                await setLiveDatatoDB(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
                             if (sportType == "NHL") {
                                 broadcastingData.player = getNHLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
-                                setLiveDatatoDB(broadcastingData)
+                                await setLiveDatatoDB(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                             }
                             if (sportType == "MLB") {
                                 if (detailData.player.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData.player);
-                                    setLiveDatatoDB(broadcastingData)
+                                    await setLiveDatatoDB(broadcastingData)
                                     console.log(JSON.stringify(broadcastingData))
                                     global.io.sockets.emit('broadcast', { broadcastingData });
                                 }
@@ -865,7 +865,7 @@ const getNHLData = (detailData) => {
     player['Total Shots'] = detailData.player.statistics.total.shots;
     player['Total Assists'] = detailData.player.statistics.total.assists;
     player['Total Points'] = detailData.player.statistics.total.points;
-    player['Total Power Play Points'] = detailData.player.statistics.powerplay.goals;
+    player['Total Power Play Points'] = detailData.player.statistics.powerplay.goals + detailData.player.statistics.powerplay.assists;
     return player;
 }
 
@@ -1518,10 +1518,10 @@ const updateMLBBet = async (event) => {
 const summarizeNHLPlayers = (data) => {
     const homeStats = data.home.players;
     const awayStats = data.away.players;
-   
-  
+
+
     return [...homeStats, ...awayStats];
-  };
+};
 const updateNHLBet = async (event) => {
     try {
         console.log(event);
@@ -1552,19 +1552,19 @@ const updateNHLBet = async (event) => {
                     //     break;
                     // }
                     console.log(pick.prop.propName);
-                    
+
                     switch (pick.prop.propName) {
-                        case 'Total Shots':                        
+                        case 'Total Shots':
                             result = play.statistics.total.shots != undefined ?
-                                play.statistics.total.shots : -1;                        
+                                play.statistics.total.shots : -1;
                             break;
                         case 'Total Assists':
                             result = play.statistics.total.assists != undefined ?
-                                play.statistics.total.assists : -1;                        
+                                play.statistics.total.assists : -1;
                             break;
                         case 'Total Points':
                             result = play.statistics.total.points != undefined ?
-                                play.statistics.total.points : -1;                        
+                                play.statistics.total.points : -1;
                             break;
                         case 'Total Power Play Points':
                             result = play.statistics.powerplay != undefined ?
@@ -2089,5 +2089,5 @@ module.exports = {
     checkEvents,
     changeEventState,
     test,
-    getWeeklyEventsNHL    
+    getWeeklyEventsNHL
 }

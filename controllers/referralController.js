@@ -13,6 +13,13 @@ const setReferral = async (req, res) => {
             })
         }
 
+        const isExist = await Referral.findOne({ referralCode });
+        if (isExist && String(isExist.userId) != String(userId)) {
+            return res.status(400).json({
+                message: "Referral Code already exists!"
+            })
+        }
+
         const referral = await Referral.findOne({ userId: new ObjectId(userId) });
         const user = await User.findOne({ _id: new ObjectId(userId) })
 
