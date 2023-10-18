@@ -269,4 +269,8 @@ router.post('/admin/testBet', eventController.testBet);
 router.post('/admin/addSoccerTeam', teamController.addSoccerTeam);
 router.post('/admin/bet/updateEvents', betController.udpateEventsByBet);
 router.post('/admin/test', eventController.test);
+
+router.post('/admin/addCFBTeam', teamController.addCFBTeamToDatabase);
+router.post('/admin/getCFBPlayers', playerController.addCFBPlayersToDatabase);
+router.post('/admin/getWeeklyScheduleCFB', eventController.getWeeklyEventsCFB);
 module.exports = router;

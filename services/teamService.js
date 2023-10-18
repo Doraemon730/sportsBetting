@@ -7,12 +7,14 @@ const apiNBAKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
 const apiNHLKey = process.env.NHL_API_KEY;
 const apiMLBKey = process.env.MLB_API_KEY;
+const apiCFBKey = process.env.NCAA_API_KEY;
 const {
   NBA_API_BASEURL,
   LOCALE,
   NFL_API_BASEURL,
   NHL_API_BASEURL,
   MLB_API_BASEURL,
+  CFB_API_BASEURL
 } = require('../config/constant');
 
 // NBA
@@ -123,17 +125,18 @@ const fetchCFBTeams = async () => {
       return conferences;
     })
     .catch(error => {
-      throw new Error('Error retrieving NBA schedule:', error);
+      console.log(error);
     });
 }
 const fetchCFBTeamsFromRemoteId = async (remoteId) => {
 
-  return axios.get(`${NHL_API_BASEURL}/${LOCALE}/teams/${remoteId}/profile.json?api_key=${apiNHLKey}`)
+  return axios.get(`${CFB_API_BASEURL}/${LOCALE}/teams/${remoteId}/full_roster.json?api_key=${apiCFBKey}`)
     .then(response => {
       const team = response.data;
       return team;
     }).catch(error => {
-      throw new Error('Error retrieving NFL TeamProfile:', error);
+      console.log(error);
+      
     })
 }
 
@@ -145,5 +148,6 @@ module.exports = {
   fetchNHLTeams,
   fetchNHLTeamsFromRemoteId,
   fetchMLBTeams,
-  fetchMLBTeamsFromRemoteId
+  fetchMLBTeamsFromRemoteId,
+  fetchCFBTeamsFromRemoteId
 };

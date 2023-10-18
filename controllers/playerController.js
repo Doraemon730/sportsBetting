@@ -1,5 +1,6 @@
 const Contest = require("../models/Contest");
 const Player = require("../models/Player");
+const CFPlayer = require('../models/CFPlayer');
 const Discount = require("../models/Discount");
 const Event = require('../models/Event');
 const Prop = require('../models/Prop');
@@ -20,7 +21,8 @@ const {
   fetchNBATeamsFromRemoteId,
   fetchNFLTeamsFromRemoteId,
   fetchNHLTeamsFromRemoteId,
-  fetchMLBTeamsFromRemoteId
+  fetchMLBTeamsFromRemoteId,
+  fetchCFBTeamsFromRemoteId
 } = require("../services/teamService");
 const {
   getAllTeamsFromDatabase,
@@ -51,9 +53,102 @@ const getTopPlayerBy = async (req, res) => {
 
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-
-
-    const players = await Player.aggregate(
+    let players;
+    if(String(sportId) == '652f31fdfb0c776ae3db47e1')
+    {
+      console.log("AAAAAAAAAAAAAAAAAAAAAAAAA");
+      players = await CFPlayer.aggregate(
+        [{
+          $unwind: '$odds' // Unwind the odds array to work with individual odds documents
+  
+        },
+        {
+          $sort: {
+            'odds.value': -1 // Sort by odds.value in descending order
+          }
+        },
+        {
+          $lookup: {
+            from: 'props', // Replace with the actual name of your 'props' collection
+            localField: 'odds.id',
+            foreignField: '_id',
+            as: 'prop'
+          }
+        },
+        {
+          $unwind: {
+            path: '$prop',
+            preserveNullAndEmptyArrays: true
+          } // Unwind the 'prop' array created by the lookup
+        },
+        {
+          $lookup: {
+            from: 'teams', // Replace with the actual name of your 'props' collection
+            localField: 'teamId',
+            foreignField: '_id',
+            as: 'team'
+          }
+        },
+        {
+          $unwind: {
+            path: '$team', // Unwind the 'prop' array created by the lookup
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: 'events',
+            localField: 'odds.event',
+            foreignField: '_id',
+            as: 'event'
+          }
+        },
+        {
+          $unwind: '$event'
+        },
+        {
+          $match: {
+            'event.startTime': {
+              $gte: new Date(),
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$odds.id', // Group by odds.id
+            players: {
+              $push: {
+                playerId: '$_id',
+                playerName: '$name',
+                remoteId: '$remoteId',
+                playerPosition: '$position',
+                contestId: '$odds.event',
+                playerNumber: '$jerseyNumber',
+                headshot: '$headshot',
+                odds: '$odds.value',
+                teamName: { $ifNull: ['$team.alias', '$teamName'] },
+                teamId: '$teamId',
+                contestName: '$event.name',
+                contestStartTime: '$event.startTime',
+                overUnder: "over",
+                propId: '$prop._id',
+                propName: '$prop.displayName'
+              }
+            }
+          }
+        },
+        {
+          $project: {
+            topPlayers: '$players'
+            // {
+            //   $slice: ['$players', 10] // Get the top 10 players for each odds.id group
+            // }
+          }
+        }
+        ]);
+    } else 
+    {
+      players = await Player.aggregate(
       [{
         $unwind: '$odds' // Unwind the odds array to work with individual odds documents
 
@@ -142,6 +237,8 @@ const getTopPlayerBy = async (req, res) => {
         }
       }
       ]);
+    }
+    console.log(JSON.stringify(players));
     //props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
     //props = props.filter(item => item.displayName !== "Total Hits");
     let tackles = ["DE", "DL", "LE", "RE", "DT", "NT", "LB", "MLB", "ILB", "OLB", "LOLB", "ROLB", "SLB", "WLB", "DB", "CB", "S", "SS", "FS"];
@@ -479,6 +576,34 @@ const addNFLPlayersToDatabase = async (req, res) => {
 
   }
 }
+
+const addCFBPlayersToDatabase = async (req, res) => {
+  try {
+    const teams = await getAllTeamsFromDatabase(new ObjectId("652f31fdfb0c776ae3db47e1"));
+    for (const team of teams) {
+
+      const remoteteam = await fetchCFBTeamsFromRemoteId(team.remoteId);
+      for (const player of remoteteam.players) {
+        const newPlayer = new CFPlayer({
+          name: player.name,
+          sportId: new ObjectId("652f31fdfb0c776ae3db47e1"),
+          remoteId: player.id,
+          teamId: team._id,
+          position: player.position,
+          jerseyNumber: player.jersey,
+        });
+        await newPlayer.save();
+      }
+    }
+    res.status(200).json({
+      message: 'CFB players added to the database.'
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Server Error");
+  }
+}
 const addNHLPlayersToDatabase = async (req, res) => {
   try {
     const teams = await getAllTeamsFromDatabase(new ObjectId("65108faf4fa2698548371fbd"));
@@ -644,5 +769,6 @@ module.exports = {
   addMLBPlayersToDatabase,
   remove,
   resetOdds,
-  updateMLBPlayers
+  updateMLBPlayers,
+  addCFBPlayersToDatabase
 };
