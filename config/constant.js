@@ -31,7 +31,8 @@ const NFL_IMAGE_PROVIDER = "ap_premium"
 const NFL_IMAGE_TYPE = "headshots"
 const NHL_API_BASEURL = "https://api.sportradar.us/nhl/trial/v7";
 const MLB_API_BASEURL = "https://api.sportradar.com/mlb/trial/v7";
-
+const CFB_API_BASEURL = "https://api.sportradar.us/ncaafb/trial/v7";
+const CFB_COMPETITION_ID = "sr:competition:27653";
 // Soccer
 const UEFA_COMPETITION_ID = "sr:competition:7";
 const LALIGA_COMPETITION_ID = "sr:competition:8";
@@ -87,5 +88,7 @@ module.exports = {
     MLS_COMPETITION_ID,
     SAUDI_COMPETITION_ID,
     SOCCER_API_BASEURL,
-    ODDS_COM_API_BASEURL
+    ODDS_COM_API_BASEURL,
+    CFB_API_BASEURL,
+    CFB_COMPETITION_ID
 }

@@ -19,6 +19,9 @@ const TeamSchema = new mongoose.Schema({
   },
   srId: {
     type: String,
+  },
+  market: {
+    type: String
   }
 });
 

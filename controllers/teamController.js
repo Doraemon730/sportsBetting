@@ -142,10 +142,17 @@ const addMLBTeamsToDatabase = async (req, res) => {
 
 const addCFBTeamToDatabase = async (req, res) => {
     try{
+        const { name, remoteId, alias, market } = req.body;
+
         const team = new Team({
-            name: req.body.name,
-            sportId: new ObjectId("652f31fdfb0c776ae3db47e1")
-        })   
+            name,
+            sportId: new ObjectId("652f31fdfb0c776ae3db47e1"),
+            remoteId,
+            alias,
+            market
+        });
+        await team.save();
+        res.json(team);
     } catch (error) {
         console.log(error);
         res.status(500).send(`Error adding CFB contests to the database: ${error.message}`);
@@ -182,5 +189,6 @@ module.exports = {
     addNHLTeamsToDatabase,
     addMLBTeamsToDatabase,
     remove,
-    addSoccerTeam
+    addSoccerTeam,
+    addCFBTeamToDatabase
 }

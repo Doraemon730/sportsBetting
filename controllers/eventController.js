@@ -1,5 +1,6 @@
 const Event = require('../models/Event');
 const Player = require('../models/Player');
+const CFPlayer = require('../models/CFPlayer');
 const Prop = require('../models/Prop');
 const User = require('../models/User');
 const Team = require('../models/Team');
@@ -35,7 +36,8 @@ const {
     fetchWeeklyEventsSaudi,
     fetchMLBGameSummary,
     fetchSoccerEventSummary,
-    fetchNHLGameSummary
+    fetchNHLGameSummary,
+    fetchWeeklyEventsCFB
 } = require('../services/eventService');
 
 const { USD2Ether, Ether2USD } = require('../utils/util');
@@ -139,7 +141,8 @@ const getWeeklyEventsNFL = async () => {
                     continue;
                 for (const market of playerProp.markets) {
                     const prop = await Prop.findOne({
-                        srId: market.id
+                        srId: market.id,
+                        sportId: new ObjectId('650e0b6fb80ab879d1c142c8')
                     });
                     if (!player || !prop) continue;
                     let outcomes = market.books[0].outcomes;
@@ -239,7 +242,8 @@ const getWeeklyEventsNHL = async () => {
                     continue;
                 for (const market of playerProp.markets) {
                     const prop = await Prop.findOne({
-                        srId: market.id
+                        srId: market.id,
+                        sportId: new ObjectId('65108faf4fa2698548371fbd')
                     });
                     if (!player || !prop) continue;
                     let outcomes = market.books[0].outcomes;
@@ -346,7 +350,8 @@ const getWeeklyEventsMLB = async () => {
                 console.log(player);
                 for (const market of playerProp.markets) {
                     const prop = await Prop.findOne({
-                        srId: market.id
+                        srId: market.id,
+                        sportId: new ObjectId('65108fcf4fa2698548371fc0')
                     });
                     if (!prop) continue;
                     const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
@@ -380,6 +385,125 @@ const getWeeklyEventsMLB = async () => {
 
         }
         console.log("Get MLB Events and update finished at " + new Date().toString());
+    } catch (error) {
+        console.log(error);
+
+    }
+};
+const getWeeklyEventsCFB = async () => {
+    try {
+        const mappings = await fetchEventMapping();
+        if (!mappings || !Array.isArray(mappings)) {
+            console.log('No mappings');
+            return;
+        }
+        //console.log(mappings);
+        if (players.length == 0)
+            await playerMapping();
+        console.log(JSON.stringify(players[0]));
+
+        let events = await fetchWeeklyEventsCFB();
+        let now = new Date();
+        events = events.filter(item => new Date(item.sport_event.start_time) > now);
+        console.log("CFB events count = " + events.length);
+        for (const event of events) {
+
+            let myEvent = new Event({
+                id: event.sport_event.id,
+                startTime: event.sport_event.start_time,
+                sportId: new ObjectId('652f31fdfb0c776ae3db47e1')
+            });
+            let alias = [], inc = 0;
+            for (const competitor of event.sport_event.competitors) {
+                const team = await Team.findOne({
+                    sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
+                    alias: competitor.abbreviation
+                });
+                if(team)
+                {
+                    competitor.teamId = team._id;
+                    inc += 1;
+                }                    
+                myEvent.competitors.push(competitor);
+                alias.push(competitor.abbreviation);
+            }
+            if(inc == 0)
+                continue;
+            myEvent.name = alias[0] + " vs " + alias[1];
+
+            let mapping = mappings.find(item => item.id == event.sport_event.id);
+            if (mapping)
+                myEvent.matchId = mapping.external_id;
+
+
+            let playerProps = await fetchEventPlayerProps(event.sport_event.id);
+            if (!playerProps || 'markets' in playerProps)
+                continue;            
+            let existingEvent = await Event.findOne({ sportId: new ObjectId('652f31fdfb0c776ae3db47e1'), id: event.sport_event.id });
+            if (existingEvent) {
+                myEvent = existingEvent;
+                existingEvent.startTime = myEvent.startTime;
+                await existingEvent.save();
+            } else {
+                // Event doesn't exist, insert new event
+                await myEvent.save();
+                console.log('CFB New event inserted! _id=' + myEvent.id);
+            }
+            //await myEvent.save();
+            //console.log(playerProps);
+            
+
+            for (const playerProp of playerProps) {
+                console.log(playerProp.player.id, true);
+                console.log(playerProp.player.name, true);        
+                const play = players.find(item => String(item.id) == String(playerProp.player.id));
+
+                if (!play)
+                    continue;        
+                const player = await CFPlayer.findOne({
+                    remoteId: play.us_id,
+                    sportId: new ObjectId('652f31fdfb0c776ae3db47e1')
+                });
+                if (!player)
+                    continue;
+                console.log(player);
+                for (const market of playerProp.markets) {
+                    const prop = await Prop.findOne({
+                        srId: market.id,
+                        sportId: new ObjectId('652f31fdfb0c776ae3db47e1')
+                    });
+                    if (!prop) continue;
+                    const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
+                    console.log(JSON.stringify(market));
+                    let outcomes = market.books[0].outcomes;
+                    console.log(playerProp.player.name);
+                    let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                    let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    console.log(odd1);
+                    console.log(odd2);
+                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
+                        console.log(playerProp.player.name);
+                        if (index !== -1) {
+                            player.odds[index].value = outcomes[0].open_total;
+                            player.odds[index].event = myEvent._id;
+                        } else {
+                            player.odds.push({
+                                id: prop._id,
+                                value: outcomes[0].open_total,
+                                event: myEvent._id
+                            });
+                        }
+                    } else if (index != -1) {
+                        player.odds.splice(index, 1);
+                    }
+
+                }
+                await player.save();
+            }
+            //console.log(playerProps);
+
+        }
+        console.log("Get CFB Events and update finished at " + new Date().toString());
     } catch (error) {
         console.log(error);
 
@@ -2093,5 +2217,6 @@ module.exports = {
     checkEvents,
     changeEventState,
     test,
-    getWeeklyEventsNHL
+    getWeeklyEventsNHL,
+    getWeeklyEventsCFB
 }
