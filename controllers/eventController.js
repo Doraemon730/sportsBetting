@@ -865,7 +865,7 @@ const getNHLData = (detailData) => {
     player['Total Shots'] = detailData.player.statistics.total.shots;
     player['Total Assists'] = detailData.player.statistics.total.assists;
     player['Total Points'] = detailData.player.statistics.total.points;
-    player['Total Power Play Points'] = detailData.player.statistics.powerplay.goals;
+    player['Total Power Play Points'] = detailData.player.statistics.powerplay.goals + detailData.player.statistics.powerplay.assists;
     return player;
 }
 
@@ -1518,10 +1518,10 @@ const updateMLBBet = async (event) => {
 const summarizeNHLPlayers = (data) => {
     const homeStats = data.home.players;
     const awayStats = data.away.players;
-   
-  
+
+
     return [...homeStats, ...awayStats];
-  };
+};
 const updateNHLBet = async (event) => {
     try {
         console.log(event);
@@ -1552,25 +1552,25 @@ const updateNHLBet = async (event) => {
                     //     break;
                     // }
                     console.log(pick.prop.propName);
-                    
+
                     switch (pick.prop.propName) {
-                        case 'Total Shots':                        
+                        case 'Total Shots':
                             result = play.statistics.total.shots != undefined ?
-                                play.statistics.total.shots : -1;                        
+                                play.statistics.total.shots : -1;
                             break;
                         case 'Total Assists':
                             result = play.statistics.total.assists != undefined ?
-                                play.statistics.total.assists : -1;                        
+                                play.statistics.total.assists : -1;
                             break;
                         case 'Total Points':
                             result = play.statistics.total.points != undefined ?
-                                play.statistics.total.points : -1;                        
+                                play.statistics.total.points : -1;
                             break;
                         case 'Total Power Play Points':
                             result = play.statistics.powerplay.goals != undefined ?
-                                play.statistics.powerplay.goals : -1;                        
-                            break;                        
-                        }
+                                play.statistics.powerplay.goals : -1;
+                            break;
+                    }
 
                     console.log(result);
                     if (result !== undefined && result != -1) {
@@ -2089,5 +2089,5 @@ module.exports = {
     checkEvents,
     changeEventState,
     test,
-    getWeeklyEventsNHL    
+    getWeeklyEventsNHL
 }
