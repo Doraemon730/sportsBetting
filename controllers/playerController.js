@@ -54,8 +54,8 @@ const getTopPlayerBy = async (req, res) => {
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
     let players;
-   
-      players = await Player.aggregate(
+
+    players = await Player.aggregate(
       [{
         $unwind: '$odds' // Unwind the odds array to work with individual odds documents
 
@@ -177,7 +177,7 @@ const getTopPlayerBy = async (req, res) => {
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
           break;
         case "Receptions":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB" || item.playerPosition == "TE");
           break;
         case "INT":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
@@ -595,17 +595,17 @@ const addNBAPlayersToDatabase = async (req, res) => {
     for (const team of teams) {
 
       const remoteteam = await fetchNBATeamsFromRemoteId(team.remoteId);
-      for (const player of remoteteam.players) {        
-          const newPlayer = new Player({
-            name: player.full_name,
-            sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
-            remoteId: player.id,
-            teamId: team._id,
-            position: player.position,            
-            srId: player.sr_id,
-            jerseyNumber: player.jersey_number
-          });
-          await newPlayer.save();        
+      for (const player of remoteteam.players) {
+        const newPlayer = new Player({
+          name: player.full_name,
+          sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
+          remoteId: player.id,
+          teamId: team._id,
+          position: player.position,
+          srId: player.sr_id,
+          jerseyNumber: player.jersey_number
+        });
+        await newPlayer.save();
       }
     }
     res.status(200).json({
