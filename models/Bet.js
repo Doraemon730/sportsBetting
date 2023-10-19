@@ -35,6 +35,7 @@ const BetSchema = new mongoose.Schema({
     },
     remoteId: {
       type: String,
+      required: true,
     },
     contestId: {
       type: mongoose.Schema.Types.ObjectId,

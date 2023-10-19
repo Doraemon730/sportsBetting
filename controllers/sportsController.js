@@ -3,7 +3,7 @@ const { ObjectId } = require("mongodb");
 require('../utils/log');
 const getAllSports = async (req, res) => {
     try {
-        const sports = await Sport.aggregate([
+        let sports = await Sport.aggregate([
             {
                 $lookup: {
                     from: 'props',
@@ -12,8 +12,11 @@ const getAllSports = async (req, res) => {
                     as: 'props',
                 },
             },]);
+        sports = sports.filter(item => item.name !== "CFB");    
+        
         res.status(200).json(sports);
     } catch (error) {
+        console.log(error);
         res.status(500).send("Server Error");
     }
 }
