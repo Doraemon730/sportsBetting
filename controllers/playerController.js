@@ -54,100 +54,7 @@ const getTopPlayerBy = async (req, res) => {
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
     let players;
-    if(String(sportId) == '652f31fdfb0c776ae3db47e1')
-    {
-      console.log("AAAAAAAAAAAAAAAAAAAAAAAAA");
-      players = await CFPlayer.aggregate(
-        [{
-          $unwind: '$odds' // Unwind the odds array to work with individual odds documents
-  
-        },
-        {
-          $sort: {
-            'odds.value': -1 // Sort by odds.value in descending order
-          }
-        },
-        {
-          $lookup: {
-            from: 'props', // Replace with the actual name of your 'props' collection
-            localField: 'odds.id',
-            foreignField: '_id',
-            as: 'prop'
-          }
-        },
-        {
-          $unwind: {
-            path: '$prop',
-            preserveNullAndEmptyArrays: true
-          } // Unwind the 'prop' array created by the lookup
-        },
-        {
-          $lookup: {
-            from: 'teams', // Replace with the actual name of your 'props' collection
-            localField: 'teamId',
-            foreignField: '_id',
-            as: 'team'
-          }
-        },
-        {
-          $unwind: {
-            path: '$team', // Unwind the 'prop' array created by the lookup
-            preserveNullAndEmptyArrays: true
-          }
-        },
-        {
-          $lookup: {
-            from: 'events',
-            localField: 'odds.event',
-            foreignField: '_id',
-            as: 'event'
-          }
-        },
-        {
-          $unwind: '$event'
-        },
-        {
-          $match: {
-            'event.startTime': {
-              $gte: new Date(),
-            }
-          }
-        },
-        {
-          $group: {
-            _id: '$odds.id', // Group by odds.id
-            players: {
-              $push: {
-                playerId: '$_id',
-                playerName: '$name',
-                remoteId: '$remoteId',
-                playerPosition: '$position',
-                contestId: '$odds.event',
-                playerNumber: '$jerseyNumber',
-                headshot: '$headshot',
-                odds: '$odds.value',
-                teamName: { $ifNull: ['$team.alias', '$teamName'] },
-                teamId: '$teamId',
-                contestName: '$event.name',
-                contestStartTime: '$event.startTime',
-                overUnder: "over",
-                propId: '$prop._id',
-                propName: '$prop.displayName'
-              }
-            }
-          }
-        },
-        {
-          $project: {
-            topPlayers: '$players'
-            // {
-            //   $slice: ['$players', 10] // Get the top 10 players for each odds.id group
-            // }
-          }
-        }
-        ]);
-    } else 
-    {
+   
       players = await Player.aggregate(
       [{
         $unwind: '$odds' // Unwind the odds array to work with individual odds documents
@@ -237,8 +144,8 @@ const getTopPlayerBy = async (req, res) => {
         }
       }
       ]);
-    }
-    console.log(JSON.stringify(players));
+
+    //console.log(JSON.stringify(players));
     //props = props.filter(item => item.displayName !== "Hits Allowed" && item.displayName !== "Pitching Outs");
     //props = props.filter(item => item.displayName !== "Total Hits");
     let tackles = ["DE", "DL", "LE", "RE", "DT", "NT", "LB", "MLB", "ILB", "OLB", "LOLB", "ROLB", "SLB", "WLB", "DB", "CB", "S", "SS", "FS"];
@@ -583,8 +490,9 @@ const addCFBPlayersToDatabase = async (req, res) => {
     for (const team of teams) {
 
       const remoteteam = await fetchCFBTeamsFromRemoteId(team.remoteId);
+      console.log(remoteteam);
       for (const player of remoteteam.players) {
-        const newPlayer = new CFPlayer({
+        const newPlayer = new Player({
           name: player.name,
           sportId: new ObjectId("652f31fdfb0c776ae3db47e1"),
           remoteId: player.id,
@@ -680,27 +588,24 @@ const addNBAPlayersToDatabase = async (req, res) => {
   try {
     // Fetch contest data from the Sportradar NBA API
 
-    const teams = await getAllTeamsFromDatabase();
+    const teams = await getAllTeamsFromDatabase(new ObjectId('64f78bc5d0686ac7cf1a6855'));
 
 
     // Loop through the fetched data and add contests to the database
     for (const team of teams) {
 
       const remoteteam = await fetchNBATeamsFromRemoteId(team.remoteId);
-      for (const player of remoteteam.players) {
-        const playerProfile = await fetchPlayerProfile(player.id);
-        if (playerProfile) {
+      for (const player of remoteteam.players) {        
           const newPlayer = new Player({
             name: player.full_name,
             sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
             remoteId: player.id,
             teamId: team._id,
-            position: player.position,
-            statistics: playerProfile.average,
-            srId: playerProfile.sr_id
+            position: player.position,            
+            srId: player.sr_id,
+            jerseyNumber: player.jersey_number
           });
-          await newPlayer.save();
-        }
+          await newPlayer.save();        
       }
     }
     res.status(200).json({

@@ -6,6 +6,7 @@ const apiNBAKey = process.env.NBA_API_KEY;
 const apiNFLKey = process.env.NFL_API_KEY;
 const apiNHLKey = process.env.NHL_API_KEY;
 const apiMLBKey = process.env.MLB_API_KEY;
+const apiCFBKey = process.env.NCAA_API_KEY;
 const SOCCER_API_KEY = process.env.SOCCER_API_KEY;
 const {
   NBA_API_BASEURL,
@@ -27,7 +28,8 @@ const {
   MLS_COMPETITION_ID,
   SAUDI_COMPETITION_ID,
   ODDS_COM_API_BASEURL,
-  CFB_COMPETITION_ID
+  CFB_COMPETITION_ID,
+  CFB_API_BASEURL
 } = require('../config/constant');
 
 const fetchEventMapping = async () => {
@@ -126,6 +128,16 @@ const fetchNFLGameSummary = async (matchId) => {
     });
 }
 
+const fetchCFBGameSummary = async (matchId) => {
+    return axios.get(`${CFB_API_BASEURL}/${LOCALE}/games/${matchId}/statistics.json?api_key=${apiCFBKey}`)
+    .then(response => {
+        const statistics = response.data;
+        return statistics;
+    })
+    .catch(error => {
+        console.log('Error retrieving NFL schedule:' + error);
+    });
+}
 const fetchNHLGameSummary = async (matchId) => {
     return axios.get(`${NHL_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiNHLKey}`)
     .then(response => {
@@ -274,6 +286,7 @@ module.exports = {
     fetchSoccerEventSummary,
     fetchWeeklyEventsNHL,
     fetchNHLGameSummary,
-    fetchWeeklyEventsCFB
+    fetchWeeklyEventsCFB,
+    fetchCFBGameSummary
 };
 

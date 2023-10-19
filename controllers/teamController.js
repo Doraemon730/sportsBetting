@@ -41,7 +41,9 @@ const addNBATeamsToDatabase = async (req, res) => {
                     const team = new Team({
                         name: teamInfo.name,
                         sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
-                        remoteId: teamInfo.id
+                        remoteId: teamInfo.id,
+                        alias: teamInfo.alias,
+                        srId: teamInfo.sr_id
                     });
                     await team.save();
                 }

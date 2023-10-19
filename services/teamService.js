@@ -129,6 +129,7 @@ const fetchCFBTeams = async () => {
     });
 }
 const fetchCFBTeamsFromRemoteId = async (remoteId) => {
+  console.log(`${CFB_API_BASEURL}/${LOCALE}/teams/${remoteId}/full_roster.json?api_key=${apiCFBKey}`);
 
   return axios.get(`${CFB_API_BASEURL}/${LOCALE}/teams/${remoteId}/full_roster.json?api_key=${apiCFBKey}`)
     .then(response => {
