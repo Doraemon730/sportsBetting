@@ -2549,20 +2549,20 @@ const testBet = async (req, res) => {
         console.log(error);
     }
 }
-const getWeekEventAll = () => {
+const getWeekEventAll = async() => {
     try {
-        // await getWeeklyEventsNFL();
-        // await getWeeklyEventsMLB();
-        // await getWeeklyEventsSoccer();
-        // await getWeeklyEventsNHL();
-        // await getWeeklyEventsCFB();
-        Promise.all([
-            getWeeklyEventsNFL(),
-            getWeeklyEventsMLB(),
-            getWeeklyEventsSoccer(),
-            getWeeklyEventsNHL(),
-            getWeeklyEventsCFB()
-        ]);
+        await getWeeklyEventsNFL();
+        await getWeeklyEventsMLB();
+        await getWeeklyEventsSoccer();
+        await getWeeklyEventsNHL();
+        await getWeeklyEventsCFB();
+        // Promise.all([
+        //     getWeeklyEventsNFL(),
+        //     getWeeklyEventsMLB(),
+        //     getWeeklyEventsSoccer(),
+        //     getWeeklyEventsNHL(),
+        //     getWeeklyEventsCFB()
+        // ]);
     } catch (error) {
         console.log(error);
     }

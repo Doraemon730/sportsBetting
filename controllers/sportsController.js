@@ -12,7 +12,7 @@ const getAllSports = async (req, res) => {
                     as: 'props',
                 },
             },]);
-        sports = sports.filter(item => item.name !== "CFB");    
+        //sports = sports.filter(item => item.name !== "CFB");    
         
         res.status(200).json(sports);
     } catch (error) {

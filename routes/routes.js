@@ -250,6 +250,7 @@ router.post('/admin/getTotalBalance', admin, userController.getTotalBalance);
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
 router.post('/admin/getNFLPlayers', playerController.addNFLPlayersToDatabase);
+router.post('/admin/getWeeklyEvents', eventController.getWeekEventAll);
 router.post('/admin/getWeeklyScheduleNFL', eventController.getWeeklyEventsNFL);
 router.post('/admin/getWeeklyScheduleMLB', eventController.getWeeklyEventsMLB);
 router.post('/admin/getWeeklyScheduleNHL', eventController.getWeeklyEventsNHL);
