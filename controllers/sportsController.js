@@ -21,11 +21,11 @@ const getAllSports = async (req, res) => {
     }
 }
 
-const addSport = async(req, res) => {
+const addSport = async (req, res) => {
     try {
-        const {name} = req.body;
+        const { name } = req.body;
         const sport = new Sport({
-            name:name
+            name: name
         });
         await sport.save();
         res.json(sport);
@@ -34,4 +34,4 @@ const addSport = async(req, res) => {
     }
 }
 
-module.exports = { getAllSports, addSport};
+module.exports = { getAllSports, addSport };

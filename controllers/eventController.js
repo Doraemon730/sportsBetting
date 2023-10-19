@@ -12,7 +12,8 @@ const request = require('request')
 const {
     NFL_LIVEDATA_BASEURL,
     MLB_LIVEDATA_BASEURL,
-    NHL_LIVEDATA_BASEURL
+    NHL_LIVEDATA_BASEURL,
+    CFB_LIVEDATA_BASEURL
 } = require('../config/constant');
 const {
     ObjectId
@@ -63,6 +64,7 @@ const { addPrizeTransaction } = require('./transactionController.js');
 const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
+const CFB_API_KEY = process.env.NCAA_API_KEY;
 
 let players = [];
 
@@ -420,15 +422,14 @@ const getWeeklyEventsCFB = async () => {
                     sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
                     alias: competitor.abbreviation
                 });
-                if(team)
-                {
+                if (team) {
                     competitor.teamId = team._id;
                     inc += 1;
-                }                    
+                }
                 myEvent.competitors.push(competitor);
                 alias.push(competitor.abbreviation);
             }
-            if(inc == 0)
+            if (inc == 0)
                 continue;
             myEvent.name = alias[0] + " vs " + alias[1];
 
@@ -439,7 +440,7 @@ const getWeeklyEventsCFB = async () => {
 
             let playerProps = await fetchEventPlayerProps(event.sport_event.id);
             if (!playerProps || 'markets' in playerProps)
-                continue;            
+                continue;
             let existingEvent = await Event.findOne({ sportId: new ObjectId('652f31fdfb0c776ae3db47e1'), id: event.sport_event.id });
             if (existingEvent) {
                 myEvent = existingEvent;
@@ -452,15 +453,15 @@ const getWeeklyEventsCFB = async () => {
             }
             //await myEvent.save();
             //console.log(playerProps);
-            
+
 
             for (const playerProp of playerProps) {
                 console.log(playerProp.player.id, true);
-                console.log(playerProp.player.name, true);        
+                console.log(playerProp.player.name, true);
                 const play = players.find(item => String(item.id) == String(playerProp.player.id));
 
                 if (!play)
-                    continue;        
+                    continue;
                 const player = await Player.findOne({
                     remoteId: play.us_id,
                     sportId: new ObjectId('652f31fdfb0c776ae3db47e1')
@@ -801,14 +802,15 @@ const getLiveDataByEvent = async () => {
             if (event.sportId == '650e0b6fb80ab879d1c142c8') {
                 url = `${NFL_LIVEDATA_BASEURL}=${NFL_API_KEY}&match=sd:match:${event.matchId}`
                 sportType = "NFL"
-            }
-            if (event.sportId == '65108faf4fa2698548371fbd') {
+            } else if (event.sportId == '65108faf4fa2698548371fbd') {
                 url = `${NHL_LIVEDATA_BASEURL}=${NHL_API_KEY}&match=sd:match:${event.matchId}`
                 sportType = "NHL"
-            }
-            else if (event.sportId == '65108fcf4fa2698548371fc0') {
+            } else if (event.sportId == '65108fcf4fa2698548371fc0') {
                 url = `${MLB_LIVEDATA_BASEURL}=${MLB_API_KEY}&match=sd:match:${event.matchId}`
                 sportType = "MLB"
+            } else if (event.sportId == '652f31fdfb0c776ae3db47e1') {
+                url = `${CFB_LIVEDATA_BASEURL}=${CFB_API_KEY}&match=sd:match:${event.matchId}`
+                sportType = "CFB"
             } else {
                 await Event.updateOne({
                     _id: event._id
@@ -899,6 +901,12 @@ const getLiveDataByEvent = async () => {
                                     await setLiveDatatoDB(broadcastingData)          
                                     global.io.sockets.emit('broadcast', { broadcastingData });
                                 }
+                            }
+                            if (sportType == "CFB") {
+                                broadcastingData.player = getCFBData(detailData);
+                                console.log(JSON.stringify(broadcastingData))
+                                await setLiveDatatoDB(broadcastingData)
+                                global.io.sockets.emit('broadcast', { broadcastingData });
                             }
                         }
                     }
@@ -1138,6 +1146,24 @@ const getMLBData = (detailData) => {
 
     return player;
 };
+
+const getCFBData = (detailData) => {
+    const player = {
+        remoteId: detailData.player.id,
+        name: detailData.player.name
+    }
+    if (detailData.hasOwnProperty('rushing')) {
+        player['Rush Yards'] = detailData.rushing.yards;
+    }
+    if (detailData.hasOwnProperty('passing')) {
+        player['Pass Yards'] = detailData.passing.yards;
+        player['Pass TDs'] = detailData.passing.touchdowns;
+    }
+    if (detailData.hasOwnProperty('receiving')) {
+        player['Receving Yards'] = detailData.receiving.yards;
+    }
+    return player;
+}
 
 const summarizeStatsByPlayer = (data, category) => {
     const homeStats = data.statistics.home[category].players.map((player) => ({
@@ -2048,9 +2074,9 @@ const updateNHLBet = async (event) => {
                             break;
                         case 'Total Power Play Points':
                             result = play.statistics.powerplay != undefined ?
-                                play.statistics.powerplay.goals + play.statistics.powerplay.assists: -1;                        
-                            break;                        
-                        }
+                                play.statistics.powerplay.goals + play.statistics.powerplay.assists : -1;
+                            break;
+                    }
 
                     console.log(result);
                     if (result !== undefined && result != -1) {
