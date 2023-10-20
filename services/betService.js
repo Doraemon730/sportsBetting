@@ -10,7 +10,7 @@ require('../utils/log');
 const cronWednesdaySchedule = '0 0 * * 3'; // Runs at 12:00 AM every Wednesday
 const cronThursdaySchedule = '0 0 * * 4'; // Runs at 12:00 AM every Thursday
 const cronEtherPriceSchedule = '* * * * *';
-const cronMatchSchedule = '*/1 * * * *'; //Runs every half an hour
+const cronMatchSchedule = '*/5 * * * *'; //Runs every half an hour
 const cronWeeklySchedule = '0 0 * * 1'; //Runs every Monday
 const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
 const cronWeekEventSchedule = '10 * * * *';
