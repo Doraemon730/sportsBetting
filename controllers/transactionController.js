@@ -324,13 +324,29 @@ const checkWithdraw = (user) => {
 
 const getRevenue = async (req, res) => {
     try {
-        const now = new Date();
-        now.setUTCHours(7, 0, 0, 0);
+        let now = new Date();
+        now.setHours(0, 0, 0, 0);
         const data_1 = await Transaction.aggregate([{
             $match: {
                 createdAt: {
                     $gte: now,
                     $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$transactionType',
+                amount: { $sum: '$amountETH' },
+            }
+        }]);
+
+        let yesterday = new Date(Date.now() - 1000 * 60 * 60 * 24);
+        yesterday.setHours(0, 0, 0, 0)
+        const data_2 = await Transaction.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: yesterday,
+                    $lte: now
                 }
             }
         }, {
@@ -398,7 +414,7 @@ const getRevenue = async (req, res) => {
 
         result = { revenue: [], profit: [], total: statistic.total };
         if (!data_1) {
-            result = { revenue: [0, 0, 0, 0, 0], profit: [0, 0, 0, 0, 0], total: statistic.total };
+            result = { revenue: [0, 0, 0, 0, 0, 0], profit: [0, 0, 0, 0, 0, 0], total: statistic.total };
             return res.json(result);
         }
         let betAmount = 0;
@@ -408,6 +424,17 @@ const getRevenue = async (req, res) => {
                 betAmount = data_1[i].amount;
             if (data_1[i]._id == 'prize' || data_1[i]._id == 'refund')
                 prizeAmount += data_1[i].amount;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_2.length; i++) {
+            if (data_2[i]._id == 'bet')
+                betAmount = data_2[i].amount;
+            if (data_2[i]._id == 'prize')
+                prizeAmount = data_2[i].amount;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
