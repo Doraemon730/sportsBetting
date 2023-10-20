@@ -151,8 +151,9 @@ const getWeeklyEventsNFL = async () => {
                     let outcomes = market.books[0].outcomes;
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    let odd = Math.abs(odd1 - odd2);
                     const index = player.odds.findIndex(odd => String(odd.id) == String(prop._id));
-                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
+                    if (odd <= 20) {
                         //console.log(market);
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -252,8 +253,9 @@ const getWeeklyEventsNHL = async () => {
                     let outcomes = market.books[0].outcomes;
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    let odd = Math.abs(odd1 - odd2);
                     const index = player.odds.findIndex(odd => String(odd.id) == String(prop._id));
-                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
+                    if (odd <= 20) {
                         //console.log(market);
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -363,9 +365,10 @@ const getWeeklyEventsMLB = async () => {
                     console.log(playerProp.player.name);
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    let odd = Math.abs(odd1 - odd2);
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
+                    if (odd <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
@@ -481,9 +484,10 @@ const getWeeklyEventsCFB = async () => {
                     console.log(playerProp.player.name);
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    let odd = Math.abs(odd1 - odd2);
                     console.log(odd1);
                     console.log(odd2);
-                    if (odd1 >= 100 && odd1 <= 120 && odd2 >= 100 && odd2 <= 120) {
+                    if (odd <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
                             player.odds[index].value = outcomes[0].open_total;
@@ -525,7 +529,15 @@ const competitiorDraft = [
     "sr:competitor:44",
     "sr:competitor:1649",
     "sr:competitor:659691",
-    "sr:competitor:2702"
+    "sr:competitor:2702",
+    "sr:competitor:2829",
+    "sr:competitor:35",
+    "sr:competitor:2836",
+    "sr:competitor:42",
+    "sr:competitor:33",
+    "sr:competitor:1653",
+    "sr:competitor:2673"
+
 ];
 
 const nameDraft = [
@@ -541,7 +553,16 @@ const nameDraft = [
     "Lacazette, Alexandre",
     "Lukaku, Romelu",
     "Messi, Lionel",
-    "Ronaldo, Cristiano"
+    "Ronaldo, Cristiano",
+    "Felix, Joao",
+    "Bellingham, Jude",
+    "Hojlund, Rasmus",
+    "Morata, Alvaro",
+    "Jesus, Gabriel",
+    "Junior, Vinicius",
+    "Salah, Mohamed",
+    "Ben Yedder, Wissam",
+    "Haller, Sebastian"
 ];
 const teamDraft = [
     '65150e67f9968df69b4e3322',
@@ -558,6 +579,12 @@ const teamDraft = [
     '65151527f9968df69b4e351c',
     '65151585f9968df69b4e357b',
     '65150d19294650b6131a48e1',
+    '653221d0729d7f0201137ac6',
+    '653225f2729d7f0201137ae5',
+    '65322688729d7f0201137aeb',
+    '65322789729d7f0201137af5',
+    '653227ff729d7f0201137b86',
+    '65322830729d7f0201137c12'
 ]
 const processSoccerEvents = async (mappings, events) => {
     try {
@@ -577,6 +604,7 @@ const processSoccerEvents = async (mappings, events) => {
                 sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
                 competitors: competitors
             });
+            
             let index = competitiorDraft.indexOf(competitors[0].id);
             if (index == undefined || index == -1)
                 index = competitiorDraft.indexOf(competitors[1].id);
@@ -879,7 +907,7 @@ const getLiveDataByEvent = async () => {
             //         const jsonData = JSON.parse(chunk.toString());
             //         if (jsonData.hasOwnProperty('payload')) {
             //             failCount = 0;
-                        
+
             //             const detailData = jsonData['payload'];
             //             if (detailData.hasOwnProperty('player')) {
             //                 if (sportType == "NFL") {
@@ -998,7 +1026,7 @@ async function processData(jsonData, event_id, sportType) {
             if (detailData.player.hasOwnProperty('statistics')) {
                 broadcastingData.player = getMLBData(detailData.player);
                 console.log(JSON.stringify(broadcastingData))
-                await setLiveDatatoDB(broadcastingData)          
+                await setLiveDatatoDB(broadcastingData)
                 global.io.sockets.emit('broadcast', { broadcastingData });
             }
         }
@@ -1033,11 +1061,11 @@ const setLiveDatatoDB = async (broadcastingData) => {
     }
 }
 const testlive = async (req, res) => {
-    try{
-        let {remoteId} = req.body;
+    try {
+        let { remoteId } = req.body;
         let bets = await setLiveDatatoDBTest(remoteId);
         res.json(bets);
-    } catch(error){
+    } catch (error) {
         console.log(error);
     }
 }
@@ -1047,7 +1075,7 @@ const setLiveDatatoDBTest = async (remoteId) => {
             status: 'pending',
             'picks.remoteId': remoteId
         });
-        
+
         for (let bet of bets) {
             let index = bet.picks.findIndex(item => item.remoteId == remoteId)
             console.log(bet)
@@ -1518,7 +1546,8 @@ const updateCFBBet = async (event) => {
                             play = receivingStats.find(item => item.id == player.remoteId);
                             if (play)
                                 result = play.yards;
-                            break;                    }
+                            break;
+                    }
                     console.log("play " + play);
                     console.log("result " + result);
                     if (!play || result == undefined) {
@@ -2531,7 +2560,7 @@ const updateBet = async (eventId) => {
             updateSoccerBet(event);
         } else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
             updateNHLBet(event);
-        } else if( String(event.sportId) == '652f31fdfb0c776ae3db47e1') {
+        } else if (String(event.sportId) == '652f31fdfb0c776ae3db47e1') {
             updateCFBBet(event);
         }
     } catch (error) {
@@ -2550,7 +2579,7 @@ const testBet = async (req, res) => {
         console.log(error);
     }
 }
-const getWeekEventAll = async() => {
+const getWeekEventAll = async () => {
     try {
         await getWeeklyEventsNFL();
         await getWeeklyEventsMLB();
@@ -2588,7 +2617,7 @@ const checkEvents = async () => {
             else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
                 console.log("NHL " + event._id);
                 await updateNHLBet(event);
-            } else if((String(event.sportId) == '652f31fdfb0c776ae3db47e1')) {
+            } else if ((String(event.sportId) == '652f31fdfb0c776ae3db47e1')) {
                 console.log("CFB " + event._id);
                 await updateCFBBet(event);
             }

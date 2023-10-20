@@ -54,8 +54,8 @@ const getTopPlayerBy = async (req, res) => {
     const now = new Date();
     const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
     let players;
-   
-      players = await Player.aggregate(
+
+    players = await Player.aggregate(
       [{
         $unwind: '$odds' // Unwind the odds array to work with individual odds documents
 
@@ -177,7 +177,7 @@ const getTopPlayerBy = async (req, res) => {
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
           break;
         case "Receptions":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB" || item.playerPosition == "TE");
           break;
         case "INT":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
@@ -455,6 +455,26 @@ const updateNBAPlayers = async () => {
     console.log(error);
   }
 }
+
+const addSoccerPlayer = async(req, res) => {
+  try {
+    const {name, teamId, position, jerseyNumber, srId, teamName,headshot} = req.body;
+    const newPlayer = new Player({
+      sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+      teamId: new ObjectId(teamId),
+      name,
+      position,
+      jerseyNumber,
+      srId,
+      teamName,
+      headshot
+    });
+    const result = await newPlayer.save();
+    res.json(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
 const addNFLPlayersToDatabase = async (req, res) => {
   try {
     const teams = await getAllTeamsFromDatabase(new ObjectId("650e0b6fb80ab879d1c142c8"));
@@ -595,17 +615,17 @@ const addNBAPlayersToDatabase = async (req, res) => {
     for (const team of teams) {
 
       const remoteteam = await fetchNBATeamsFromRemoteId(team.remoteId);
-      for (const player of remoteteam.players) {        
-          const newPlayer = new Player({
-            name: player.full_name,
-            sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
-            remoteId: player.id,
-            teamId: team._id,
-            position: player.position,            
-            srId: player.sr_id,
-            jerseyNumber: player.jersey_number
-          });
-          await newPlayer.save();        
+      for (const player of remoteteam.players) {
+        const newPlayer = new Player({
+          name: player.full_name,
+          sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"),
+          remoteId: player.id,
+          teamId: team._id,
+          position: player.position,
+          srId: player.sr_id,
+          jerseyNumber: player.jersey_number
+        });
+        await newPlayer.save();
       }
     }
     res.status(200).json({
@@ -675,5 +695,6 @@ module.exports = {
   remove,
   resetOdds,
   updateMLBPlayers,
-  addCFBPlayersToDatabase
+  addCFBPlayersToDatabase,
+  addSoccerPlayer
 };
