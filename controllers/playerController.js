@@ -455,6 +455,26 @@ const updateNBAPlayers = async () => {
     console.log(error);
   }
 }
+
+const addSoccerPlayer = async(req, res) => {
+  try {
+    const {name, teamId, position, jerseyNumber, srId, teamName,headshot} = req.body;
+    const newPlayer = new Player({
+      sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
+      teamId: new ObjectId(teamId),
+      name,
+      position,
+      jerseyNumber,
+      srId,
+      teamName,
+      headshot
+    });
+    const result = await newPlayer.save();
+    res.json(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
 const addNFLPlayersToDatabase = async (req, res) => {
   try {
     const teams = await getAllTeamsFromDatabase(new ObjectId("650e0b6fb80ab879d1c142c8"));
@@ -675,5 +695,6 @@ module.exports = {
   remove,
   resetOdds,
   updateMLBPlayers,
-  addCFBPlayersToDatabase
+  addCFBPlayersToDatabase,
+  addSoccerPlayer
 };
