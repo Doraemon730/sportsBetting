@@ -889,28 +889,28 @@ const getLiveDataByEvent = async () => {
                             if (sportType == "NFL") {
                                 broadcastingData.player = getNFLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
-                                await setLiveDatatoDB(broadcastingData);
                                 global.io.sockets.emit('broadcast', { broadcastingData });
+                                setLiveDatatoDB(broadcastingData);
                             }
                             if (sportType == "NHL") {
                                 broadcastingData.player = getNHLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
-                                await setLiveDatatoDB(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
+                                setLiveDatatoDB(broadcastingData)
                             }
                             if (sportType == "MLB") {
                                 if (detailData.player.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData.player);
                                     console.log(JSON.stringify(broadcastingData))
-                                    await setLiveDatatoDB(broadcastingData)
                                     global.io.sockets.emit('broadcast', { broadcastingData });
+                                    await setLiveDatatoDB(broadcastingData)
                                 }
                             }
                             if (sportType == "CFB") {
                                 broadcastingData.player = getCFBData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
-                                await setLiveDatatoDB(broadcastingData)
                                 global.io.sockets.emit('broadcast', { broadcastingData });
+                                await setLiveDatatoDB(broadcastingData)
                             }
                         }
                     }
