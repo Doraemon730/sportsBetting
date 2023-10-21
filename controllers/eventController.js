@@ -604,7 +604,7 @@ const processSoccerEvents = async (mappings, events) => {
                 sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
                 competitors: competitors
             });
-            
+
             let index = competitiorDraft.indexOf(competitors[0].id);
             if (index == undefined || index == -1)
                 index = competitiorDraft.indexOf(competitors[1].id);
@@ -864,38 +864,38 @@ const getLiveDataByEvent = async () => {
             let failCount = 0;
             let queue = Promise.resolve();
             stream.on('data', (chunk) => {
-                stream.pause(); 
+                stream.pause();
                 if (isJSON(chunk.toString())) {
                     const jsonData = JSON.parse(chunk.toString());
                     if (jsonData.hasOwnProperty('payload')) {
                         failCount = 0;
-                        queue = queue.then(() => processData(jsonData, event._id, sportType)).finally(() => {
+                        queue = queue.then(() => processData(jsonData, event._id, sportType)).finally(async () => {
                             if (jsonData.hasOwnProperty('metadata')) {
                                 const metadata = jsonData['metadata'];
                                 if (metadata['status'] == 'complete') {
                                     isCompleted = true;
                                 }
                             }
-                        
+
                             if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                                return Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
+                                return await Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
                             }
-                        
+
                             if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
                                 failCount++;
                                 if (failCount > 300) {
-                                    return Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
+                                    return await Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
                                 }
                             }
-                        
+
                             stream.resume();
                         }).catch((error) => {
-                                console.error('Error:', error);
-                                Event.updateOne({_id: event._id}, { $set: { state: 2 } });
-                                stream.destroy(); 
+                            console.error('Error:', error);
+                            Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
+                            stream.destroy();
                         });
                     } else {
-                       stream.resume(); 
+                        stream.resume();
                     }
                 };
             });
@@ -1013,22 +1013,28 @@ async function processData(jsonData, event_id, sportType) {
         if (sportType == "NFL") {
             broadcastingData.player = getNFLData(detailData);
             console.log(JSON.stringify(broadcastingData))
-            await Promise(setLiveDatatoDB(broadcastingData));
             global.io.sockets.emit('broadcast', { broadcastingData });
+            await setLiveDatatoDB(broadcastingData);
         }
         if (sportType == "NHL") {
             broadcastingData.player = getNHLData(detailData);
             console.log(JSON.stringify(broadcastingData))
-            await setLiveDatatoDB(broadcastingData)
             global.io.sockets.emit('broadcast', { broadcastingData });
+            await setLiveDatatoDB(broadcastingData)
         }
         if (sportType == "MLB") {
             if (detailData.player.hasOwnProperty('statistics')) {
                 broadcastingData.player = getMLBData(detailData.player);
                 console.log(JSON.stringify(broadcastingData))
-                await setLiveDatatoDB(broadcastingData)
                 global.io.sockets.emit('broadcast', { broadcastingData });
+                await setLiveDatatoDB(broadcastingData)
             }
+        }
+        if (sportType == "CFB") {
+            broadcastingData.player = getCFBData(detailData);
+            console.log(JSON.stringify(broadcastingData))
+            await setLiveDatatoDB(broadcastingData)
+            global.io.sockets.emit('broadcast', { broadcastingData });
         }
     }
 }
