@@ -1306,7 +1306,6 @@ const updateNFLBet = async (event) => {
                     console.log("result " + result);
                     if (!play || result == undefined) {
                         refund = 1;
-                        break;
                     }
                     else {
                         pick.result = result;
@@ -1339,10 +1338,10 @@ const updateNFLBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                 }
                 continue;
             }
@@ -1559,7 +1558,6 @@ const updateCFBBet = async (event) => {
                     console.log("result " + result);
                     if (!play || result == undefined) {
                         refund = 1;
-                        break;
                     }
                     else {
                         pick.result = result;
@@ -1592,10 +1590,10 @@ const updateCFBBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                 }
                 continue;
             }
@@ -1790,7 +1788,6 @@ const updateMLBBet = async (event) => {
                     play = players.find(item => item.id == player.remoteId);
                     if (!play) {
                         refund = 1;
-                        break;
                     }
                     // let index = player.odds.find(item => String(item.event) == String(event._id));
                     // if(index == undefined || index == -1)
@@ -1872,7 +1869,6 @@ const updateMLBBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else {
                         refund = 1;
-                        break;
                     }
                 }
                 if (pick.result != undefined) {
@@ -1902,10 +1898,10 @@ const updateMLBBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                     continue;
                 }
             }
@@ -2040,9 +2036,9 @@ const updateMLBBet = async (event) => {
                     if (user) {
                         user.wins += 1;
                     }
-                    await user.save();
                     await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                    await user.save();
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
@@ -2086,7 +2082,6 @@ const updateNHLBet = async (event) => {
                     play = players.find(item => item.id == player.remoteId);
                     if (!play) {
                         refund = 1;
-                        break;
                     }
                     // let index = player.odds.find(item => String(item.event) == String(event._id));
                     // if(index == undefined || index == -1)
@@ -2121,7 +2116,6 @@ const updateNHLBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else {
                         refund = 1;
-                        break;
                     }
                 }
                 if (pick.result != undefined) {
@@ -2151,10 +2145,10 @@ const updateNHLBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                     continue;
                 }
             }
@@ -2289,9 +2283,9 @@ const updateNHLBet = async (event) => {
                     if (user) {
                         user.wins += 1;
                     }
-                    await user.save();
                     await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                    await user.save();
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
@@ -2350,7 +2344,6 @@ const updateSoccerBet = async (event) => {
                     }
                     else {
                         refund = 1;
-                        break;
                     }
                 }
 
@@ -2383,10 +2376,10 @@ const updateSoccerBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
-                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
                     await bet.save();
+                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                 }
                 continue;
             }
