@@ -604,7 +604,7 @@ const processSoccerEvents = async (mappings, events) => {
                 sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
                 competitors: competitors
             });
-            
+
             let index = competitiorDraft.indexOf(competitors[0].id);
             if (index == undefined || index == -1)
                 index = competitiorDraft.indexOf(competitors[1].id);
@@ -862,114 +862,114 @@ const getLiveDataByEvent = async () => {
             const stream = request(url);
             let isCompleted = false;
             let failCount = 0;
-            let queue = Promise.resolve();
-            stream.on('data', (chunk) => {
-                stream.pause(); 
-                if (isJSON(chunk.toString())) {
-                    const jsonData = JSON.parse(chunk.toString());
-                    if (jsonData.hasOwnProperty('payload')) {
-                        failCount = 0;
-                        queue = queue.then(() => processData(jsonData, event._id, sportType)).finally(() => {
-                            if (jsonData.hasOwnProperty('metadata')) {
-                                const metadata = jsonData['metadata'];
-                                if (metadata['status'] == 'complete') {
-                                    isCompleted = true;
-                                }
-                            }
-                        
-                            if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                                return Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
-                            }
-                        
-                            if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-                                failCount++;
-                                if (failCount > 300) {
-                                    return Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
-                                }
-                            }
-                        
-                            stream.resume();
-                        }).catch((error) => {
-                                console.error('Error:', error);
-                                Event.updateOne({_id: event._id}, { $set: { state: 2 } });
-                                stream.destroy(); 
-                        });
-                    } else {
-                       stream.resume(); 
-                    }
-                };
-            });
-            // stream.on('data', async (chunk) => {
-            //     // Process the incoming data chunk here
-            //     //stream.pause();
+            // let queue = Promise.resolve();
+            // stream.on('data', (chunk) => {
+            //     stream.pause();
             //     if (isJSON(chunk.toString())) {
-            //         // console.log(chunk.toString());
             //         const jsonData = JSON.parse(chunk.toString());
             //         if (jsonData.hasOwnProperty('payload')) {
             //             failCount = 0;
+            //             queue = queue.then(() => processData(jsonData, event._id, sportType)).finally(async () => {
+            //                 if (jsonData.hasOwnProperty('metadata')) {
+            //                     const metadata = jsonData['metadata'];
+            //                     if (metadata['status'] == 'complete') {
+            //                         isCompleted = true;
+            //                     }
+            //                 }
 
-            //             const detailData = jsonData['payload'];
-            //             if (detailData.hasOwnProperty('player')) {
-            //                 if (sportType == "NFL") {
-            //                     broadcastingData.player = getNFLData(detailData);
-            //                     console.log(JSON.stringify(broadcastingData))
-            //                     await setLiveDatatoDB(broadcastingData);
-            //                     global.io.sockets.emit('broadcast', { broadcastingData });
+            //                 if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+            //                     return await Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
             //                 }
-            //                 if (sportType == "NHL") {
-            //                     broadcastingData.player = getNHLData(detailData);
-            //                     console.log(JSON.stringify(broadcastingData))
-            //                     await setLiveDatatoDB(broadcastingData)
-            //                     global.io.sockets.emit('broadcast', { broadcastingData });
-            //                 }
-            //                 if (sportType == "MLB") {
-            //                     if (detailData.player.hasOwnProperty('statistics')) {
-            //                         broadcastingData.player = getMLBData(detailData.player);
-            //                         console.log(JSON.stringify(broadcastingData))
-            //                         await setLiveDatatoDB(broadcastingData)          
-            //                         global.io.sockets.emit('broadcast', { broadcastingData });
+
+            //                 if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+            //                     failCount++;
+            //                     if (failCount > 300) {
+            //                         return await Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
             //                     }
             //                 }
-            //                 if (sportType == "CFB") {
-            //                     broadcastingData.player = getCFBData(detailData);
-            //                     console.log(JSON.stringify(broadcastingData))
-            //                     await setLiveDatatoDB(broadcastingData)
-            //                     global.io.sockets.emit('broadcast', { broadcastingData });
-            //                 }
-            //             }
-            //         }
-            //         if (jsonData.hasOwnProperty('metadata')) {
-            //             const metadata = jsonData['metadata'];
-            //             if (metadata['status'] == 'complete') {
-            //                 isCompleted = true;
-            //             }
-            //         }
-            //         if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-            //             await Event.updateOne({
-            //                 _id: event._id
-            //             }, {
-            //                 $set: {
-            //                     state: 2
-            //                 }
+
+            //                 stream.resume();
+            //             }).catch((error) => {
+            //                 console.error('Error:', error);
+            //                 Event.updateOne({ _id: event._id }, { $set: { state: 2 } });
+            //                 stream.destroy();
             //             });
-            //             //updateBet(event._id);
-            //             stream.abort();
+            //         } else {
+            //             stream.resume();
             //         }
-            //         if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
-            //             failCount++;
-            //             if (failCount > 300) {
-            //                 await Event.updateOne({
-            //                     _id: event._id
-            //                 }, {
-            //                     $set: {
-            //                         state: 2
-            //                     }
-            //                 });
-            //                 stream.abort();
-            //             }
-            //         }
-            //     }
+            //     };
             // });
+            stream.on('data', async (chunk) => {
+                // Process the incoming data chunk here
+                //stream.pause();
+                if (isJSON(chunk.toString())) {
+                    // console.log(chunk.toString());
+                    const jsonData = JSON.parse(chunk.toString());
+                    if (jsonData.hasOwnProperty('payload')) {
+                        failCount = 0;
+
+                        const detailData = jsonData['payload'];
+                        if (detailData.hasOwnProperty('player')) {
+                            if (sportType == "NFL") {
+                                broadcastingData.player = getNFLData(detailData);
+                                console.log(JSON.stringify(broadcastingData))
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                                await setLiveDatatoDB(broadcastingData);
+                            }
+                            if (sportType == "NHL") {
+                                broadcastingData.player = getNHLData(detailData);
+                                console.log(JSON.stringify(broadcastingData))
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                                await setLiveDatatoDB(broadcastingData)
+                            }
+                            if (sportType == "MLB") {
+                                if (detailData.player.hasOwnProperty('statistics')) {
+                                    broadcastingData.player = getMLBData(detailData.player);
+                                    console.log(JSON.stringify(broadcastingData))
+                                    global.io.sockets.emit('broadcast', { broadcastingData });
+                                    await setLiveDatatoDB(broadcastingData)
+                                }
+                            }
+                            if (sportType == "CFB") {
+                                broadcastingData.player = getCFBData(detailData);
+                                console.log(JSON.stringify(broadcastingData))
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                                await setLiveDatatoDB(broadcastingData)
+                            }
+                        }
+                    }
+                    if (jsonData.hasOwnProperty('metadata')) {
+                        const metadata = jsonData['metadata'];
+                        if (metadata['status'] == 'complete') {
+                            isCompleted = true;
+                        }
+                    }
+                    if (isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                        await Event.updateOne({
+                            _id: event._id
+                        }, {
+                            $set: {
+                                state: 2
+                            }
+                        });
+                        //updateBet(event._id);
+                        stream.abort();
+                    }
+                    if (!isCompleted && jsonData.hasOwnProperty('heartbeat')) {
+                        failCount++;
+                        if (failCount > 300) {
+                            await Event.updateOne({
+                                _id: event._id
+                            }, {
+                                $set: {
+                                    state: 2
+                                }
+                            });
+                            stream.abort();
+                        }
+                    }
+                }
+            });
             // Handle errors
             stream.on('error', async (error) => {
                 console.error('Error:', error);
@@ -1013,22 +1013,29 @@ async function processData(jsonData, event_id, sportType) {
         if (sportType == "NFL") {
             broadcastingData.player = getNFLData(detailData);
             console.log(JSON.stringify(broadcastingData))
-            await Promise(setLiveDatatoDB(broadcastingData));
             global.io.sockets.emit('broadcast', { broadcastingData });
+            await setLiveDatatoDB(broadcastingData);
         }
         if (sportType == "NHL") {
             broadcastingData.player = getNHLData(detailData);
             console.log(JSON.stringify(broadcastingData))
-            await setLiveDatatoDB(broadcastingData)
             global.io.sockets.emit('broadcast', { broadcastingData });
+            await setLiveDatatoDB(broadcastingData)
         }
         if (sportType == "MLB") {
             if (detailData.player.hasOwnProperty('statistics')) {
                 broadcastingData.player = getMLBData(detailData.player);
                 console.log(JSON.stringify(broadcastingData))
-                await setLiveDatatoDB(broadcastingData)
                 global.io.sockets.emit('broadcast', { broadcastingData });
+                await setLiveDatatoDB(broadcastingData)
             }
+        }
+
+        if (sportType == "CFB") {
+            broadcastingData.player = getCFBData(detailData);
+            console.log(JSON.stringify(broadcastingData))
+            await setLiveDatatoDB(broadcastingData)
+            global.io.sockets.emit('broadcast', { broadcastingData });
         }
     }
 }
@@ -1299,7 +1306,6 @@ const updateNFLBet = async (event) => {
                     console.log("result " + result);
                     if (!play || result == undefined) {
                         refund = 1;
-                        break;
                     }
                     else {
                         pick.result = result;
@@ -1332,10 +1338,10 @@ const updateNFLBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                 }
                 continue;
             }
@@ -1552,7 +1558,6 @@ const updateCFBBet = async (event) => {
                     console.log("result " + result);
                     if (!play || result == undefined) {
                         refund = 1;
-                        break;
                     }
                     else {
                         pick.result = result;
@@ -1585,10 +1590,10 @@ const updateCFBBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                 }
                 continue;
             }
@@ -1783,7 +1788,6 @@ const updateMLBBet = async (event) => {
                     play = players.find(item => item.id == player.remoteId);
                     if (!play) {
                         refund = 1;
-                        break;
                     }
                     // let index = player.odds.find(item => String(item.event) == String(event._id));
                     // if(index == undefined || index == -1)
@@ -1865,7 +1869,6 @@ const updateMLBBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else {
                         refund = 1;
-                        break;
                     }
                 }
                 if (pick.result != undefined) {
@@ -1895,10 +1898,10 @@ const updateMLBBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                     continue;
                 }
             }
@@ -2033,9 +2036,9 @@ const updateMLBBet = async (event) => {
                     if (user) {
                         user.wins += 1;
                     }
-                    await user.save();
                     await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                    await user.save();
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
@@ -2079,7 +2082,6 @@ const updateNHLBet = async (event) => {
                     play = players.find(item => item.id == player.remoteId);
                     if (!play) {
                         refund = 1;
-                        break;
                     }
                     // let index = player.odds.find(item => String(item.event) == String(event._id));
                     // if(index == undefined || index == -1)
@@ -2114,7 +2116,6 @@ const updateNHLBet = async (event) => {
                         bet.picks[bet.picks.indexOf(pick)] = pick;
                     } else {
                         refund = 1;
-                        break;
                     }
                 }
                 if (pick.result != undefined) {
@@ -2144,10 +2145,10 @@ const updateNHLBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
                     await bet.save();
                     await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                     continue;
                 }
             }
@@ -2282,9 +2283,9 @@ const updateNHLBet = async (event) => {
                     if (user) {
                         user.wins += 1;
                     }
-                    await user.save();
                     await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                    await user.save();
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
@@ -2343,7 +2344,6 @@ const updateSoccerBet = async (event) => {
                     }
                     else {
                         refund = 1;
-                        break;
                     }
                 }
 
@@ -2376,10 +2376,10 @@ const updateSoccerBet = async (event) => {
                     //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
                     //user.ETH_balance += entryETH;
                     //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    await user.save();
                     bet.status = 'refund';
-                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
                     await bet.save();
+                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                    await user.save();
                 }
                 continue;
             }
@@ -2406,8 +2406,6 @@ const updateSoccerBet = async (event) => {
                                     bet.prize = bet.entryFee * BET_2_3_LOW;
                                     bet.status = "win"
                                 }
-                                bet.prize = bet.entryFee * BET_2_3_LOW;
-                                bet.status = "win"
                                 break;
                             case 3:
                                 if (bet.betType == "high")
