@@ -200,7 +200,7 @@ const getTopPlayerBy = async (req, res) => {
           break;
       }
 
-      now.setUTCHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
         let discountPlayer = await Discount.findOne({
           date: now,
@@ -456,9 +456,9 @@ const updateNBAPlayers = async () => {
   }
 }
 
-const addSoccerPlayer = async(req, res) => {
+const addSoccerPlayer = async (req, res) => {
   try {
-    const {name, teamId, position, jerseyNumber, srId, teamName,headshot} = req.body;
+    const { name, teamId, position, jerseyNumber, srId, teamName, headshot } = req.body;
     const newPlayer = new Player({
       sportId: new ObjectId('65131974db50d0c2c8bf7aa7'),
       teamId: new ObjectId(teamId),

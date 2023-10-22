@@ -7,7 +7,7 @@ const setDiscount = async (req, res) => {
     try {
         let { playerId, date, original, discount, propId } = req.body;
         date = new Date(date);
-        date.setUTCHours(0, 0, 0, 0);
+        date.setHours(0, 0, 0, 0);
         let data = await Discount.findOne({ playerId: new ObjectId(playerId) });
         if (data) {
             data = await Discount.findOneAndUpdate({ playerId: new ObjectId(playerId) }, { $set: { date, original, discount, propId } });

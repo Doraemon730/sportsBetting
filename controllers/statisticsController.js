@@ -8,7 +8,7 @@ const { USD2Ether } = require('../utils/util');
 const updateTotal = async () => {
     try {
         const now = new Date();
-        now.setUTCHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
         const statistic = await Statistics.findOne({}, {}, {
             sort: {
                 _id: -1
@@ -50,7 +50,7 @@ const updateTotal = async () => {
 const updateBetWithNew = async (amount) => {
     try {
         const now = new Date();
-        now.setUTCHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
         const statistic = await Statistics.findOne({}, {}, {
             sort: {
                 _id: -1
@@ -93,7 +93,7 @@ const updateBetWithNew = async (amount) => {
 const updateBetWithDaily = async (isFirst, amount) => {
     try {
         const now = new Date();
-        now.setUTCHours(0, 0, 0, 0);
+        now.setHours(0, 0, 0, 0);
         const statistic = await Statistics.findOne({}, {}, {
             sort: {
                 _id: -1
@@ -147,7 +147,7 @@ const updateBetResult = async (isWin) => {
 
 const getStatisticsByDate = async (date) => {
     try {
-        date.setUTCHours(0, 0, 0, 0);
+        date.setHours(0, 0, 0, 0);
         console.log(date);
         const statistics = await Statistics.findOne({
             date: date
