@@ -1284,7 +1284,7 @@ const updateNFLBet = async (event) => {
                         case 'Pass TDs':
                             play = passingStats.find(item => item.id == player.remoteId);
                             if (play)
-                                result = play.touchdown;
+                                result = play.touchdowns;
                             break;
                         case 'INT':
                             play = passingStats.find(item => item.id == player.remoteId);
@@ -1556,7 +1556,7 @@ const updateCFBBet = async (event) => {
                         case 'Pass TDs':
                             play = passingStats.find(item => item.id == player.remoteId);
                             if (play)
-                                result = play.touchdown;
+                                result = play.touchdowns;
                             break;
                         case 'Receiving Yards':
                             play = receivingStats.find(item => item.id == player.remoteId);
