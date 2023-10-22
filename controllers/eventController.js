@@ -2406,8 +2406,6 @@ const updateSoccerBet = async (event) => {
                                     bet.prize = bet.entryFee * BET_2_3_LOW;
                                     bet.status = "win"
                                 }
-                                bet.prize = bet.entryFee * BET_2_3_LOW;
-                                bet.status = "win"
                                 break;
                             case 3:
                                 if (bet.betType == "high")
