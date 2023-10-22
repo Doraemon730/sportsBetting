@@ -604,6 +604,21 @@ const updateMLBPlayers = async () => {
     console.log(error);
   }
 }
+
+const updateSoccerPlayers = async (req, res) => {
+  try {
+    const players = await Player.find({ sportId: new ObjectId("65131974db50d0c2c8bf7aa7") });
+    
+    for (const player of players) {
+      console.log(player);
+      player.remoteId = player.srId;
+      await player.save();
+    }
+    res.json("success");
+  } catch (error) {
+    console.log(error);
+  }
+}
 const addNBAPlayersToDatabase = async (req, res) => {
   try {
     // Fetch contest data from the Sportradar NBA API
@@ -696,5 +711,6 @@ module.exports = {
   resetOdds,
   updateMLBPlayers,
   addCFBPlayersToDatabase,
-  addSoccerPlayer
+  addSoccerPlayer,
+  updateSoccerPlayers
 };

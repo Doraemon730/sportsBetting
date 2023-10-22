@@ -276,4 +276,5 @@ router.post('/admin/addCFBTeam', teamController.addCFBTeamToDatabase);
 router.post('/admin/getCFBPlayers', playerController.addCFBPlayersToDatabase);
 router.post('/admin/getWeeklyScheduleCFB', eventController.getWeeklyEventsCFB);
 router.post('/admin/testlive', eventController.testlive);
+router.post('/admin/updateSoccerPlayers', playerController.updateSoccerPlayers);
 module.exports = router;
