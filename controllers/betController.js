@@ -74,6 +74,22 @@ const startBetting = async (req, res) => {
 
         for (const element of jsonArray) {
             const eventId = new ObjectId(element.contestId);
+            let NBAProps = ["Points", "Assists", "Rebounds", "3-PT Made", "Steals", "Blocks", "Turnovers", "Points+Rebounds", "Points+Assists", "Rebounds+Assists", "Pts+Rebs+Asts", "Blocks+Steals"]
+            if (NBAProps.includes(element.prop.propName)) {
+                const player = await Player.findById(new ObjectId(element.playerId))
+                const propId = await Prop.findOne({ displayName: element.prop.propName })
+                let index = player.odds.findIndex(item => String(item.id) == String(propId._id))
+                if (index < 0) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting." });
+                }
+                if (element.prop.odds != player.odds[index].value) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting." });
+                }
+            }
 
             const event = await Event.findById(eventId);
             if (!event) {
@@ -459,6 +475,52 @@ const getAllBets = async (req, res) => {
     }
 }
 
+const cancelWrongBets = async (req, res) => {
+    try {
+        const { sportId } = req.body;
+        const events = await Event.find({ sportId: new ObjectId(sportId) });
+        events.forEach(event => {
+            if (event.participants.length > 0) {
+                let betIds = event.participants;
+                betIds.forEach(async betId => {
+                    const bet = await Bet.findOne({ _id: new ObjectId(betId) });
+                    if (!bet) {
+                        return;
+                    }
+                    if (bet.status == "canceled") {
+                        return;
+                    }
+                    if (bet.status == "pending") {
+                        console.log(bet._id)
+                        let user = await User.findOne({ _id: bet.userId });
+                        // if (bet.parlay) {
+                        //     if (bet.entryFee == 10)
+                        //         user.firstSix = 1;
+                        //     if (bet.entryFee == 25)
+                        //         user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
+                        // } else {
+                        if (bet.credit > 0)
+                            user.credits += bet.credit;
+                        let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+                        user.ETH_balance += entryETH;
+                        await updateTotalBalanceAndCredits(entryETH, bet.credit);
+                        // }
+                        user.totalBetAmount -= bet.entryFee
+                        user = setUserLevel(user);
+                        await user.save();
+                        bet.status = 'canceled';
+                        console.log(user);
+                        console.log(bet);
+                        await bet.save();
+                    }
+                })
+            }
+        });
+    } catch (error) { }
+
+
+}
+
 const cancelBet = async (req, res) => {
     try {
         const { betId } = req.body;
@@ -656,5 +718,6 @@ module.exports = {
     startFirstFreeBetting,
     startWednesdayFreeBetting,
     udpateEventsByBet,
-    giveRewards
+    giveRewards,
+    cancelWrongBets
 }
