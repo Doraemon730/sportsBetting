@@ -13,7 +13,8 @@ const {
     NFL_LIVEDATA_BASEURL,
     MLB_LIVEDATA_BASEURL,
     NHL_LIVEDATA_BASEURL,
-    CFB_LIVEDATA_BASEURL
+    CFB_LIVEDATA_BASEURL,
+    NBA_LIVEDATA_BASEURL
 } = require('../config/constant');
 const {
     ObjectId
@@ -66,6 +67,7 @@ const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
 const CFB_API_KEY = process.env.NCAA_API_KEY;
+const NBA_API_KEY = process.env.NBA_API_KEY;
 const mutex = require('async-mutex')
 const lock = new mutex.Mutex();
 
@@ -549,7 +551,7 @@ const getWeeklyEventsNBA = async () => {
                 myEvent.competitors.push(competitor);
                 alias.push(team.alias);
             }
-            myEvent.name = alias[0] + " vs " + alias[1];          
+            myEvent.name = alias[0] + " vs " + alias[1];
 
             let mapping = mappings.find(item => item.id == event.sport_event.id);
             if (mapping)
@@ -613,10 +615,10 @@ const getWeeklyEventsNBA = async () => {
                     // }
                     // console.log(minOdds + " " + minIndex + " " + total);
                     let book = market.books.find(item => item.name == "FanDuel");
-                    if(book == undefined)
+                    if (book == undefined)
                         continue;
                     let outcomes = book.outcomes;
-                    
+
                     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
                     let odd = Math.abs(odd1 - odd2);
@@ -974,6 +976,9 @@ const getLiveDataByEvent = async () => {
             } else if (event.sportId == '652f31fdfb0c776ae3db47e1') {
                 url = `${CFB_LIVEDATA_BASEURL}=${CFB_API_KEY}&match=sd:match:${event.matchId}`
                 sportType = "CFB"
+            } else if (event.sportId == '64f78bc5d0686ac7cf1a6855') {
+                url = `${NBA_LIVEDATA_BASEURL}=${NBA_API_KEY}&match=sd:match:${event.matchId}`
+                sportType = "NBA"
             } else {
                 await Event.updateOne({
                     _id: event._id
@@ -1069,6 +1074,12 @@ const getLiveDataByEvent = async () => {
                             }
                             if (sportType == "CFB") {
                                 broadcastingData.player = getCFBData(detailData);
+                                console.log(JSON.stringify(broadcastingData))
+                                global.io.sockets.emit('broadcast', { broadcastingData });
+                                await setLiveDatatoDB(broadcastingData)
+                            }
+                            if (sportType == "NBA") {
+                                broadcastingData.player = getNBAData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                                 await setLiveDatatoDB(broadcastingData)
@@ -1341,6 +1352,42 @@ const getCFBData = (detailData) => {
     if (detailData.hasOwnProperty('receiving')) {
         player['Receving Yards'] = detailData.receiving.yards;
     }
+    return player;
+}
+
+const getNBAData = (detailData) => {
+    const player = {
+        remoteId: detailData.player.id,
+        name: detailData.player.full_name
+    }
+    player['Points'] = detailData.statistics.points ? detailData.statistics.points : 0;
+    player['Assists'] = detailData.statistics.assists ? detailData.statistics.assists : 0;
+    player['Rebounds'] = detailData.statistics.rebounds ? detailData.statistics.rebounds : 0;
+    player['3-PT Made'] = detailData.statistics.three_points_made ? detailData.statistics.three_points_made : 0;
+    player['Steals'] = detailData.statistics.steals ? detailData.statistics.steals : 0;
+    player['Blocks'] = detailData.statistics.blocks ? detailData.statistics.blocks : 0;
+    player['Turnovers'] = detailData.statistics.turnovers ? detailData.statistics.turnovers : 0;
+    if (detailData.statistics.points && detailData.statistics.rebounds)
+        player['Points+Rebounds'] = detailData.statistics.points + detailData.statistics.rebounds;
+    else
+        player['Points+Rebounds'] = 0;
+    if (detailData.statistics.points && detailData.statistics.assists)
+        player['Points+Assists'] = detailData.statistics.points + detailData.statistics.assists;
+    else
+        player['Points+Assists'] = 0;
+    if (detailData.statistics.rebounds && detailData.statistics.assists)
+        player['Rebounds+Assists'] = detailData.statistics.rebounds + detailData.statistics.assists;
+    else
+        player['Rebounds+Assists'] = 0;
+    if (detailData.statistics.points && detailData.statistics.rebounds && detailData.statistics.assists)
+        player['Pts+Rebs+Asts'] = detailData.statistics.points + detailData.statistics.rebounds + detailData.statistics.assists;
+    else
+        player['Pts+Rebs+Asts'] = 0;
+    if (detailData.statistics.blocks && detailData.statistics.steals)
+        player['Blocks+Steals'] = detailData.statistics.blocks + detailData.statistics.steals;
+    else
+        player['Blocks+Steals'] = 0;
+
     return player;
 }
 
