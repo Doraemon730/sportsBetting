@@ -814,6 +814,9 @@ const getRevenue = async (req, res) => {
         }
         let betAmount = 0;
         let prizeAmount = 0;
+
+        const etherPrice = await Ethereum.find();
+        const ether = etherPrice[0].price;
         for (let i = 0; i < data_1.length; i++) {
             if (data_1[i]._id == 'pending')
                 betAmount += data_1[i].entryFee;
@@ -822,7 +825,7 @@ const getRevenue = async (req, res) => {
             if (data_1[i]._id == 'win')
                 betAmount += data_1[i].entryFee;
             if (data_1[i]._id == 'win')
-                prizeAmount += data_1[i].prize;
+                prizeAmount += data_1[i].prize / ether;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
@@ -837,7 +840,7 @@ const getRevenue = async (req, res) => {
             if (data_2[i]._id == 'win')
                 betAmount += data_2[i].entryFee;
             if (data_2[i]._id == 'win')
-                prizeAmount += data_2[i].prize;
+                prizeAmount += data_2[i].prize / ether;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
@@ -852,7 +855,7 @@ const getRevenue = async (req, res) => {
             if (data_14[i]._id == 'win')
                 betAmount += data_14[i].entryFee;
             if (data_14[i]._id == 'win')
-                prizeAmount += data_14[i].prize;
+                prizeAmount += data_14[i].prize / ether;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
@@ -867,7 +870,7 @@ const getRevenue = async (req, res) => {
             if (data_30[i]._id == 'win')
                 betAmount += data_30[i].entryFee;
             if (data_30[i]._id == 'win')
-                prizeAmount += data_30[i].prize;
+                prizeAmount += data_30[i].prize / ether;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
@@ -882,7 +885,7 @@ const getRevenue = async (req, res) => {
             if (data_365[i]._id == 'win')
                 betAmount += data_365[i].entryFee;
             if (data_365[i]._id == 'win')
-                prizeAmount += data_365[i].prize;
+                prizeAmount += data_365[i].prize / ether;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
@@ -897,7 +900,7 @@ const getRevenue = async (req, res) => {
             if (data_max[i]._id == 'win')
                 betAmount += data_max[i].entryFee;
             if (data_max[i]._id == 'win')
-                prizeAmount += data_max[i].prize;
+                prizeAmount += data_max[i].prize / ether;
         }
         result.revenue.push(betAmount);
         result.profit.push(betAmount - prizeAmount);
