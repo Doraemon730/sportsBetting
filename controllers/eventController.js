@@ -1276,6 +1276,8 @@ const getNFLData = (detailData) => {
     }
     if (detailData.hasOwnProperty('rushing')) {
         player['Rush Yards'] = detailData.rushing.yards;
+        player['Rush+Rec Yards'] = detailData.rushing.yards + (detailData.receiving ? detailData.receiving.yards : 0);
+        player['Pass+Rush Yards'] =  detailData.rushing.yards + (detailData.passing ? detailData.passing.yards : 0);
     }
     if (detailData.hasOwnProperty('passing')) {
         player['Pass Yards'] = detailData.passing.yards;
@@ -1283,10 +1285,13 @@ const getNFLData = (detailData) => {
         player['Pass Completions'] = detailData.passing.completions;
         player['Pass TDs'] = detailData.passing.touchdowns;
         player['INT'] = detailData.passing.interceptions;
+        player['Pass+Rush Yards'] =  detailData.passing.yards + (detailData.rushing ? detailData.rushing.yards : 0);
+
     }
     if (detailData.hasOwnProperty('receiving')) {
         player['Receving Yards'] = detailData.receiving.yards;
         player['Receptions'] = detailData.receiving.receptions;
+        player['Rush+Rec Yards'] = detailData.receiving.yards + (detailData.rushing ? detailData.rushing.yards : 0);
     }
     if (detailData.hasOwnProperty('field-goals')) {
         player['FG Made'] = detailData.field_goals.made;
@@ -1443,11 +1448,29 @@ const updateNFLBet = async (event) => {
             let finished = 0, win = 0, refund = 0, lost = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
-                    let result, play;
+                    let result, play, play1;
                     const player = await Player.findById(pick.playerId);
 
                     console.log("player " + player);
                     switch (pick.prop.propName) {
+                        case 'Rush+Rec Yards':
+                            play = rushingStats.find(item => item.id == player.remoteId);
+                            play1 = receivingStats.find(item => item.id == player.remoteId);
+                            if(play || play1) {
+                                result = 0;
+                                result += play? play.yards: 0;
+                                result += play1? play1.yards: 0;
+                            }
+                            break;
+                        case 'Pass+Rush Yards':
+                            play = passingStats.find(item => item.id == player.remoteId);
+                            play1 = rushingStats.find(item => item.id == player.remoteId);
+                            if(play || play1) {
+                                result = 0;
+                                result += play? play.yards: 0;
+                                result += play1? play1.yards: 0;
+                            }
+                            break;
                         case 'Rush Yards':
                             play = rushingStats.find(item => item.id == player.remoteId);
                             if (play)
