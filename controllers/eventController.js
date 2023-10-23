@@ -66,6 +66,8 @@ const NFL_API_KEY = process.env.NFL_API_KEY;
 const MLB_API_KEY = process.env.MLB_API_KEY;
 const NHL_API_KEY = process.env.NHL_API_KEY;
 const CFB_API_KEY = process.env.NCAA_API_KEY;
+const mutex = require('async-mutex')
+const lock = new mutex.Mutex();
 
 let players = [];
 
@@ -982,13 +984,6 @@ const getLiveDataByEvent = async () => {
                 })
                 continue;
             }
-            await Event.updateOne({
-                _id: event._id
-            }, {
-                $set: {
-                    state: 1
-                }
-            })
             let broadcastingData = {
                 contestId: event._id
             }
@@ -1034,7 +1029,16 @@ const getLiveDataByEvent = async () => {
             // });
             stream.on('data', async (chunk) => {
                 // Process the incoming data chunk here
-                //stream.pause();
+                if (event.state == 0) {
+                    await Event.updateOne({
+                        _id: event._id
+                    }, {
+                        $set: {
+                            state: 1
+                        }
+                    })
+                }
+                // stream.pause();
                 if (isJSON(chunk.toString())) {
                     // console.log(chunk.toString());
                     const jsonData = JSON.parse(chunk.toString());
@@ -1102,6 +1106,7 @@ const getLiveDataByEvent = async () => {
                         }
                     }
                 }
+                // stream.resume();
             });
             // Handle errors
             stream.on('error', async (error) => {
@@ -1173,6 +1178,7 @@ async function processData(jsonData, event_id, sportType) {
     }
 }
 const setLiveDatatoDB = async (broadcastingData) => {
+    const release = await lock.acquire();
     try {
         let bets = [];
         console.log(broadcastingData.player.remoteId);
@@ -1190,14 +1196,18 @@ const setLiveDatatoDB = async (broadcastingData) => {
             if (index >= 0) {
                 let propName = bet.picks[index].prop.propName;
                 if (broadcastingData.player[propName] != undefined) {
-                    bet.picks[index].liveData = broadcastingData.player[propName]
-                    console.log(bet.picks[index].liveData);
-                    await bet.save();
+                    if (broadcastingData.player[propName] > bet.picks[index].liveData) {
+                        bet.picks[index].liveData = broadcastingData.player[propName]
+                        console.log(bet.picks[index].liveData);
+                        await bet.save();
+                    }
                 }
             }
         }
     } catch (error) {
         console.log(error);
+    } finally {
+        release();
     }
 }
 const testlive = async (req, res) => {

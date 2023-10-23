@@ -39,6 +39,8 @@ const getTopPlayerBy = async (req, res) => {
         message: "sportId is required"
       });
     }
+    if (sportId == "64f78bc5d0686ac7cf1a6855")
+      return res.res.status(404).json("There is not props");
 
     sportId = new ObjectId(sportId);
     let props = await Prop.find({
@@ -156,6 +158,9 @@ const getTopPlayerBy = async (req, res) => {
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
       switch (prop.displayName) {
         case "Rush+Rec Yards":
+          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
+          break;
+        case "Rush Yards":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
           break;
         case "Pass Yards":
