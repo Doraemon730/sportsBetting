@@ -219,7 +219,7 @@ router.post('/admin/statistics',
 
 router.post('/admin/statistics/getRevenue',
     admin,
-    transactionController.getRevenue);
+    betController.getRevenue);
 
 router.post('/admin/statistics/getTotalBet',
     admin,
