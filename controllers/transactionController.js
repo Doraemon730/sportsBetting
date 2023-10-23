@@ -24,7 +24,7 @@ const {
     join
 } = require('path');
 const { Web3 } = require('web3');
-const { updateTotalBalanceAndCredits } = require('../controllers/statisticsController');
+const { updateTotalBalanceAndCredits, updateTotalUsers } = require('../controllers/statisticsController');
 
 const etherApiKey = process.env.ETHERSCAN_API_KEY;
 const mainWalletAddress = process.env.MAIN_WALLET_ADDRESS;
@@ -88,6 +88,7 @@ const depositBalance = async (req, res) => {
             user.credits += credits;
             // await updateTotalBalanceAndCredits(0, credits);
             user.firstDepositAmount = parseFloat(amountUSD);
+            await updateTotalUsers();
         }
 
         await transaction.save();
