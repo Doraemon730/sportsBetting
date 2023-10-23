@@ -29,7 +29,8 @@ const {
   SAUDI_COMPETITION_ID,
   ODDS_COM_API_BASEURL,
   CFB_COMPETITION_ID,
-  CFB_API_BASEURL
+  CFB_API_BASEURL,
+  NBA_COMPETITION_ID
 } = require('../config/constant');
 
 const fetchEventMapping = async () => {
@@ -93,6 +94,18 @@ const fetchWeeklyEventsMLB = async () => {
 
 const fetchWeeklyEventsCFB =  async () => {
     return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${CFB_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
+    .then(response => {
+        const events = response.data.schedules;
+        
+        return events;
+    })
+    .catch(error => {
+        console.log('Error retrieving MLB Events:' + error);
+    });
+}
+
+const fetchWeeklyEventsNBA =  async () => {
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${NBA_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
     .then(response => {
         const events = response.data.schedules;
         
@@ -287,6 +300,7 @@ module.exports = {
     fetchWeeklyEventsNHL,
     fetchNHLGameSummary,
     fetchWeeklyEventsCFB,
-    fetchCFBGameSummary
+    fetchCFBGameSummary,
+    fetchWeeklyEventsNBA
 };
 
