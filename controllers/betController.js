@@ -724,7 +724,7 @@ const getRevenue = async (req, res) => {
             }
         }, {
             $group: {
-                _id: '$betType',
+                _id: '$status',
                 entryFee: { $sum: '$entryFeeETH' },
                 prize: { $sum: '$prize' }
             }
@@ -741,7 +741,7 @@ const getRevenue = async (req, res) => {
             }
         }, {
             $group: {
-                _id: '$betType',
+                _id: '$status',
                 entryFee: { $sum: '$entryFeeETH' },
                 prize: { $sum: '$prize' }
             }
@@ -756,7 +756,7 @@ const getRevenue = async (req, res) => {
             }
         }, {
             $group: {
-                _id: '$betType',
+                _id: '$status',
                 entryFee: { $sum: '$entryFeeETH' },
                 prize: { $sum: '$prize' }
             }
@@ -771,7 +771,7 @@ const getRevenue = async (req, res) => {
             }
         }, {
             $group: {
-                _id: '$betType',
+                _id: '$status',
                 entryFee: { $sum: '$entryFeeETH' },
                 prize: { $sum: '$prize' }
             }
@@ -786,7 +786,7 @@ const getRevenue = async (req, res) => {
             }
         }, {
             $group: {
-                _id: '$betType',
+                _id: '$status',
                 entryFee: { $sum: '$entryFeeETH' },
                 prize: { $sum: '$prize' }
             }
@@ -794,7 +794,7 @@ const getRevenue = async (req, res) => {
 
         const data_max = await Bet.aggregate([{
             $group: {
-                _id: '$betType',
+                _id: '$status',
                 entryFee: { $sum: '$entryFeeETH' },
                 prize: { $sum: '$prize' }
             }
