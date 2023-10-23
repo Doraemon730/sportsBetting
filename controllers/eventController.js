@@ -1985,80 +1985,83 @@ const updateMLBBet = async (event) => {
                     //     refund = 1;
                     //     break;
                     // }
-                    console.log(pick.prop.propName);
-                    console.log(JSON.stringify(play.statistics.hitting));
-                    console.log(JSON.stringify(play.statistics.pitching));
-                    switch (pick.prop.propName) {
-                        case 'Pitcher Strikeouts':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.outs.ktotal != undefined ?
-                                    play.statistics.hitting.overall.outs.ktotal : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.outs.ktotal != undefined ?
-                                    play.statistics.pitching.overall.outs.ktotal : -1;
-                            break;
-                        case 'Total Bases':
-                            console.log(play.statistics.hitting);
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.tb != undefined ?
-                                    play.statistics.hitting.overall.onbase.tb : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.tb != undefined ?
-                                    play.statistics.pitching.overall.onbase.tb : -1;
-                            break;
-                        case 'Earned Runs':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.earned != undefined ?
-                                    play.statistics.hitting.overall.runs.earned : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.earned != undefined ?
-                                    play.statistics.pitching.overall.runs.earned : -1;
-                            break;
-                        case 'Total Hits':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h != undefined ?
-                                    play.statistics.hitting.overall.onbase.h : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h != undefined ?
-                                    play.statistics.pitching.overall.onbase.h : -1;
-                            break;
-                        case 'Total Runs':
-                            console.log(JSON.stringify(play.statistics));
-                            if (play.statistics.hitting) {
-                                console.log(play.statistics.hitting.overall.runs.total);
-                                result = play.statistics.hitting.overall.runs.total != undefined ?
-                                    play.statistics.hitting.overall.runs.total : -1;
-                            }
+                    else {
+                        console.log(pick.prop.propName);
+                        console.log(JSON.stringify(play.statistics.hitting));
+                        console.log(JSON.stringify(play.statistics.pitching));
+                        switch (pick.prop.propName) {
+                            case 'Pitcher Strikeouts':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.outs.ktotal != undefined ?
+                                        play.statistics.hitting.overall.outs.ktotal : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.outs.ktotal != undefined ?
+                                        play.statistics.pitching.overall.outs.ktotal : -1;
+                                break;
+                            case 'Total Bases':
+                                console.log(play.statistics.hitting);
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.onbase.tb != undefined ?
+                                        play.statistics.hitting.overall.onbase.tb : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.onbase.tb != undefined ?
+                                        play.statistics.pitching.overall.onbase.tb : -1;
+                                break;
+                            case 'Earned Runs':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.runs.earned != undefined ?
+                                        play.statistics.hitting.overall.runs.earned : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.runs.earned != undefined ?
+                                        play.statistics.pitching.overall.runs.earned : -1;
+                                break;
+                            case 'Total Hits':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.onbase.h != undefined ?
+                                        play.statistics.hitting.overall.onbase.h : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.onbase.h != undefined ?
+                                        play.statistics.pitching.overall.onbase.h : -1;
+                                break;
+                            case 'Total Runs':
+                                console.log(JSON.stringify(play.statistics));
+                                if (play.statistics.hitting) {
+                                    console.log(play.statistics.hitting.overall.runs.total);
+                                    result = play.statistics.hitting.overall.runs.total != undefined ?
+                                        play.statistics.hitting.overall.runs.total : -1;
+                                }
 
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.total != undefined ?
-                                    play.statistics.pitching.overall.runs.total : -1;
-                            console.log(result);
-                            break;
-                        case 'Hits Allowed':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h != undefined ?
-                                    play.statistics.hitting.overall.onbase.h : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h != undefined ?
-                                    play.statistics.pitching.overall.onbase.h : -1;
-                            break;
-                        case 'Pitching Outs':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.ip_1 != undefined ?
-                                    play.statistics.hitting.overall.ip_1 : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.ip_1 != undefined ?
-                                    play.statistics.pitching.overall.ip_1 : -1;
-                            break;
-                    }
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.runs.total != undefined ?
+                                        play.statistics.pitching.overall.runs.total : -1;
+                                console.log(result);
+                                break;
+                            case 'Hits Allowed':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.onbase.h != undefined ?
+                                        play.statistics.hitting.overall.onbase.h : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.onbase.h != undefined ?
+                                        play.statistics.pitching.overall.onbase.h : -1;
+                                break;
+                            case 'Pitching Outs':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.ip_1 != undefined ?
+                                        play.statistics.hitting.overall.ip_1 : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.ip_1 != undefined ?
+                                        play.statistics.pitching.overall.ip_1 : -1;
+                                break;
+                        }
 
-                    console.log(result);
-                    if (result !== undefined && result != -1) {
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
-                    } else {
-                        refund = 1;
+                        console.log(result);
+                        if (result !== undefined && result != -1) {
+                            pick.result = result;
+                            bet.picks[bet.picks.indexOf(pick)] = pick;
+                        } else {
+                            refund = 1;
+                        }
+
                     }
                 }
                 if (pick.result != undefined) {
@@ -2279,33 +2282,35 @@ const updateNHLBet = async (event) => {
                     //     refund = 1;
                     //     break;
                     // }
-                    console.log(pick.prop.propName);
+                    else {
+                        console.log(pick.prop.propName);
 
-                    switch (pick.prop.propName) {
-                        case 'Total Shots':
-                            result = play.statistics.total.shots != undefined ?
-                                play.statistics.total.shots : -1;
-                            break;
-                        case 'Total Assists':
-                            result = play.statistics.total.assists != undefined ?
-                                play.statistics.total.assists : -1;
-                            break;
-                        case 'Total Points':
-                            result = play.statistics.total.points != undefined ?
-                                play.statistics.total.points : -1;
-                            break;
-                        case 'Total Power Play Points':
-                            result = play.statistics.powerplay != undefined ?
-                                play.statistics.powerplay.goals + play.statistics.powerplay.assists : -1;
-                            break;
-                    }
+                        switch (pick.prop.propName) {
+                            case 'Total Shots':
+                                result = play.statistics.total.shots != undefined ?
+                                    play.statistics.total.shots : -1;
+                                break;
+                            case 'Total Assists':
+                                result = play.statistics.total.assists != undefined ?
+                                    play.statistics.total.assists : -1;
+                                break;
+                            case 'Total Points':
+                                result = play.statistics.total.points != undefined ?
+                                    play.statistics.total.points : -1;
+                                break;
+                            case 'Total Power Play Points':
+                                result = play.statistics.powerplay != undefined ?
+                                    play.statistics.powerplay.goals + play.statistics.powerplay.assists : -1;
+                                break;
+                        }
 
-                    console.log(result);
-                    if (result !== undefined && result != -1) {
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
-                    } else {
-                        refund = 1;
+                        console.log(result);
+                        if (result !== undefined && result != -1) {
+                            pick.result = result;
+                            bet.picks[bet.picks.indexOf(pick)] = pick;
+                        } else {
+                            refund = 1;
+                        }
                     }
                 }
                 if (pick.result != undefined) {
