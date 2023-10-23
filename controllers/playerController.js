@@ -39,6 +39,8 @@ const getTopPlayerBy = async (req, res) => {
         message: "sportId is required"
       });
     }
+    if (sportId == "64f78bc5d0686ac7cf1a6855")
+      return res.res.status(404).json("There is not props");
 
     sportId = new ObjectId(sportId);
     let props = await Prop.find({
