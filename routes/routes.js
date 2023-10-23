@@ -118,6 +118,10 @@ router.post('/bet/cancel',
     auth,
     betController.cancelBet);
 
+router.post('/bet/cancelWrongBets',
+    admin,
+    betController.cancelWrongBets);
+
 // Transactions routes
 router.post(
     '/transaction/deposit',
