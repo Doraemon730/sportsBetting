@@ -8,6 +8,7 @@ const Referral = require("../models/Referral");
 const Event = require('../models/Event');
 const Player = require('../models/Player');
 const Prop = require('../models/Prop');
+const Capital = require('../models/Capital');
 const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
@@ -710,6 +711,203 @@ const giveRewards = async (req, res) => {
     return res.json("You have already given the rewards")
 }
 
+const getRevenue = async (req, res) => {
+    try {
+        let now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const data_1 = await Bet.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: now,
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$betType',
+                entryFee: { $sum: '$entryFeeETH' },
+                prize: { $sum: '$prize' }
+            }
+        }]);
+
+        let yesterday = new Date(Date.now() - 1000 * 60 * 60 * 24);
+        yesterday.setHours(0, 0, 0, 0)
+        const data_2 = await Bet.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: yesterday,
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$betType',
+                entryFee: { $sum: '$entryFeeETH' },
+                prize: { $sum: '$prize' }
+            }
+        }]);
+
+        const data_14 = await Bet.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$betType',
+                entryFee: { $sum: '$entryFeeETH' },
+                prize: { $sum: '$prize' }
+            }
+        }])
+
+        const data_30 = await Bet.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$betType',
+                entryFee: { $sum: '$entryFeeETH' },
+                prize: { $sum: '$prize' }
+            }
+        }])
+
+        const data_365 = await Bet.aggregate([{
+            $match: {
+                createdAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
+                    $lte: new Date(Date.now())
+                }
+            }
+        }, {
+            $group: {
+                _id: '$betType',
+                entryFee: { $sum: '$entryFeeETH' },
+                prize: { $sum: '$prize' }
+            }
+        }])
+
+        const data_max = await Bet.aggregate([{
+            $group: {
+                _id: '$betType',
+                entryFee: { $sum: '$entryFeeETH' },
+                prize: { $sum: '$prize' }
+            }
+        }])
+
+
+        const statistic = await Capital.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+
+        result = { revenue: [], profit: [], total: statistic.total };
+        if (!data_1) {
+            result = { revenue: [0, 0, 0, 0, 0, 0], profit: [0, 0, 0, 0, 0, 0], total: statistic.total };
+            return res.json(result);
+        }
+        let betAmount = 0;
+        let prizeAmount = 0;
+        for (let i = 0; i < data_1.length; i++) {
+            if (data_1[i]._id == 'pending')
+                betAmount += data_1[i].entryFee;
+            if (data_1[i]._id == 'lost')
+                betAmount += data_1[i].entryFee;
+            if (data_1[i]._id == 'win')
+                betAmount += data_1[i].entryFee;
+            if (data_1[i]._id == 'win')
+                prizeAmount += data_1[i].prize;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_2.length; i++) {
+            if (data_2[i]._id == 'pending')
+                betAmount += data_2[i].entryFee;
+            if (data_2[i]._id == 'lost')
+                betAmount += data_2[i].entryFee;
+            if (data_2[i]._id == 'win')
+                betAmount += data_2[i].entryFee;
+            if (data_2[i]._id == 'win')
+                prizeAmount += data_2[i].prize;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_14.length; i++) {
+            if (data_14[i]._id == 'pending')
+                betAmount += data_14[i].entryFee;
+            if (data_14[i]._id == 'lost')
+                betAmount += data_14[i].entryFee;
+            if (data_14[i]._id == 'win')
+                betAmount += data_14[i].entryFee;
+            if (data_14[i]._id == 'win')
+                prizeAmount += data_14[i].prize;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_30.length; i++) {
+            if (data_30[i]._id == 'pending')
+                betAmount += data_30[i].entryFee;
+            if (data_30[i]._id == 'lost')
+                betAmount += data_30[i].entryFee;
+            if (data_30[i]._id == 'win')
+                betAmount += data_30[i].entryFee;
+            if (data_30[i]._id == 'win')
+                prizeAmount += data_30[i].prize;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_365.length; i++) {
+            if (data_365[i]._id == 'pending')
+                betAmount += data_365[i].entryFee;
+            if (data_365[i]._id == 'lost')
+                betAmount += data_365[i].entryFee;
+            if (data_365[i]._id == 'win')
+                betAmount += data_365[i].entryFee;
+            if (data_365[i]._id == 'win')
+                prizeAmount += data_365[i].prize;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        betAmount = 0;
+        prizeAmount = 0;
+        for (let i = 0; i < data_max.length; i++) {
+            if (data_max[i]._id == 'pending')
+                betAmount += data_max[i].entryFee;
+            if (data_max[i]._id == 'lost')
+                betAmount += data_max[i].entryFee;
+            if (data_max[i]._id == 'win')
+                betAmount += data_max[i].entryFee;
+            if (data_max[i]._id == 'win')
+                prizeAmount += data_max[i].prize;
+        }
+        result.revenue.push(betAmount);
+        result.profit.push(betAmount - prizeAmount);
+
+        res.json(result);
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
+}
+
 module.exports = {
     startBetting,
     getAllBets,
@@ -721,5 +919,6 @@ module.exports = {
     startWednesdayFreeBetting,
     udpateEventsByBet,
     giveRewards,
-    cancelWrongBets
+    cancelWrongBets,
+    getRevenue
 }
