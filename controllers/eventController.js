@@ -41,7 +41,8 @@ const {
     fetchNHLGameSummary,
     fetchWeeklyEventsCFB,
     fetchCFBGameSummary,
-    fetchWeeklyEventsNBA
+    fetchWeeklyEventsNBA,
+    fetchNBAGameSummary
 } = require('../services/eventService');
 
 const { USD2Ether, Ether2USD } = require('../utils/util');
@@ -1446,12 +1447,6 @@ const updateNFLBet = async (event) => {
                     const player = await Player.findById(pick.playerId);
 
                     console.log("player " + player);
-                    // let index = player.odds.find(item=> String(item.event) == String(event._id));
-                    // if(index == undefined || index == -1)
-                    // {
-                    //     refund = 1;
-                    //     break;
-                    // }
                     switch (pick.prop.propName) {
                         case 'Rush Yards':
                             play = rushingStats.find(item => item.id == player.remoteId);
@@ -1507,25 +1502,28 @@ const updateNFLBet = async (event) => {
                     console.log("play " + play);
                     console.log("result " + result);
                     if (!play || result == undefined) {
-                        refund += 1;
+                        pick.result = -1;                        
+                    } else {
+                        pick.result = result;                        
                     }
-                    else {
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
-                    }
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
                 }
                 if (pick.result != undefined) {
                     finished += 1;
-                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
-                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
-                        win += 1;
+                    if(pick.result == -1) {
+                        refund += 1;
                     } else {
-                        lost += 1;
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
                     }
                 }
             }
            
-            if (finished + refund == bet.picks.length) {
+            if (finished == bet.picks.length) {
                 if (refund) {
                     if (bet.betType == "high" && lost > 0) {
                         console.log("lost");
@@ -1711,16 +1709,16 @@ const updateNFLBet = async (event) => {
                     console.log("status + " + bet.status);
                     console.log("bet result " + bet);
                     await bet.save();
-                    if (bet.status == "win")
-                        await addPrizeTransaction(bet.userId, bet.prize, 'prize');
+                    
                     if (bet.status == 'win') {
+                        await addPrizeTransaction(bet.userId, bet.prize, 'prize');
                         const user = await User.findById(bet.userId);
                         if (user) {
                             user.wins += 1;
-                        }
-                        await user.save();
+                        }                        
                         await updateBetResult(true);
                         await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                        await user.save();
                     } else {
                         await updateBetResult(false);
                         await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
@@ -1744,11 +1742,307 @@ const summarizeNBAStatsByPlayer = (data) => {
 const updateNBABet = async (event) => {
     try {
         console.log(event);
-        const summary = await fetchMLBGameSummary(event.matchId);
+        const summary = await fetchNBAGameSummary(event.matchId);
         if (!summary || summary.game.status != 'closed')
             return;
-        const players = summarizeMLBStatsByPlayer(summary);
-        
+        const players = summarizeNBAStatsByPlayer(summary);
+        for (const betId of event.participants) {
+            //const pick = bet.picks.find(item => item.contestId == event._id);
+            let bet = await Bet.findById(betId);
+            if (!bet || bet.status != 'pending')//
+                continue;
+            console.log(betId);
+            let finished = 0, win = 0, refund = 0, lost = 0;
+            for (const pick of bet.picks) {
+                if (String(pick.contestId) == String(event._id)) {
+                    let result = -1, play;
+                    const player = await Player.findById(pick.playerId);
+                    play = players.find(item => item.id == player.remoteId);
+                    if (play) {
+                       
+                        switch (pick.prop.propName) {
+                            case 'Points':
+                                result = play.statistics.points != undefined? play.statistics.points : -1;
+                                break;
+                            case 'Assists':
+                                result = play.statistics.assists != undefined? play.statistics.assists : -1;
+                                break;
+                            case 'Rebounds':
+                                result = play.statistics.rebounds != undefined? play.statistics.rebounds : -1;
+                                break;
+                            case '3-PT Made':
+                                result = play.statistics.three_points_made != undefined? play.statistics.three_points_made : -1;
+                                break;
+                            case 'Steals':
+                                result = play.statistics.steals != undefined? play.statistics.steals : -1;
+                                break;
+                            case 'Blocks':
+                                result = play.statistics.blocks != undefined? play.statistics.blocks : -1;
+                                break;
+                            case 'Turnovers':
+                                result = play.statistics.turnovers != undefined? play.statistics.turnovers : -1;
+                                break;
+                            case 'Points+Rebounds':
+                                if (play.statistics.points && play.statistics.rebounds)
+                                result = play.statistics.points + play.statistics.rebounds;
+                            else
+                            result = 0;
+                                break;
+                            case 'Points+Assists':
+                                if (play.statistics.points && play.statistics.assists)
+                                result = play.statistics.points + play.statistics.assists;
+                                else
+                                result = 0;
+                                break;
+                            case 'Rebounds+Assists':
+                                if (play.statistics.rebounds && play.statistics.assists)
+                                result = play.statistics.rebounds + play.statistics.assists;
+                                else
+                                result = 0;
+                                break;
+                            case 'Pts+Rebs+Asts':
+                                if (play.statistics.points && play.statistics.rebounds && play.statistics.assists)
+                                result = play.statistics.points + play.statistics.rebounds + play.statistics.assists;
+                                else
+                                result = 0;
+                                break;
+                            case 'Blocks+Steals':
+                                if (play.statistics.blocks && play.statistics.steals)
+                                    result = play.statistics.blocks + play.statistics.steals;
+                                else
+                                    result = 0;
+                                break;
+                        }   
+                    }
+                    console.log(result);
+                    if (!play || result == -1) {
+                        pick.result = -1;                        
+                    } else {
+                        pick.result = result;                        
+                    }
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
+                }
+                if (pick.result != undefined) {
+                    finished += 1;
+                    if(pick.result == -1) {
+                        refund += 1;
+                    } else {
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
+                    }
+                }
+            }
+            console.log("1840:  " + finished);
+            if (finished == bet.picks.length) {
+                if (refund) {
+                    if (bet.betType == "high" && lost > 0) {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+                        
+                    } else {
+                        if(bet.betType == "low") {
+                            switch(bet.picks.length) {
+                                case 3:
+                                case 4:
+                                    if(lost > 0) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    } else  {
+                                        console.log("refund");
+                                        bet.status = "refund";                                    
+                                    }
+                                    break;
+                                case 5:
+                                case 6:
+                                    if(lost > 1) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    }
+                                    else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }                                    
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";                           
+                                    break;
+
+                            }
+                        } else {                            
+                            console.log('refund');
+                            bet.status = "refund";                            
+                        }                        
+                    }
+                    console.log("bet result ", bet);
+                    await bet.save();
+                    if(bet.status == "refund"){
+                        const user = await User.findById(bet.userId);
+                            if (bet.credit > 0)
+                                user.credits += bet.credit;                            
+                            await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                            await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                } else {
+                    switch (finished) {
+                        case 2:
+                            if (win == 2) {
+                                bet.prize = bet.entryFee * BET_2_2_HIGH;
+                                bet.status = "win"
+                            } else {
+                                bet.prize = 0;
+                                bet.status = "lost"
+                            }
+                            break;
+                        case 3:
+                            switch (win) {
+                                case 2:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_2_3_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 3:
+                                    if (bet.betType == "high")
+                                        bet.prize = bet.entryFee * BET_3_3_HIGH;
+                                    else
+                                        bet.prize = bet.entryFee * BET_3_3_LOW;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 4:
+                            switch (win) {
+                                case 3:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_3_4_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 4:
+                                    if (bet.betType == "high")
+                                        bet.prize = bet.entryFee * BET_4_4_HIGH;
+                                    else
+                                        bet.prize = bet.entryFee * BET_4_4_LOW;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                    break;
+                            };
+                            break;
+                        case 5:
+                            switch (win) {
+                                case 3:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_3_5_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 4:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_4_5_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 5:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_5_5_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                            }
+                            break;
+                        case 6:
+                            switch (win) {
+                                case 4:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_4_6_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 5:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_5_6_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 6:
+                                    bet.prize = bet.entryFee * BET_6_6_LOW;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    console.log("status + " + bet.status);
+                    console.log("bet result " + bet);
+                    await bet.save();
+                        
+                    if (bet.status == 'win') {
+                        await addPrizeTransaction(bet.userId, bet.prize, 'prize');
+                        const user = await User.findById(bet.userId);
+                        if (user) {
+                            user.wins += 1;
+                        }                        
+                        await updateBetResult(true);
+                        await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                        await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }                    
+                }
+            }     
+        }
+        event.state = 3;
+        await event.save();
+        console.log("Update Bets from NBA Event finished at " + new Date().toString() + " Id: " + event._id);
     } catch (error) {
         console.log(error);
     }
@@ -1814,20 +2108,23 @@ const updateCFBBet = async (event) => {
                     console.log("play " + play);
                     console.log("result " + result);
                     if (!play || result == undefined) {
-                        refund = 1;
+                        pick.result = -1;                        
+                    } else {
+                        pick.result = result;                        
                     }
-                    else {
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
-                    }
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
                 }
                 if (pick.result != undefined) {
                     finished += 1;
-                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
-                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
-                        win += 1;
+                    if(pick.result == -1) {
+                        refund += 1;
                     } else {
-                        lost += 1;
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
                     }
                 }
             }
@@ -1855,6 +2152,62 @@ const updateCFBBet = async (event) => {
                 continue;
             }
             if (finished == bet.picks.length) {
+                if (refund) {
+                    if (bet.betType == "high" && lost > 0) {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+                        
+                    } else {
+                        if(bet.betType == "low") {
+                            switch(bet.picks.length) {
+                                case 3:
+                                case 4:
+                                    if(lost > 0) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    } else  {
+                                        console.log("refund");
+                                        bet.status = "refund";                                    
+                                    }
+                                    break;
+                                case 5:
+                                case 6:
+                                    if(lost > 1) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    }
+                                    else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }                                    
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";                           
+                                    break;
+
+                            }
+                        } else {                            
+                            console.log('refund');
+                            bet.status = "refund";                            
+                        }                        
+                    }
+                    console.log("bet result ", bet);
+                    await bet.save();
+                    if(bet.status == "refund"){
+                        const user = await User.findById(bet.userId);
+                            if (bet.credit > 0)
+                                user.credits += bet.credit;                            
+                            await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                            await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                } else {
                 switch (finished) {
                     case 2:
                         if (win == 2) {
@@ -1982,23 +2335,24 @@ const updateCFBBet = async (event) => {
                         break;
                 }
                 console.log("status + ", bet.status);
-                if (bet.status == "win")
-                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
+                console.log("bet result ", bet);
+                await bet.save();
+                    
                 if (bet.status == 'win') {
+                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
                     const user = await User.findById(bet.userId);
                     if (user) {
                         user.wins += 1;
-                    }
-                    await user.save();
+                    }                    
                     await updateBetResult(true);
                     await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                    await user.save();
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                 }
             }
-            console.log("bet result ", bet);
-            await bet.save();
+            }
         }
         event.state = 3;
         await event.save();
@@ -2043,128 +2397,159 @@ const updateMLBBet = async (event) => {
                     let result = -1, play;
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id == player.remoteId);
-                    if (!play) {
-                        refund = 1;
-                    }
-                    // let index = player.odds.find(item => String(item.event) == String(event._id));
-                    // if(index == undefined || index == -1)
-                    // {
-                    //     refund = 1;
-                    //     break;
-                    // }
-                    console.log(pick.prop.propName);
-                    console.log(JSON.stringify(play.statistics.hitting));
-                    console.log(JSON.stringify(play.statistics.pitching));
-                    switch (pick.prop.propName) {
-                        case 'Pitcher Strikeouts':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.outs.ktotal != undefined ?
-                                    play.statistics.hitting.overall.outs.ktotal : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.outs.ktotal != undefined ?
-                                    play.statistics.pitching.overall.outs.ktotal : -1;
-                            break;
-                        case 'Total Bases':
-                            console.log(play.statistics.hitting);
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.tb != undefined ?
-                                    play.statistics.hitting.overall.onbase.tb : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.tb != undefined ?
-                                    play.statistics.pitching.overall.onbase.tb : -1;
-                            break;
-                        case 'Earned Runs':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.runs.earned != undefined ?
-                                    play.statistics.hitting.overall.runs.earned : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.earned != undefined ?
-                                    play.statistics.pitching.overall.runs.earned : -1;
-                            break;
-                        case 'Total Hits':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h != undefined ?
-                                    play.statistics.hitting.overall.onbase.h : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h != undefined ?
-                                    play.statistics.pitching.overall.onbase.h : -1;
-                            break;
-                        case 'Total Runs':
-                            console.log(JSON.stringify(play.statistics));
-                            if (play.statistics.hitting) {
-                                console.log(play.statistics.hitting.overall.runs.total);
-                                result = play.statistics.hitting.overall.runs.total != undefined ?
-                                    play.statistics.hitting.overall.runs.total : -1;
-                            }
+                    if (play) {                        
+                        console.log(pick.prop.propName);
+                        console.log(JSON.stringify(play.statistics.hitting));
+                        console.log(JSON.stringify(play.statistics.pitching));
+                        switch (pick.prop.propName) {
+                            case 'Pitcher Strikeouts':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.outs.ktotal != undefined ?
+                                        play.statistics.hitting.overall.outs.ktotal : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.outs.ktotal != undefined ?
+                                        play.statistics.pitching.overall.outs.ktotal : -1;
+                                break;
+                            case 'Total Bases':
+                                console.log(play.statistics.hitting);
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.onbase.tb != undefined ?
+                                        play.statistics.hitting.overall.onbase.tb : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.onbase.tb != undefined ?
+                                        play.statistics.pitching.overall.onbase.tb : -1;
+                                break;
+                            case 'Earned Runs':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.runs.earned != undefined ?
+                                        play.statistics.hitting.overall.runs.earned : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.runs.earned != undefined ?
+                                        play.statistics.pitching.overall.runs.earned : -1;
+                                break;
+                            case 'Total Hits':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.onbase.h != undefined ?
+                                        play.statistics.hitting.overall.onbase.h : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.onbase.h != undefined ?
+                                        play.statistics.pitching.overall.onbase.h : -1;
+                                break;
+                            case 'Total Runs':
+                                console.log(JSON.stringify(play.statistics));
+                                if (play.statistics.hitting) {
+                                    console.log(play.statistics.hitting.overall.runs.total);
+                                    result = play.statistics.hitting.overall.runs.total != undefined ?
+                                        play.statistics.hitting.overall.runs.total : -1;
+                                }
 
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.runs.total != undefined ?
-                                    play.statistics.pitching.overall.runs.total : -1;
-                            console.log(result);
-                            break;
-                        case 'Hits Allowed':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.onbase.h != undefined ?
-                                    play.statistics.hitting.overall.onbase.h : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.onbase.h != undefined ?
-                                    play.statistics.pitching.overall.onbase.h : -1;
-                            break;
-                        case 'Pitching Outs':
-                            if (play.statistics.hitting)
-                                result = play.statistics.hitting.overall.ip_1 != undefined ?
-                                    play.statistics.hitting.overall.ip_1 : -1;
-                            else if (play.statistics.pitching)
-                                result = play.statistics.pitching.overall.ip_1 != undefined ?
-                                    play.statistics.pitching.overall.ip_1 : -1;
-                            break;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.runs.total != undefined ?
+                                        play.statistics.pitching.overall.runs.total : -1;
+                                console.log(result);
+                                break;
+                            case 'Hits Allowed':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.onbase.h != undefined ?
+                                        play.statistics.hitting.overall.onbase.h : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.onbase.h != undefined ?
+                                        play.statistics.pitching.overall.onbase.h : -1;
+                                break;
+                            case 'Pitching Outs':
+                                if (play.statistics.hitting)
+                                    result = play.statistics.hitting.overall.ip_1 != undefined ?
+                                        play.statistics.hitting.overall.ip_1 : -1;
+                                else if (play.statistics.pitching)
+                                    result = play.statistics.pitching.overall.ip_1 != undefined ?
+                                        play.statistics.pitching.overall.ip_1 : -1;
+                                break;
+                        }                        
                     }
-
                     console.log(result);
-                    if (result !== undefined && result != -1) {
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                    if (!play || result == -1) {
+                        pick.result = -1;                        
                     } else {
-                        refund = 1;
+                        pick.result = result;                        
                     }
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
                 }
                 if (pick.result != undefined) {
                     finished += 1;
-                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
-                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
-                        win += 1;
+                    if(pick.result == -1) {
+                        refund += 1;
                     } else {
-                        lost += 1;
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
                     }
                 }
             }
-            console.log("1146:  " + finished);
-            if (refund) {
-                if (bet.betType == "high" && lost > 0) {
-                    console.log("lost");
-                    bet.prize = 0;
-                    bet.status = "lost";
-                    await bet.save();
-                    await updateBetResult(false);
-                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                } else {
-                    console.log("Refund");
-                    const user = await User.findById(bet.userId);
-                    if (bet.credit > 0)
-                        user.credits += bet.credit;
-                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                    //user.ETH_balance += entryETH;
-                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    bet.status = 'refund';
-                    await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
-                    await user.save();
-                    continue;
-                }
-            }
+            console.log("2491:  " + finished);
+            
             if (finished == bet.picks.length) {
                 console.log("finished : " + finished);
-                switch (finished) {
+                if (refund) {
+                    if (bet.betType == "high" && lost > 0) {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+                        
+                    } else {
+                        if(bet.betType == "low") {
+                            switch(bet.picks.length) {
+                                case 3:
+                                case 4:
+                                    if(lost > 0) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    } else  {
+                                        console.log("refund");
+                                        bet.status = "refund";                                    
+                                    }
+                                    break;
+                                case 5:
+                                case 6:
+                                    if(lost > 1) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    }
+                                    else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }                                    
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";                           
+                                    break;
+
+                            }
+                        } else {                            
+                            console.log('refund');
+                            bet.status = "refund";                            
+                        }                        
+                    }
+                    console.log("bet result ", bet);
+                    await bet.save();
+                    if(bet.status == "refund"){
+                        const user = await User.findById(bet.userId);
+                            if (bet.credit > 0)
+                                user.credits += bet.credit;                            
+                            await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                            await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                } else
+                {
+                    switch (finished) {
                     case 2:
                         if (win == 2) {
                             bet.prize = bet.entryFee * BET_2_2_HIGH;
@@ -2285,10 +2670,11 @@ const updateMLBBet = async (event) => {
                     default:
                         break;
                 }
-                if (bet.status == "win") {
-                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
-                }
+                await bet.save();
+            console.log("Bet udpated : " + JSON.stringify(bet));
+                
                 if (bet.status == 'win') {
+                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
                     const user = await User.findById(bet.userId);
                     if (user) {
                         user.wins += 1;
@@ -2299,10 +2685,9 @@ const updateMLBBet = async (event) => {
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                }
+                }}
             }
-            await bet.save();
-            console.log("Bet udpated : " + JSON.stringify(bet));
+            
         }
         event.state = 3;
         await event.save();
@@ -2337,81 +2722,111 @@ const updateNHLBet = async (event) => {
                     let result = -1, play;
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id == player.remoteId);
-                    if (!play) {
-                        refund = 1;
-                    }
-                    // let index = player.odds.find(item => String(item.event) == String(event._id));
-                    // if(index == undefined || index == -1)
-                    // {
-                    //     refund = 1;
-                    //     break;
-                    // }
-                    console.log(pick.prop.propName);
+                    if (play) {                        
+                        console.log(pick.prop.propName);
 
-                    switch (pick.prop.propName) {
-                        case 'Total Shots':
-                            result = play.statistics.total.shots != undefined ?
-                                play.statistics.total.shots : -1;
-                            break;
-                        case 'Total Assists':
-                            result = play.statistics.total.assists != undefined ?
-                                play.statistics.total.assists : -1;
-                            break;
-                        case 'Total Points':
-                            result = play.statistics.total.points != undefined ?
-                                play.statistics.total.points : -1;
-                            break;
-                        case 'Total Power Play Points':
-                            result = play.statistics.powerplay != undefined ?
-                                play.statistics.powerplay.goals + play.statistics.powerplay.assists : -1;
-                            break;
+                        switch (pick.prop.propName) {
+                            case 'Total Shots':
+                                result = play.statistics.total.shots != undefined ?
+                                    play.statistics.total.shots : -1;
+                                break;
+                            case 'Total Assists':
+                                result = play.statistics.total.assists != undefined ?
+                                    play.statistics.total.assists : -1;
+                                break;
+                            case 'Total Points':
+                                result = play.statistics.total.points != undefined ?
+                                    play.statistics.total.points : -1;
+                                break;
+                            case 'Total Power Play Points':
+                                result = play.statistics.powerplay != undefined ?
+                                    play.statistics.powerplay.goals + play.statistics.powerplay.assists : -1;
+                                break;
+                        }
                     }
-
+                    
                     console.log(result);
-                    if (result !== undefined && result != -1) {
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                    if (!play || result == -1) {
+                        pick.result = -1;                        
                     } else {
-                        refund = 1;
+                        pick.result = result;                        
                     }
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
                 }
                 if (pick.result != undefined) {
                     finished += 1;
-                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
-                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
-                        win += 1;
+                    if(pick.result == -1) {
+                        refund += 1;
                     } else {
-                        lost += 1;
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
                     }
                 }
             }
-            console.log("1146:  " + finished);
-            if (refund) {
-                if (bet.betType == "high" && lost > 0) {
-                    console.log("lost");
-                    bet.prize = 0;
-                    bet.status = "lost";
-                    await bet.save();
-                    await updateBetResult(false);
-                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                } else {
-                    console.log("Refund");
-                    const user = await User.findById(bet.userId);
-                    if (bet.credit > 0)
-                        user.credits += bet.credit;
-                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                    //user.ETH_balance += entryETH;
-                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    bet.status = 'refund';
-                    await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
-                    await user.save();
-                    continue;
-                }
-            }
+            console.log("1146:  " + finished);            
             if (finished == bet.picks.length) {
                 console.log("finished : " + finished);
-                switch (finished) {
+                if (refund) {
+                    if (bet.betType == "high" && lost > 0) {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+                        
+                    } else {
+                        if(bet.betType == "low") {
+                            switch(bet.picks.length) {
+                                case 3:
+                                case 4:
+                                    if(lost > 0) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    } else  {
+                                        console.log("refund");
+                                        bet.status = "refund";                                    
+                                    }
+                                    break;
+                                case 5:
+                                case 6:
+                                    if(lost > 1) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    }
+                                    else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }                                    
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";                           
+                                    break;
+
+                            }
+                        } else {                            
+                            console.log('refund');
+                            bet.status = "refund";                            
+                        }                        
+                    }
+                    console.log("bet result " + JSON.stringify(bet));
+                    await bet.save();
+                    if(bet.status == "refund"){
+                        const user = await User.findById(bet.userId);
+                            if (bet.credit > 0)
+                                user.credits += bet.credit;                            
+                            await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                            await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                } else {
+                    switch (finished) {
                     case 2:
                         if (win == 2) {
                             bet.prize = bet.entryFee * BET_2_2_HIGH;
@@ -2532,10 +2947,10 @@ const updateNHLBet = async (event) => {
                     default:
                         break;
                 }
-                if (bet.status == "win") {
-                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
-                }
+                await bet.save();
+                console.log("Bet udpated : " + JSON.stringify(bet));                
                 if (bet.status == 'win') {
+                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
                     const user = await User.findById(bet.userId);
                     if (user) {
                         user.wins += 1;
@@ -2546,10 +2961,9 @@ const updateNHLBet = async (event) => {
                 } else {
                     await updateBetResult(false);
                     await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                }
+                }}
             }
-            await bet.save();
-            console.log("Bet udpated : " + JSON.stringify(bet));
+           
         }
         event.state = 3;
         await event.save();
@@ -2595,55 +3009,92 @@ const updateSoccerBet = async (event) => {
 
                     if (play) {
                         result = play.statistics.goals_scored;
-                        console.log(result);
-                        pick.result = result;
-                        bet.picks[bet.picks.indexOf(pick)] = pick;
+                        console.log(result);                        
                     }
                     else {
-                        refund = 1;
+                        result = -1;
                     }
+                    pick.result = result;
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
                 }
 
                 if (pick.result != undefined) {
                     console.log(pick.result);
                     finished += 1;
-                    if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
-                        pick.overUnder == "under" && pick.result < pick.prop.odds) {
-                        win += 1;
+                    if(pick.result == -1) {
+                        refund += 1;
                     } else {
-                        lost += 1;
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
                     }
                 }
             }
             console.log("win: " + win + " lost: " + lost);
-            if (refund) {
-                const user = await User.findById(bet.userId);
-                if (!user)
-                    continue;
-                if (bet.betType == "high" && lost > 0) {
-                    console.log("lost");
-                    bet.prize = 0;
-                    bet.status = "lost";
-                    await bet.save();
-                    await updateBetResult(false);
-                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                } else {
-                    if (bet.credit > 0)
-                        user.credits += bet.credit;
-                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                    //user.ETH_balance += entryETH;
-                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    bet.status = 'refund';
-                    await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
-                    await user.save();
-                }
-                continue;
-            }
+           
             console.log(finished);
             if (finished == bet.picks.length) {
-                console.log("1351");
-                switch (finished) {
+                console.log("3043");
+                if (refund) {
+                    if (bet.betType == "high" && lost > 0) {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+                        
+                    } else {
+                        if(bet.betType == "low") {
+                            switch(bet.picks.length) {
+                                case 3:
+                                case 4:
+                                    if(lost > 0) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    } else  {
+                                        console.log("refund");
+                                        bet.status = "refund";                                    
+                                    }
+                                    break;
+                                case 5:
+                                case 6:
+                                    if(lost > 1) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";                           
+                                    }
+                                    else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }                                    
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";                           
+                                    break;
+
+                            }
+                        } else {                            
+                            console.log('refund');
+                            bet.status = "refund";                            
+                        }                        
+                    }
+                    console.log("bet result ", bet);
+                    await bet.save();
+                    if(bet.status == "refund"){
+                        const user = await User.findById(bet.userId);
+                            if (bet.credit > 0)
+                                user.credits += bet.credit;                            
+                            await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                            await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                } else {
+                    switch (finished) {
                     case 2:
                         if (win == 2) {
                             bet.prize = bet.entryFee * BET_2_2_HIGH;
@@ -2768,26 +3219,26 @@ const updateSoccerBet = async (event) => {
                         break;
                     default:
                         break;
-                }
-                if (bet.status == "win")
-                    await addPrizeTransaction(bet.userId, bet.prize, 'prize');
-
-                if (bet.status == 'win') {
-                    const user = await User.findById(bet.userId);
-                    if (user) {
-                        user.wins += 1;
-
                     }
-                    await user.save();
-                    await updateBetResult(true);
-                    await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
-                } else {
-                    await updateBetResult(false);
-                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    console.log("3226")
+                    await bet.save();
+                    if (bet.status == 'win') {
+                        await addPrizeTransaction(bet.userId, bet.prize, 'prize');
+                        const user = await User.findById(bet.userId);
+                        if (user) {
+                            user.wins += 1;
+
+                        }                        
+                        await updateBetResult(true);
+                        await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                        await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
                 }
             }
-            console.log("1468")
-            await bet.save();
+            
         }
         event.state = 3;
         await event.save();
@@ -2816,6 +3267,8 @@ const updateBet = async (eventId) => {
         } else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
             updateNHLBet(event);
         } else if (String(event.sportId) == '652f31fdfb0c776ae3db47e1') {
+            updateCFBBet(event);
+        } else if (String(event.sportId) == '64f78bc5d0686ac7cf1a6855') {
             updateCFBBet(event);
         }
     } catch (error) {
@@ -2876,6 +3329,10 @@ const checkEvents = async () => {
             } else if ((String(event.sportId) == '652f31fdfb0c776ae3db47e1')) {
                 console.log("CFB " + event._id);
                 await updateCFBBet(event);
+            }
+            else if ((String(event.sportId) == '64f78bc5d0686ac7cf1a6855')) {
+                console.log("NBA " + event._id);
+                await updateNBABet(event);
             }
         }
     } catch (error) {
