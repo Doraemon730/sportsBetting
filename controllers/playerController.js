@@ -236,7 +236,8 @@ const getTopPlayerBySport = async (req, res) => {
         message: "sportId is required"
       });
     }
-
+    // if(sportId == "64f78bc5d0686ac7cf1a6855")
+    //   return res.status(404).json("There is not props");
     sportId = new ObjectId(sportId);
     const props = await Prop.find({
       sportId: sportId
@@ -609,6 +610,21 @@ const updateMLBPlayers = async () => {
     console.log(error);
   }
 }
+
+const updateSoccerPlayers = async (req, res) => {
+  try {
+    const players = await Player.find({ sportId: new ObjectId("65131974db50d0c2c8bf7aa7") });
+    
+    for (const player of players) {
+      console.log(player);
+      player.remoteId = player.srId;
+      await player.save();
+    }
+    res.json("success");
+  } catch (error) {
+    console.log(error);
+  }
+}
 const addNBAPlayersToDatabase = async (req, res) => {
   try {
     // Fetch contest data from the Sportradar NBA API
@@ -682,7 +698,7 @@ const remove = async (req, res) => {
 }
 
 const resetOdds = async (req, res) => {
-  await Player.updateMany({ sportId: new ObjectId('65131974db50d0c2c8bf7aa7') }, { odds: [] });
+  await Player.updateMany({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855') }, { odds: [] });
   res.json("Success");
 }
 
@@ -701,5 +717,6 @@ module.exports = {
   resetOdds,
   updateMLBPlayers,
   addCFBPlayersToDatabase,
-  addSoccerPlayer
+  addSoccerPlayer,
+  updateSoccerPlayers
 };

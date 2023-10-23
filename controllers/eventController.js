@@ -39,7 +39,8 @@ const {
     fetchSoccerEventSummary,
     fetchNHLGameSummary,
     fetchWeeklyEventsCFB,
-    fetchCFBGameSummary
+    fetchCFBGameSummary,
+    fetchWeeklyEventsNBA
 } = require('../services/eventService');
 
 const { USD2Ether, Ether2USD } = require('../utils/util');
@@ -512,6 +513,138 @@ const getWeeklyEventsCFB = async () => {
 
         }
         console.log("Get CFB Events and update finished at " + new Date().toString());
+    } catch (error) {
+        console.log(error);
+
+    }
+};
+
+const getWeeklyEventsNBA = async () => {
+    try {
+        const mappings = await fetchEventMapping();
+        if (!mappings || !Array.isArray(mappings)) {
+            console.log('No mappings');
+            return;
+        }
+        //console.log(mappings);        
+
+        let events = await fetchWeeklyEventsNBA();
+        let now = new Date();
+        events = events.filter(item => new Date(item.sport_event.start_time) > now);
+        console.log("NBA events count = " + events.length);
+        for (const event of events) {
+
+            let myEvent = new Event({
+                id: event.sport_event.id,
+                startTime: event.sport_event.start_time,
+                sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')
+            });
+            let alias = [], inc = 0;
+            for (const competitor of event.sport_event.competitors) {
+                const team = await Team.findOne({
+                    sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'),
+                    alias: competitor.abbreviation
+                });
+                competitor.teamId = team._id;
+                myEvent.competitors.push(competitor);
+                alias.push(team.alias);
+            }
+            myEvent.name = alias[0] + " vs " + alias[1];          
+
+            let mapping = mappings.find(item => item.id == event.sport_event.id);
+            if (mapping)
+                myEvent.matchId = mapping.external_id;
+
+
+            let playerProps = await fetchEventPlayerProps(event.sport_event.id);
+            if (!playerProps || 'markets' in playerProps)
+                continue;
+            let existingEvent = await Event.findOne({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'), id: event.sport_event.id });
+            if (existingEvent) {
+                myEvent = existingEvent;
+                existingEvent.startTime = myEvent.startTime;
+                await existingEvent.save();
+            } else {
+                // Event doesn't exist, insert new event
+                await myEvent.save();
+                console.log('NBA New event inserted! _id=' + myEvent.id);
+            }
+            //await myEvent.save();
+            //console.log(playerProps);
+
+
+            for (const playerProp of playerProps) {
+                console.log(playerProp.player.id, true);
+                console.log(playerProp.player.name, true);
+                //const play = players.find(item => String(item.id) == String(playerProp.player.id));
+
+
+                const player = await Player.findOne({
+                    srId: playerProp.player.id,
+                    sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')
+                });
+                if (!player)
+                    continue;
+                console.log(player);
+                for (const market of playerProp.markets) {
+                    const prop = await Prop.findOne({
+                        srId: market.id,
+                        sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')
+                    });
+                    if (!prop) continue;
+                    const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
+                    console.log(JSON.stringify(market));
+                    console.log(playerProp.player.name);
+                    let minOdds = 100, minIndex = -1, total = -1;
+
+                    // for(let i = 0; i < market.books.length; i ++){
+                    //     let outcomes = market.books[i].outcomes;
+                    //     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                    //     let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    //     let odd = Math.abs(odd1 - odd2);
+                    //     console.log(market.books[i].name + ": " +odd1 + " " + odd2 + " " + odd);
+                    //     if(odd < minOdds){
+                    //         minOdds = odd;
+                    //         minIndex = i;
+                    //         total = outcomes[0].open_total;
+                    //         if(minOdds == 0)
+                    //             break;
+                    //     }
+                    // }
+                    // console.log(minOdds + " " + minIndex + " " + total);
+                    let book = market.books.find(item => item.name == "FanDuel");
+                    if(book == undefined)
+                        continue;
+                    let outcomes = book.outcomes;
+                    
+                    let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                    let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                    let odd = Math.abs(odd1 - odd2);
+                    console.log(odd1);
+                    console.log(odd2);
+                    if (odd <= 20) {
+                        console.log(playerProp.player.name);
+                        if (index !== -1) {
+                            player.odds[index].value = outcomes[0].open_total;
+                            player.odds[index].event = myEvent._id;
+                        } else {
+                            player.odds.push({
+                                id: prop._id,
+                                value: outcomes[0].open_total,
+                                event: myEvent._id
+                            });
+                        }
+                    } else if (index != -1) {
+                        player.odds.splice(index, 1);
+                    }
+
+                }
+                await player.save();
+            }
+            //console.log(playerProps);
+
+        }
+        console.log("Get NBA Events and update finished at " + new Date().toString());
     } catch (error) {
         console.log(error);
 
@@ -2594,6 +2727,7 @@ const getWeekEventAll = async () => {
         await getWeeklyEventsSoccer();
         await getWeeklyEventsNHL();
         await getWeeklyEventsCFB();
+        await getWeeklyEventsNBA();
         // Promise.all([
         //     getWeeklyEventsNFL(),
         //     getWeeklyEventsMLB(),
@@ -2652,5 +2786,6 @@ module.exports = {
     test,
     getWeeklyEventsNHL,
     getWeeklyEventsCFB,
-    testlive
+    testlive,
+    getWeeklyEventsNBA
 }

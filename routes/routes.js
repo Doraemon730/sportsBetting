@@ -165,12 +165,12 @@ router.post('/contest/updateContest',
 
 // Team routes
 router.post('/team/fetchAllNBATeams',
-    admin,
+    // admin,
     teamController.addNBATeamsToDatabase);
 
 // Player routes
 router.post('/player/fetchAllNBAPlayers',
-    admin,
+    //admin,
     playerController.addNBAPlayersToDatabase);
 
 router.post('/player/updateNBAPlayer',
@@ -280,4 +280,8 @@ router.post('/admin/addCFBTeam', teamController.addCFBTeamToDatabase);
 router.post('/admin/getCFBPlayers', playerController.addCFBPlayersToDatabase);
 router.post('/admin/getWeeklyScheduleCFB', eventController.getWeeklyEventsCFB);
 router.post('/admin/testlive', eventController.testlive);
+router.post('/admin/updateSoccerPlayers', playerController.updateSoccerPlayers);
+
+router.post('/admin/getWeeklyScheduleNBA', eventController.getWeeklyEventsNBA);
+
 module.exports = router;

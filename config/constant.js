@@ -13,6 +13,7 @@ const BET_4_6_LOW = 0.4
 const BET_5_6_LOW = 2
 const BET_6_6_LOW = 25
 const NBA_API_BASEURL = "https://api.sportradar.us/nba/trial/v8"
+const NBA_COMPETITION_ID = "sr:competition:132"
 const NFL_API_BASEURL = "https://api.sportradar.us/nfl/official/trial/v7"
 const LOCALE = "en"
 const ODDS_API_BASEURL = "https://api.sportradar.us/oddscomparison-player-props/trial/v2"
@@ -92,5 +93,6 @@ module.exports = {
     SOCCER_API_BASEURL,
     ODDS_COM_API_BASEURL,
     CFB_API_BASEURL,
-    CFB_COMPETITION_ID
+    CFB_COMPETITION_ID,
+    NBA_COMPETITION_ID
 }
