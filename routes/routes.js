@@ -126,6 +126,7 @@ router.post('/bet/cancelWrongBets',
 router.post(
     '/transaction/deposit',
     auth,
+    checkWithdraw,
     transactionController.depositBalance
 );
 router.post(
