@@ -25,6 +25,7 @@ const NFL_LIVEDATA_BASEURL = "https://api.sportradar.us/nfl/official/trial/strea
 const MLB_LIVEDATA_BASEURL = "https://api.sportradar.com/mlb/trial/stream/en/statistics/subscribe?api_key"
 const NHL_LIVEDATA_BASEURL = "https://api.sportradar.us/nhl/trial/stream/en/statistics/subscribe?api_key"
 const CFB_LIVEDATA_BASEURL = "https://api.sportradar.us/ncaafb/trial/stream/en/statistics/subscribe?api_key"
+const NBA_LIVEDATA_BASEURL = "https://api.sportradar.com/nba/trial/stream/en/statistics/subscribe?api_key"
 
 const MLB_COMPETITION_ID = "sr:competition:109"
 const NHL_COMPETITION_ID = "sr:competition:234";
@@ -72,6 +73,7 @@ module.exports = {
     NFL_LIVEDATA_BASEURL,
     MLB_LIVEDATA_BASEURL,
     NHL_LIVEDATA_BASEURL,
+    NBA_LIVEDATA_BASEURL,
     NFL_IMAGE_BASEURL,
     NFL_IMAGE_PROVIDER,
     NFL_IMAGE_TYPE,

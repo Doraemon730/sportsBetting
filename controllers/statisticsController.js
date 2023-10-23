@@ -60,17 +60,18 @@ const updateBetWithNew = async (amount) => {
             statistic.daily_bets++;
             statistic.daily_bet_users++;
             statistic.total_bets++;
-            statistic.total_bet_users++;
             statistic.total_bet_amount += amount;
             statistic.daily_bet_amount += amount;
             await statistic.save();
         } else {
+            let total_users = 1;
             let total_bets = 1;
             let total_bet_users = 1;
             let total_bet_amount = amount;
             if (statistic) {
+                total_users = statistic.total_users + 1;
                 total_bets = statistic.total_bets + 1;
-                total_bet_users = statistic.total_bet_users + 1;
+                total_bet_users = statistic.total_bet_users;
                 total_bet_amount = statistic.total_bet_amount + amount
             }
             const newstatistic = new Statistics({
@@ -145,13 +146,55 @@ const updateBetResult = async (isWin) => {
     }
 }
 
+const updateTotalUsers = async () => {
+    try {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const statistic = await Statistics.findOne({}, {}, {
+            sort: {
+                _id: -1
+            }
+        });
+        if (statistic && now.getDate() === statistic.date.getDate()) {
+            statistic.total_bet_users++;
+            await statistic.save();
+        } else {
+            let total_users = 1;
+            let total_bets = 1;
+            let total_bet_users = 1;
+            let total_bet_amount = amount;
+            if (statistic) {
+                total_users = statistic.total_users;
+                total_bets = statistic.total_bets;
+                total_bet_users = statistic.total_bet_users + 1;
+                total_bet_amount = statistic.total_bet_amount
+            }
+            const newstatistic = new Statistics({
+                date: now,
+                total_users,
+                total_bets,
+                total_bet_users,
+                total_bet_amount,
+                daily_bets: 0,
+                daily_bet_users: 0,
+                daily_bet_amount: amount,
+            });
+            await newstatistic.save();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 const getStatisticsByDate = async (date) => {
     try {
         date.setHours(0, 0, 0, 0);
         console.log(date);
-        const statistics = await Statistics.findOne({
-            date: date
+        let statistics = await Statistics.findOne({
+            date: { $gte: date }
         });
+        if (statistics == null)
+            statistics = new Statistics()
         return statistics;
     } catch (error) {
         console.log(error);
@@ -166,6 +209,7 @@ const getStatistics = async (req, res) => {
         if (!date)
             date = new Date();
         const statistics = await getStatisticsByDate(date);
+        console.log(JSON.stringify(statistics))
         res.json(statistics);
     } catch (error) {
         res.status(500).send('Server error');
@@ -251,5 +295,6 @@ module.exports = {
     getTotalUserWithBet,
     getUserBetStats,
     updateBetResult,
-    updateTotalBalanceAndCredits
+    updateTotalBalanceAndCredits,
+    updateTotalUsers
 }
