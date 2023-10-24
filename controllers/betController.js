@@ -715,11 +715,14 @@ const getRevenue = async (req, res) => {
     try {
         let now = new Date();
         now.setHours(0, 0, 0, 0);
+        let tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
+        tomorrow.setHours(0, 0, 0, 0)
+
         const data_1 = await Bet.aggregate([{
             $match: {
-                updatedAt: {
+                willFinishAt: {
                     $gte: now,
-                    $lte: new Date(Date.now())
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -734,9 +737,9 @@ const getRevenue = async (req, res) => {
         yesterday.setHours(0, 0, 0, 0)
         const data_2 = await Bet.aggregate([{
             $match: {
-                updatedAt: {
+                willFinishAt: {
                     $gte: yesterday,
-                    $lte: new Date(Date.now())
+                    $lte: now
                 }
             }
         }, {
@@ -749,9 +752,9 @@ const getRevenue = async (req, res) => {
 
         const data_14 = await Bet.aggregate([{
             $match: {
-                updatedAt: {
-                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-                    $lte: new Date(Date.now())
+                willFinishAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -766,7 +769,7 @@ const getRevenue = async (req, res) => {
             $match: {
                 updatedAt: {
                     $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-                    $lte: new Date(Date.now())
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -781,7 +784,7 @@ const getRevenue = async (req, res) => {
             $match: {
                 updatedAt: {
                     $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
-                    $lte: new Date(Date.now())
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -818,6 +821,8 @@ const getRevenue = async (req, res) => {
         const etherPrice = await Ethereum.find();
         const ether = etherPrice[0].price;
         for (let i = 0; i < data_1.length; i++) {
+            if (data_1[i]._id == 'pending')
+                betAmount += data_1[i].entryFee;
             if (data_1[i]._id == 'lost')
                 betAmount += data_1[i].entryFee;
             if (data_1[i]._id == 'win')
@@ -831,6 +836,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_2.length; i++) {
+            if (data_2[i]._id == 'pending')
+                betAmount += data_2[i].entryFee;
             if (data_2[i]._id == 'lost')
                 betAmount += data_2[i].entryFee;
             if (data_2[i]._id == 'win')
@@ -844,6 +851,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_14.length; i++) {
+            if (data_14[i]._id == 'pending')
+                betAmount += data_14[i].entryFee;
             if (data_14[i]._id == 'lost')
                 betAmount += data_14[i].entryFee;
             if (data_14[i]._id == 'win')
@@ -857,6 +866,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_30.length; i++) {
+            if (data_30[i]._id == 'pending')
+                betAmount += data_30[i].entryFee;
             if (data_30[i]._id == 'lost')
                 betAmount += data_30[i].entryFee;
             if (data_30[i]._id == 'win')
@@ -870,6 +881,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_365.length; i++) {
+            if (data_365[i]._id == 'pending')
+                betAmount += data_365[i].entryFee;
             if (data_365[i]._id == 'lost')
                 betAmount += data_365[i].entryFee;
             if (data_365[i]._id == 'win')
@@ -883,6 +896,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_max.length; i++) {
+            if (data_max[i]._id == 'pending')
+                betAmount += data_max[i].entryFee;
             if (data_max[i]._id == 'lost')
                 betAmount += data_max[i].entryFee;
             if (data_max[i]._id == 'win')
@@ -900,7 +915,7 @@ const getRevenue = async (req, res) => {
 }
 
 const changeBet = async (req, res) => {
-    try{
+    try {
         let bet = await Bet.findById(new ObjectId("6519980e644c75165594de46"));
         delete bet.updateAt;
         await bet.save();
@@ -913,7 +928,7 @@ const changeBet = async (req, res) => {
         //     }
         // }        
         res.json("success");
-    } catch(error){
+    } catch (error) {
         console.log(error);
     }
 }
@@ -930,5 +945,6 @@ module.exports = {
     giveRewards,
     cancelWrongBets,
     getRevenue,
-    changeBet
+    changeBet,
+    getRevenue
 }
