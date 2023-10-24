@@ -35,7 +35,6 @@ const BetSchema = new mongoose.Schema({
     },
     remoteId: {
       type: String,
-      required: true,
     },
     contestId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -75,13 +74,6 @@ const BetSchema = new mongoose.Schema({
     enum: ['pending', 'win', 'lost', 'refund', 'canceled'],
     default: 'pending'
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  finishedAt: {
-    type: Date,
-  },
   promotion: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'promotion',
@@ -97,6 +89,12 @@ const BetSchema = new mongoose.Schema({
     type: Number,
     default: 0
   }
-});
+},
+  {
+    timestamps: {
+      createdAt: true,
+      updatedAt: true
+    }
+  });
 
 module.exports = mongoose.model('bet', BetSchema);
