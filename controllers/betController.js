@@ -911,6 +911,24 @@ const getRevenue = async (req, res) => {
     }
 }
 
+const changeBet = async (req, res) => {
+    try{
+        let bet = await Bet.findById(new ObjectId("6519980e644c75165594de46"));
+        delete bet.updateAt;
+        await bet.save();
+        // let bets = await Bet.find();
+
+        // for(let bet of bets) {
+        //     if(bet.updateAt){
+        //         delete bet.updateAt;            
+        //         await bet.save();
+        //     }
+        // }        
+        res.json("success");
+    } catch(error){
+        console.log(error);
+    }
+}
 module.exports = {
     startBetting,
     getAllBets,
@@ -923,5 +941,6 @@ module.exports = {
     udpateEventsByBet,
     giveRewards,
     cancelWrongBets,
-    getRevenue
+    getRevenue,
+    changeBet
 }

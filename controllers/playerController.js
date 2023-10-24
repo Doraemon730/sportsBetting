@@ -5,6 +5,7 @@ const Discount = require("../models/Discount");
 const Event = require('../models/Event');
 const Prop = require('../models/Prop');
 const fs = require('fs');
+const Path = require('path');
 require('../utils/log');
 const {
   ObjectId
@@ -15,7 +16,8 @@ const {
   fetchPlayerProfile,
   fetchPlayerManifest,
   fetchPlayerImage,
-  fetchMLBPlayerNumber
+  fetchMLBPlayerNumber,
+  fetchImageFromPrize
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
@@ -318,6 +320,40 @@ const getTopPlayerBySport = async (req, res) => {
     res.status(500).json(error.message);
   }
 }
+
+const getImage = async (req, res) => {
+  try {
+    let {fileName} = req.body;
+    await fetchImageFromPrize(fileName);
+    res.json("success");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const setNBAImage = async (req, res) => {
+  try {
+    let players = await Player.find({sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
+    for(let player of players){
+      let name = player.name.replace(' ', '_');
+      let fileName = name + "_" + player.remoteId + ".webp";      
+      let path = Path.resolve(__dirname, '../public/images', fileName);
+      console.log(path);
+      if(fs.existsSync(path))
+      {  
+        console.log("File Exist");
+        player.headshot = fileName;
+        await player.save();
+      }
+      else
+        console.log("not Found");
+    }    
+     res.json("Success");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const getPlayersByProps = async (req, res) => {
   const {
     sportName,
@@ -460,6 +496,22 @@ const updateNBAPlayers = async () => {
         }
       }
     }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const updateNFLPlayers = async (req, res) => {
+  try {
+    const players = await Player.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
+    for (const player of players) {
+      if(player.headshot)
+      {
+        player.headshot = player.headshot + ".png";
+        await player.save();
+      }  
+    }
+    res.json("success");
   } catch (error) {
     console.log(error);
   }
@@ -721,5 +773,8 @@ module.exports = {
   updateMLBPlayers,
   addCFBPlayersToDatabase,
   addSoccerPlayer,
-  updateSoccerPlayers
+  updateSoccerPlayers,
+  getImage,
+  setNBAImage,
+  updateNFLPlayers
 };
