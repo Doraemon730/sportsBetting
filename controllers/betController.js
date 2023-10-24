@@ -9,6 +9,7 @@ const Event = require('../models/Event');
 const Player = require('../models/Player');
 const Prop = require('../models/Prop');
 const Capital = require('../models/Capital');
+const Discount = require('../models/Discount');
 const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
@@ -66,11 +67,19 @@ const startBetting = async (req, res) => {
             }
         }
 
+        let willFinishAt = new Date();
+        for (const element of jsonArray) {
+            let event = await Event.findOne({ _id: new ObjectId(element.contestId) })
+            if (event.startTime > willFinishAt)
+                willFinishAt = event.startTime;
+        }
+
         const myBet = new Bet({
             userId,
             entryFee: entryFeeSave,
             entryFeeETH: entryFeeEtherSave,
             betType,
+            willFinishAt,
             picks: jsonArray,
             credit: creditSave,
         });
@@ -105,22 +114,34 @@ const startBetting = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Contest has already started." });
             }
-            const discount = await Discount.find({playerId: element.playerId, propName: element.prop.propName});
-            if(discount) {
-                if(discountCnt > 0) {
+            let today = new Date()
+            today.setHours(0, 0, 0, 0);
+            const discount = await Discount.findOne({ playerId: element.playerId, propName: element.prop.propName, date: today });
+            console.log(element.playerId)
+            console.log(JSON.stringify(discount))
+            if (discount) {
+                console.log(discountCnt)
+                console.log(orginEntry)
+                if (discountCnt > 0) {
                     user.isPending = false;
+                    await user.save();
                     return res.status(400).send({ message: "Invalid Betting. Select Only one discount" });
                 }
 
-                if(discount.users.includes(userId)) {
+                if (discount.users && discount.users.includes(userId)) {
                     user.isPending = false;
+                    await user.save();
                     return res.status(400).send({ message: "Invalid Betting. Only one time for discount" });
                 }
-                if(orginEntry > 25) {
+                if (orginEntry > 25) {
                     user.isPending = false;
+                    await user.save();
                     return res.status(400).send({ message: "Invalid Betting. Maximum amount of Discount bet is $25" });
                 }
-                discount.users.push(userId);     
+                if (!discount.users)
+                    discount.users = [];
+                discount.users.push(userId);
+                await discount.save();
                 discountCnt += 1;
             }
 
@@ -198,11 +219,19 @@ const startFirstFreeBetting = async (req, res) => {
             }
         }
 
+        let willFinishAt = new Date();
+        for (const element of jsonArray) {
+            let event = await Event.findOne({ _id: new ObjectId(element.contestId) })
+            if (event.startTime > willFinishAt)
+                willFinishAt = event.startTime;
+        }
+
         const myBet = new Bet({
             userId,
             entryFee: entryFeeSave,
             entryFeeETH: entryFeeEtherSave,
             betType,
+            willFinishAt,
             picks: jsonArray,
             parlay: true,
             credit: 0,
@@ -223,6 +252,37 @@ const startFirstFreeBetting = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Contest has already started." });
             }
+            let today = new Date()
+            today.setHours(0, 0, 0, 0);
+            const discount = await Discount.findOne({ playerId: element.playerId, propName: element.prop.propName, date: today });
+            console.log(element.playerId)
+            console.log(JSON.stringify(discount))
+            if (discount) {
+                console.log(discountCnt)
+                console.log(orginEntry)
+                if (discountCnt > 0) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting. Select Only one discount" });
+                }
+
+                if (discount.users && discount.users.includes(userId)) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting. Only one time for discount" });
+                }
+                if (orginEntry > 25) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting. Maximum amount of Discount bet is $25" });
+                }
+                if (!discount.users)
+                    discount.users = [];
+                discount.users.push(userId);
+                await discount.save();
+                discountCnt += 1;
+            }
+
 
             if (!event.participants.includes(myBet._id)) {
                 event.participants.push(myBet._id);
@@ -733,11 +793,14 @@ const getRevenue = async (req, res) => {
     try {
         let now = new Date();
         now.setHours(0, 0, 0, 0);
+        let tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
+        tomorrow.setHours(0, 0, 0, 0)
+
         const data_1 = await Bet.aggregate([{
             $match: {
-                updatedAt: {
+                willFinishAt: {
                     $gte: now,
-                    $lte: new Date(Date.now())
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -752,9 +815,9 @@ const getRevenue = async (req, res) => {
         yesterday.setHours(0, 0, 0, 0)
         const data_2 = await Bet.aggregate([{
             $match: {
-                updatedAt: {
+                willFinishAt: {
                     $gte: yesterday,
-                    $lte: new Date(Date.now())
+                    $lte: now
                 }
             }
         }, {
@@ -767,9 +830,9 @@ const getRevenue = async (req, res) => {
 
         const data_14 = await Bet.aggregate([{
             $match: {
-                updatedAt: {
-                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-                    $lte: new Date(Date.now())
+                willFinishAt: {
+                    $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14),
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -784,7 +847,7 @@ const getRevenue = async (req, res) => {
             $match: {
                 updatedAt: {
                     $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-                    $lte: new Date(Date.now())
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -799,7 +862,7 @@ const getRevenue = async (req, res) => {
             $match: {
                 updatedAt: {
                     $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365),
-                    $lte: new Date(Date.now())
+                    $lte: tomorrow
                 }
             }
         }, {
@@ -836,6 +899,8 @@ const getRevenue = async (req, res) => {
         const etherPrice = await Ethereum.find();
         const ether = etherPrice[0].price;
         for (let i = 0; i < data_1.length; i++) {
+            if (data_1[i]._id == 'pending')
+                betAmount += data_1[i].entryFee;
             if (data_1[i]._id == 'lost')
                 betAmount += data_1[i].entryFee;
             if (data_1[i]._id == 'win')
@@ -849,6 +914,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_2.length; i++) {
+            if (data_2[i]._id == 'pending')
+                betAmount += data_2[i].entryFee;
             if (data_2[i]._id == 'lost')
                 betAmount += data_2[i].entryFee;
             if (data_2[i]._id == 'win')
@@ -862,6 +929,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_14.length; i++) {
+            if (data_14[i]._id == 'pending')
+                betAmount += data_14[i].entryFee;
             if (data_14[i]._id == 'lost')
                 betAmount += data_14[i].entryFee;
             if (data_14[i]._id == 'win')
@@ -875,6 +944,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_30.length; i++) {
+            if (data_30[i]._id == 'pending')
+                betAmount += data_30[i].entryFee;
             if (data_30[i]._id == 'lost')
                 betAmount += data_30[i].entryFee;
             if (data_30[i]._id == 'win')
@@ -888,6 +959,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_365.length; i++) {
+            if (data_365[i]._id == 'pending')
+                betAmount += data_365[i].entryFee;
             if (data_365[i]._id == 'lost')
                 betAmount += data_365[i].entryFee;
             if (data_365[i]._id == 'win')
@@ -901,6 +974,8 @@ const getRevenue = async (req, res) => {
         betAmount = 0;
         prizeAmount = 0;
         for (let i = 0; i < data_max.length; i++) {
+            if (data_max[i]._id == 'pending')
+                betAmount += data_max[i].entryFee;
             if (data_max[i]._id == 'lost')
                 betAmount += data_max[i].entryFee;
             if (data_max[i]._id == 'win')
@@ -918,25 +993,20 @@ const getRevenue = async (req, res) => {
 }
 
 const changeBet = async (req, res) => {
-    try{
-        let now = new Date();
-        now.setUTCHours(12, 0, 0, 0);
-        let bets = await Bet.find({
-            createdAt: {
-                $gte: now
-            },
-        });
-        for(let bet of bets){
-            for(let pick of bet.picks) {
-                let event = await Event.findById(pick.contestId);
-                if(!event.participants.includes(bet._id)) {
-                    event.participants.push(bet._id);                    
-                    await event.save();
-                }                
-            }
-        }
-        res.json(bets);
-    } catch(error){
+    try {
+        let bet = await Bet.findById(new ObjectId("6519980e644c75165594de46"));
+        delete bet.updateAt;
+        await bet.save();
+        // let bets = await Bet.find();
+
+        // for(let bet of bets) {
+        //     if(bet.updateAt){
+        //         delete bet.updateAt;            
+        //         await bet.save();
+        //     }
+        // }        
+        res.json("success");
+    } catch (error) {
         console.log(error);
     }
 }
@@ -953,5 +1023,6 @@ module.exports = {
     giveRewards,
     cancelWrongBets,
     getRevenue,
-    changeBet
+    changeBet,
+    getRevenue
 }
