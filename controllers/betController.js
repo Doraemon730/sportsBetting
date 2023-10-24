@@ -19,7 +19,7 @@ const startBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
         let { entryFee, betType, picks, currencyType } = req.body;
-
+        let orginEntry = entryFee;
         const jsonArray = JSON.parse(picks);
         if (jsonArray.length < 2 || jsonArray.length > 6) {
             return res.status(400).json({ message: "Invalid Betting." });
@@ -74,26 +74,25 @@ const startBetting = async (req, res) => {
             picks: jsonArray,
             credit: creditSave,
         });
-
+        let discountCnt = 0;
         for (const element of jsonArray) {
             const eventId = new ObjectId(element.contestId);
-            let NBAProps = ["Points", "Assists", "Rebounds", "3-PT Made", "Steals", "Blocks", "Turnovers", "Points+Rebounds", "Points+Assists", "Rebounds+Assists", "Pts+Rebs+Asts", "Blocks+Steals"]
-            if (NBAProps.includes(element.prop.propName)) {
-                const player = await Player.findById(new ObjectId(element.playerId))
-                const propId = await Prop.findOne({ displayName: element.prop.propName })
-                let index = player.odds.findIndex(item => String(item.id) == String(propId._id))
-                if (index < 0) {
-                    user.isPending = false;
-                    await user.save();
-                    return res.status(400).send({ message: "Invalid Betting." });
-                }
-                if (element.prop.odds != player.odds[index].value) {
-                    user.isPending = false;
-                    await user.save();
-                    return res.status(400).send({ message: "Invalid Betting." });
-                }
-            }
-
+            // let NBAProps = ["Points", "Assists", "Rebounds", "3-PT Made", "Steals", "Blocks", "Turnovers", "Points+Rebounds", "Points+Assists", "Rebounds+Assists", "Pts+Rebs+Asts", "Blocks+Steals"]
+            // if (NBAProps.includes(element.prop.propName)) {
+            //     const player = await Player.findById(new ObjectId(element.playerId))
+            //     const propId = await Prop.findOne({ displayName: element.prop.propName })
+            //     let index = player.odds.findIndex(item => String(item.id) == String(propId._id))
+            //     if (index < 0) {
+            //         user.isPending = false;
+            //         await user.save();
+            //         return res.status(400).send({ message: "Invalid Betting." });
+            //     }
+            //     if (element.prop.odds != player.odds[index].value) {
+            //         user.isPending = false;
+            //         await user.save();
+            //         return res.status(400).send({ message: "Invalid Betting." });
+            //     }
+            // }            
             const event = await Event.findById(eventId);
             if (!event) {
                 user.isPending = false;
@@ -106,11 +105,30 @@ const startBetting = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Contest has already started." });
             }
+            const discount = await Discount.find({playerId: element.playerId, propName: element.prop.propName});
+            if(discount) {
+                if(discountCnt > 0) {
+                    user.isPending = false;
+                    return res.status(400).send({ message: "Invalid Betting. Select Only one discount" });
+                }
+
+                if(discount.users.includes(userId)) {
+                    user.isPending = false;
+                    return res.status(400).send({ message: "Invalid Betting. Only one time for discount" });
+                }
+                if(orginEntry > 25) {
+                    user.isPending = false;
+                    return res.status(400).send({ message: "Invalid Betting. Maximum amount of Discount bet is $25" });
+                }
+                discount.users.push(userId);     
+                discountCnt += 1;
+            }
 
             if (!event.participants.includes(myBet._id)) {
                 event.participants.push(myBet._id);
                 await event.save();
             }
+
         }
         user.ETH_balance -= entryFeeEther;
         user.totalBetAmount += parseFloat(entryFeeSave);
