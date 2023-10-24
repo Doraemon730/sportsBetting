@@ -919,18 +919,23 @@ const getRevenue = async (req, res) => {
 
 const changeBet = async (req, res) => {
     try{
-        let bet = await Bet.findById(new ObjectId("6519980e644c75165594de46"));
-        delete bet.updateAt;
-        await bet.save();
-        // let bets = await Bet.find();
-
-        // for(let bet of bets) {
-        //     if(bet.updateAt){
-        //         delete bet.updateAt;            
-        //         await bet.save();
-        //     }
-        // }        
-        res.json("success");
+        let now = new Date();
+        now.setUTCHours(12, 0, 0, 0);
+        let bets = await Bet.find({
+            createdAt: {
+                $gte: now
+            },
+        });
+        for(let bet of bets){
+            for(let pick of bet.picks) {
+                let event = await Event.findById(pick.contestId);
+                if(!event.participants.includes(bet._id)) {
+                    event.participants.push(bet._id);                    
+                    await event.save();
+                }                
+            }
+        }
+        res.json(bets);
     } catch(error){
         console.log(error);
     }
