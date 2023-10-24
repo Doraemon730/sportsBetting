@@ -27,6 +27,9 @@ const BetSchema = new mongoose.Schema({
     enum: ['low', 'high'],
     required: true
   },
+  willFinishAt: {
+    type: Date,
+  },
   picks: [{
     playerId: {
       type: mongoose.Schema.Types.ObjectId,
