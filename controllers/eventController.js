@@ -155,6 +155,7 @@ const getWeeklyEventsNFL = async () => {
                         sportId: new ObjectId('650e0b6fb80ab879d1c142c8')
                     });
                     if (!player || !prop) continue;
+                    const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
                     let minOdds = 100, minIndex = -1, total = -1;
                     let books = market.books.filter(item => item.name != "DraftKings");
                     // let book = books.find(item => item.name == "FanDuel");
@@ -282,6 +283,7 @@ const getWeeklyEventsNHL = async () => {
                         sportId: new ObjectId('65108faf4fa2698548371fbd')
                     });
                     if (!player || !prop) continue;
+                    const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
                     let minOdds = 100, minIndex = -1, total = -1;
                     let books = market.books.filter(item => item.name != "DraftKings");
                     // let book = books.find(item => item.name == "FanDuel");
