@@ -67,11 +67,19 @@ const startBetting = async (req, res) => {
             }
         }
 
+        let willFinishAt = new Date();
+        for (const element of jsonArray) {
+            let event = await Event.findOne({ _id: new ObjectId(element.contestId) })
+            if (event.startTime > willFinishAt)
+                willFinishAt = event.startTime;
+        }
+
         const myBet = new Bet({
             userId,
             entryFee: entryFeeSave,
             entryFeeETH: entryFeeEtherSave,
             betType,
+            willFinishAt,
             picks: jsonArray,
             credit: creditSave,
         });
@@ -211,11 +219,19 @@ const startFirstFreeBetting = async (req, res) => {
             }
         }
 
+        let willFinishAt = new Date();
+        for (const element of jsonArray) {
+            let event = await Event.findOne({ _id: new ObjectId(element.contestId) })
+            if (event.startTime > willFinishAt)
+                willFinishAt = event.startTime;
+        }
+
         const myBet = new Bet({
             userId,
             entryFee: entryFeeSave,
             entryFeeETH: entryFeeEtherSave,
             betType,
+            willFinishAt,
             picks: jsonArray,
             parlay: true,
             credit: 0,
