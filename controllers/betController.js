@@ -106,7 +106,9 @@ const startBetting = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Contest has already started." });
             }
-            const discount = await Discount.findOne({ playerId: element.playerId, propName: element.prop.propName });
+            let today = new Date()
+            today.setHours(0, 0, 0, 0);
+            const discount = await Discount.findOne({ playerId: element.playerId, propName: element.prop.propName, date: today });
             console.log(element.playerId)
             console.log(JSON.stringify(discount))
             if (discount) {
@@ -234,6 +236,37 @@ const startFirstFreeBetting = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Contest has already started." });
             }
+            let today = new Date()
+            today.setHours(0, 0, 0, 0);
+            const discount = await Discount.findOne({ playerId: element.playerId, propName: element.prop.propName, date: today });
+            console.log(element.playerId)
+            console.log(JSON.stringify(discount))
+            if (discount) {
+                console.log(discountCnt)
+                console.log(orginEntry)
+                if (discountCnt > 0) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting. Select Only one discount" });
+                }
+
+                if (discount.users && discount.users.includes(userId)) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting. Only one time for discount" });
+                }
+                if (orginEntry > 25) {
+                    user.isPending = false;
+                    await user.save();
+                    return res.status(400).send({ message: "Invalid Betting. Maximum amount of Discount bet is $25" });
+                }
+                if (!discount.users)
+                    discount.users = [];
+                discount.users.push(userId);
+                await discount.save();
+                discountCnt += 1;
+            }
+
 
             if (!event.participants.includes(myBet._id)) {
                 event.participants.push(myBet._id);

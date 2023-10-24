@@ -216,7 +216,7 @@ const getTopPlayerBy = async (req, res) => {
           break;
       }
 
-      now.setUTCHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
         let discountPlayer = await Discount.findOne({
           date: now,
@@ -329,7 +329,7 @@ const getTopPlayerBySport = async (req, res) => {
 
 const getImage = async (req, res) => {
   try {
-    let {fileName} = req.body;
+    let { fileName } = req.body;
     await fetchImageFromPrize(fileName);
     res.json("success");
   } catch (error) {
@@ -339,22 +339,21 @@ const getImage = async (req, res) => {
 
 const setNBAImage = async (req, res) => {
   try {
-    let players = await Player.find({sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
-    for(let player of players){
+    let players = await Player.find({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855') });
+    for (let player of players) {
       let name = player.name.replace(' ', '_');
-      let fileName = name + "_" + player.remoteId + ".webp";      
+      let fileName = name + "_" + player.remoteId + ".webp";
       let path = Path.resolve(__dirname, '../public/images', fileName);
       console.log(path);
-      if(fs.existsSync(path))
-      {  
+      if (fs.existsSync(path)) {
         console.log("File Exist");
         player.headshot = fileName;
         await player.save();
       }
       else
         console.log("not Found");
-    }    
-     res.json("Success");
+    }
+    res.json("Success");
   } catch (error) {
     console.log(error);
   }
@@ -509,13 +508,12 @@ const updateNBAPlayers = async () => {
 
 const updateNFLPlayers = async (req, res) => {
   try {
-    const players = await Player.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
+    const players = await Player.find({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8') });
     for (const player of players) {
-      if(player.headshot)
-      {
+      if (player.headshot) {
         player.headshot = player.headshot + ".png";
         await player.save();
-      }  
+      }
     }
     res.json("success");
   } catch (error) {
@@ -675,7 +673,7 @@ const updateMLBPlayers = async () => {
 const updateSoccerPlayers = async (req, res) => {
   try {
     const players = await Player.find({ sportId: new ObjectId("65131974db50d0c2c8bf7aa7") });
-    
+
     for (const player of players) {
       console.log(player);
       player.remoteId = player.srId;
