@@ -159,6 +159,12 @@ const getTopPlayerBy = async (req, res) => {
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
       switch (prop.displayName) {
+        // case "Points":
+        //   let LebronIndex = result[prop.displayName].findIndex(item => item.playerName == "LeBron James");
+        //   result[prop.displayName][LebronIndex].odds = 0.5;
+        //   let StephenIndex = result[prop.displayName].findIndex(item => item.playerName == "Stephen Curry");
+        //   result[prop.displayName][StephenIndex].odds = 0.5;
+        //   break;
         case "Rush+Rec Yards":
           result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
           break;
@@ -210,12 +216,12 @@ const getTopPlayerBy = async (req, res) => {
           break;
       }
 
-      now.setHours(0, 0, 0, 0);
+      now.setUTCHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
         let discountPlayer = await Discount.findOne({
           date: now,
           playerId: player.playerId,
-          propId: player.propId
+          propName: prop.displayName
         }).populate('propId');
         if (!discountPlayer) {
           return player;
