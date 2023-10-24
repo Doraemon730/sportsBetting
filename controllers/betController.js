@@ -9,6 +9,7 @@ const Event = require('../models/Event');
 const Player = require('../models/Player');
 const Prop = require('../models/Prop');
 const Capital = require('../models/Capital');
+const Discount = require('../models/Discount');
 const { getReferralPrize } = require("../controllers/referralController")
 const { ObjectId } = require("mongodb");
 const { USD2Ether, Ether2USD } = require("../utils/util");
@@ -105,22 +106,32 @@ const startBetting = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Contest has already started." });
             }
-            const discount = await Discount.find({playerId: element.playerId, propName: element.prop.propName});
-            if(discount) {
-                if(discountCnt > 0) {
+            const discount = await Discount.findOne({ playerId: element.playerId, propName: element.prop.propName });
+            console.log(element.playerId)
+            console.log(JSON.stringify(discount))
+            if (discount) {
+                console.log(discountCnt)
+                console.log(orginEntry)
+                if (discountCnt > 0) {
                     user.isPending = false;
+                    await user.save();
                     return res.status(400).send({ message: "Invalid Betting. Select Only one discount" });
                 }
 
-                if(discount.users.includes(userId)) {
+                if (discount.users && discount.users.includes(userId)) {
                     user.isPending = false;
+                    await user.save();
                     return res.status(400).send({ message: "Invalid Betting. Only one time for discount" });
                 }
-                if(orginEntry > 25) {
+                if (orginEntry > 25) {
                     user.isPending = false;
+                    await user.save();
                     return res.status(400).send({ message: "Invalid Betting. Maximum amount of Discount bet is $25" });
                 }
-                discount.users.push(userId);     
+                if (!discount.users)
+                    discount.users = [];
+                discount.users.push(userId);
+                await discount.save();
                 discountCnt += 1;
             }
 
