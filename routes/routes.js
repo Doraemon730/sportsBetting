@@ -184,7 +184,7 @@ router.post('/player/props',
     playerController.getPlayerProp);
 
 router.post('/admin/player/setDiscount',
-    admin,
+    // admin,
     discountController.setDiscount);
 
 // Promotion routes

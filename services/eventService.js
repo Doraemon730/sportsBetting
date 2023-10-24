@@ -126,7 +126,7 @@ const fetchEventPlayerProps = async (event) => {
     return playerProps;
   })
   .catch(error => {
-    console.log('Error retrieving NBA schedule:' + error);
+    console.log('Error retrieving Odds Props' + error);
   });
 }
 
@@ -137,7 +137,7 @@ const fetchNFLGameSummary = async (matchId) => {
         return statistics;
     })
     .catch(error => {
-        console.log('Error retrieving NFL schedule:' + error);
+        console.log('Error retrieving NFL Summary:' + error);
     });
 }
 
