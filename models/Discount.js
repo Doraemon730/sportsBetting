@@ -21,7 +21,22 @@ const DiscountSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'props',
         required: true,
+    },
+    propName: {
+        type: String,
+        required:true,
+    },
+    users: [
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'user'
+        }
+    ]
+},{
+    timestamps: {
+      createdAt: true,
+      updatedAt: true
     }
-});
+  });
 
 module.exports = mongoose.model('discount', DiscountSchema);

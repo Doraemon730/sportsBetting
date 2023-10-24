@@ -5,12 +5,12 @@ const { ObjectId } = require('mongodb')
 
 const setDiscount = async (req, res) => {
     try {
-        let { playerId, date, original, discount, propId } = req.body;
+        let { playerId, date, original, discount, propId, propName } = req.body;
         date = new Date(date);
-        date.setHours(0, 0, 0, 0);
+        date.setUTCHours(0, 0, 0, 0);
         let data = await Discount.findOne({ playerId: new ObjectId(playerId) });
         if (data) {
-            data = await Discount.findOneAndUpdate({ playerId: new ObjectId(playerId) }, { $set: { date, original, discount, propId } });
+            data = await Discount.findOneAndUpdate({ playerId: new ObjectId(playerId) }, { $set: { date, original, discount, propId, propName} });
             return res.json(data);
         }
         data = new Discount({
@@ -18,7 +18,8 @@ const setDiscount = async (req, res) => {
             date,
             original,
             discount,
-            propId: new ObjectId(propId)
+            propId: new ObjectId(propId),
+            propName
         });
 
         await data.save();
