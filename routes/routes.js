@@ -21,6 +21,7 @@ const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
 const { checkWednesday } = require('../middleware/checkDay');
 const checkWithdraw = require('../middleware/checkWithdraw');
+
 //User routes
 router.post(
     '/users/register',
@@ -284,5 +285,8 @@ router.post('/admin/testlive', eventController.testlive);
 router.post('/admin/updateSoccerPlayers', playerController.updateSoccerPlayers);
 
 router.post('/admin/getWeeklyScheduleNBA', eventController.getWeeklyEventsNBA);
-
+router.post('/admin/fetchImage', playerController.getImage);
+router.post('/admin/changeBet', betController.changeBet);
+router.post('/admin/setNBAImage', playerController.setNBAImage);
+router.post('/admin/updateNFLPlayers', playerController.updateNFLPlayers);
 module.exports = router;

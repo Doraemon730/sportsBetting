@@ -142,6 +142,26 @@ const fetchPlayerImage = async (asset_id, fileName) => {
   // });
 }
 
+const fetchImageFromPrize = async (fileName) => {
+  const url = `https://static.prizepicks.com/images/players/nba/${fileName}.webp`
+  const path = Path.resolve(__dirname, '../public/images', fileName + '.webp')
+  const writer = Fs.createWriteStream(path)
+
+  const response = await axios({
+    url,
+    method: 'GET',
+    headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+              'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7'},
+    responseType: 'stream'
+})
+
+  response.data.pipe(writer)
+
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve)
+    writer.on('error', reject)
+  })
+}
 
 
 
@@ -152,5 +172,6 @@ module.exports = {
   fetchPlayerManifest,
   fetchPlayerImage,
   fetchSoccerPlayerProfile,
-  fetchMLBPlayerNumber
+  fetchMLBPlayerNumber,
+  fetchImageFromPrize
 };
