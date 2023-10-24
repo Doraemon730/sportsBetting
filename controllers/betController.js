@@ -238,6 +238,7 @@ const startFirstFreeBetting = async (req, res) => {
         });
 
 
+        let discountCnt = 0;
         for (const element of jsonArray) {
             const eventId = new ObjectId(element.contestId);
 
@@ -600,6 +601,41 @@ const cancelWrongBets = async (req, res) => {
     } catch (error) { }
 
 
+}
+
+const cancelBetByBetId = async (req, res) => {
+    try {
+        const { betId } = req.body;
+        if (!betId)
+            return res.status(404).json("Invalid Bet!");
+        const bet = await Bet.findOne({ _id: new ObjectId(betId) });
+        if (!bet) {
+            return res.status(404).json("Invalid Bet!");
+        }
+        let user = await User.findOne({ _id: bet.userId });
+        if (bet.parlay) {
+            if (bet.entryFee == 10)
+                user.firstSix = 1;
+            if (bet.entryFee == 25)
+                user.promotion = new ObjectId('64fbe8cd009753bb7aa7a4fb');
+        } else {
+            if (bet.credit > 0)
+                user.credits += bet.credit;
+            let entryETH = await USD2Ether(bet.entryFee - bet.credit);
+            user.ETH_balance += entryETH;
+            await updateTotalBalanceAndCredits(entryETH, bet.credit);
+        }
+        user.totalBetAmount -= bet.entryFee
+        user = setUserLevel(user);
+        await user.save();
+        bet.status = 'canceled';
+        await bet.save();
+        user.password = undefined;
+        user.privateKey = undefined;
+        res.json({ betInfo: bet, userInfo: user });
+    } catch (error) {
+        res.status(500).send('Server error');
+    }
 }
 
 const cancelBet = async (req, res) => {
@@ -1024,5 +1060,6 @@ module.exports = {
     cancelWrongBets,
     getRevenue,
     changeBet,
-    getRevenue
+    getRevenue,
+    cancelBetByBetId
 }
