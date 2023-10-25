@@ -1851,10 +1851,9 @@ const updateNFLBet = async (event) => {
                     }
                 }
             }
-            else
-            {
+            else {
                 await bet.save();
-                
+
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
@@ -2183,10 +2182,9 @@ const updateNBABet = async (event) => {
                     }
                 }
             }
-            else
-            {
+            else {
                 await bet.save();
-                
+
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
@@ -2492,7 +2490,7 @@ const updateCFBBet = async (event) => {
             }
             else {
                 await bet.save();
-                
+
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
@@ -2838,8 +2836,7 @@ const updateMLBBet = async (event) => {
                     }
                 }
             }
-            else
-            {
+            else {
                 await bet.save();
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
@@ -3420,7 +3417,7 @@ const updateSoccerBet = async (event) => {
             } else {
                 await bet.save();
                 console.log("Bet udpated : " + JSON.stringify(bet));
-            }            
+            }
 
         }
         event.state = 3;

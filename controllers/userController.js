@@ -58,7 +58,9 @@ const registerUser = async (req, res) => {
     await myReferral.save();
 
     if (!isEmpty(referralCode)) {
-      const referral = await Referral.findOne({ referralCode });
+      const referral = await Referral.findOne({ referralCode: { $regex: new RegExp("^" + referralCode.toLowerCase(), "i") } });
+      // console.log(JSON.stringify(referral))
+      // const referral = await Referral.findOne({ referralCode });
       if (referral) {
         if (referral.invitesList == null) {
           referral.invitesList = [];
