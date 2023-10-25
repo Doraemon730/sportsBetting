@@ -1874,8 +1874,9 @@ const updateNBABet = async (event) => {
     try {
         console.log(event);
         const summary = await fetchNBAGameSummary(event.matchId);
-        console.log(JSON.stringify(summary));
-        if (!summary || summary.status != 'closed')
+        if (!summary)
+            return;
+        if (summary.status != 'closed' && summary.status != 'complete')
             return;
         const players = summarizeNBAStatsByPlayer(summary);
         console.log(players);
