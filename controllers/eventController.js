@@ -1840,6 +1840,12 @@ const updateNFLBet = async (event) => {
                     }
                 }
             }
+            else
+            {
+                await bet.save();
+                
+                console.log("Bet udpated : " + JSON.stringify(bet));
+            }
         }
         event.state = 3;
         await event.save();
@@ -2154,6 +2160,12 @@ const updateNBABet = async (event) => {
                     }
                 }
             }
+            else
+            {
+                await bet.save();
+                
+                console.log("Bet udpated : " + JSON.stringify(bet));
+            }
         }
         event.state = 3;
         await event.save();
@@ -2243,29 +2255,7 @@ const updateCFBBet = async (event) => {
                     }
                 }
             }
-            if (refund) {
-                if (bet.betType == "high" && lost > 0) {
-                    console.log("lost");
-                    bet.prize = 0;
-                    bet.status = "lost";
-                    await bet.save();
-                    await updateBetResult(false);
-                    await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
-                } else {
-                    console.log('refund');
-                    const user = await User.findById(bet.userId);
-                    if (bet.credit > 0)
-                        user.credits += bet.credit;
-                    //let entryETH = await USD2Ether(bet.entryFee - bet.credit);
-                    //user.ETH_balance += entryETH;
-                    //await updateTotalBalanceAndCredits(entryETH, bet.credit);
-                    bet.status = 'refund';
-                    await bet.save();
-                    await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
-                    await user.save();
-                }
-                continue;
-            }
+
             if (finished == bet.picks.length) {
                 if (refund) {
                     if (bet.betType == "high" && lost > 0) {
@@ -2467,6 +2457,11 @@ const updateCFBBet = async (event) => {
                         await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                     }
                 }
+            }
+            else {
+                await bet.save();
+                
+                console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
         event.state = 3;
@@ -2802,6 +2797,11 @@ const updateMLBBet = async (event) => {
                     }
                 }
             }
+            else
+            {
+                await bet.save();
+                console.log("Bet udpated : " + JSON.stringify(bet));
+            }
 
         }
         event.state = 3;
@@ -3079,6 +3079,10 @@ const updateNHLBet = async (event) => {
                     }
                 }
             }
+            else {
+                await bet.save();
+                console.log("Bet udpated : " + JSON.stringify(bet));
+            }
 
         }
         event.state = 3;
@@ -3353,7 +3357,10 @@ const updateSoccerBet = async (event) => {
                         await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
                     }
                 }
-            }
+            } else {
+                await bet.save();
+                console.log("Bet udpated : " + JSON.stringify(bet));
+            }            
 
         }
         event.state = 3;
