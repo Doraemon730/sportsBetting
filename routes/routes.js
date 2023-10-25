@@ -167,12 +167,16 @@ router.post('/contest/updateContest',
 
 // Team routes
 router.post('/team/fetchAllNBATeams',
-    // admin,
+    admin,
     teamController.addNBATeamsToDatabase);
+
+router.post('/team/getTeamList',
+
+    teamController.getTeamListBySport);
 
 // Player routes
 router.post('/player/fetchAllNBAPlayers',
-    //admin,
+    admin,
     playerController.addNBAPlayersToDatabase);
 
 router.post('/player/updateNBAPlayer',
@@ -184,7 +188,7 @@ router.post('/player/props',
     playerController.getPlayerProp);
 
 router.post('/admin/player/setDiscount',
-    // admin,
+     admin,
     discountController.setDiscount);
 
 // Promotion routes

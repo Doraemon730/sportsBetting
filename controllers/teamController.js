@@ -183,6 +183,17 @@ const addSoccerTeam = async (req, res) => {
         res.status(500).send("Error");
     }
 }
+
+const getTeamListBySport = async (req, res) => {
+    try {
+        let {sportId} = req.body;        
+        const teams = await Team.find({sportId: new ObjectId(sportId)}).select('alias name');
+        res.json(teams);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send("Error");
+    }
+}
 module.exports = {
     addNBATeamsToDatabase,
     getIdfromRemoteId,
@@ -192,5 +203,6 @@ module.exports = {
     addMLBTeamsToDatabase,
     remove,
     addSoccerTeam,
-    addCFBTeamToDatabase
+    addCFBTeamToDatabase,
+    getTeamListBySport
 }
