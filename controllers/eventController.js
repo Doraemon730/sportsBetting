@@ -1470,32 +1470,32 @@ const getNBAData = (detailData) => {
         remoteId: detailData.player.id,
         name: detailData.player.full_name
     }
-    if (detailData.statistics) {
-        player['Points'] = detailData.statistics.points ? detailData.statistics.points : 0;
-        player['Assists'] = detailData.statistics.assists ? detailData.statistics.assists : 0;
-        player['Rebounds'] = detailData.statistics.rebounds ? detailData.statistics.rebounds : 0;
-        player['3-PT Made'] = detailData.statistics.three_points_made ? detailData.statistics.three_points_made : 0;
-        player['Steals'] = detailData.statistics.steals ? detailData.statistics.steals : 0;
-        player['Blocks'] = detailData.statistics.blocks ? detailData.statistics.blocks : 0;
-        player['Turnovers'] = detailData.statistics.turnovers ? detailData.statistics.turnovers : 0;
-        if (detailData.statistics.points && detailData.statistics.rebounds)
-            player['Points+Rebounds'] = detailData.statistics.points + detailData.statistics.rebounds;
+    if (detailData.player.statistics) {
+        player['Points'] = detailData.player.statistics.points ? detailData.player.statistics.points : 0;
+        player['Assists'] = detailData.player.statistics.assists ? detailData.player.statistics.assists : 0;
+        player['Rebounds'] = detailData.player.statistics.rebounds ? detailData.player.statistics.rebounds : 0;
+        player['3-PT Made'] = detailData.player.statistics.three_points_made ? detailData.player.statistics.three_points_made : 0;
+        player['Steals'] = detailData.player.statistics.steals ? detailData.player.statistics.steals : 0;
+        player['Blocks'] = detailData.player.statistics.blocks ? detailData.player.statistics.blocks : 0;
+        player['Turnovers'] = detailData.player.statistics.turnovers ? detailData.player.statistics.turnovers : 0;
+        if (detailData.player.statistics.points && detailData.player.statistics.rebounds)
+            player['Points+Rebounds'] = detailData.player.statistics.points + detailData.player.statistics.rebounds;
         else
             player['Points+Rebounds'] = 0;
-        if (detailData.statistics.points && detailData.statistics.assists)
-            player['Points+Assists'] = detailData.statistics.points + detailData.statistics.assists;
+        if (detailData.player.statistics.points && detailData.player.statistics.assists)
+            player['Points+Assists'] = detailData.player.statistics.points + detailData.player.statistics.assists;
         else
             player['Points+Assists'] = 0;
-        if (detailData.statistics.rebounds && detailData.statistics.assists)
-            player['Rebounds+Assists'] = detailData.statistics.rebounds + detailData.statistics.assists;
+        if (detailData.player.statistics.rebounds && detailData.player.statistics.assists)
+            player['Rebounds+Assists'] = detailData.player.statistics.rebounds + detailData.player.statistics.assists;
         else
             player['Rebounds+Assists'] = 0;
-        if (detailData.statistics.points && detailData.statistics.rebounds && detailData.statistics.assists)
-            player['Pts+Rebs+Asts'] = detailData.statistics.points + detailData.statistics.rebounds + detailData.statistics.assists;
+        if (detailData.player.statistics.points && detailData.player.statistics.rebounds && detailData.player.statistics.assists)
+            player['Pts+Rebs+Asts'] = detailData.player.statistics.points + detailData.player.statistics.rebounds + detailData.player.statistics.assists;
         else
             player['Pts+Rebs+Asts'] = 0;
-        if (detailData.statistics.blocks && detailData.statistics.steals)
-            player['Blocks+Steals'] = detailData.statistics.blocks + detailData.statistics.steals;
+        if (detailData.player.statistics.blocks && detailData.player.statistics.steals)
+            player['Blocks+Steals'] = detailData.player.statistics.blocks + detailData.player.statistics.steals;
         else
             player['Blocks+Steals'] = 0;
     }
