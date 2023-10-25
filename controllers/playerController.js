@@ -359,6 +359,28 @@ const setNBAImage = async (req, res) => {
   }
 }
 
+const setNHLImage = async (req, res) => {
+  try {
+    let players = await Player.find({ sportId: new ObjectId('65108faf4fa2698548371fbd') });
+    for (let player of players) {
+      let name = player.name.replace(' ', '_');
+      let fileName = name + "_" + player.remoteId + ".webp";
+      let path = Path.resolve(__dirname, '../public/images', fileName);
+      console.log(path);
+      if (fs.existsSync(path)) {
+        console.log("File Exist");
+        player.headshot = fileName;
+        await player.save();
+      }
+      else
+        console.log("not Found");
+    }
+    res.json("Success");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 const getPlayersByProps = async (req, res) => {
   const {
     sportName,
@@ -780,5 +802,6 @@ module.exports = {
   updateSoccerPlayers,
   getImage,
   setNBAImage,
-  updateNFLPlayers
+  updateNFLPlayers,
+  setNHLImage
 };
