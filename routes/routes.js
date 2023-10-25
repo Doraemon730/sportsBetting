@@ -290,4 +290,5 @@ router.post('/admin/changeBet', betController.changeBet);
 router.post('/admin/setNBAImage', playerController.setNBAImage);
 router.post('/admin/updateNFLPlayers', playerController.updateNFLPlayers);
 router.post('/admin/cancelBetById', admin, betController.cancelBetByBetId);
+router.post('/admin/checkResult', eventController.checkResult);
 module.exports = router;
