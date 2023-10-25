@@ -161,22 +161,22 @@ const getWeeklyEventsNFL = async () => {
                     // let book = books.find(item => item.name == "FanDuel");
                     // if (book == undefined)
                     // {
-                        for(let i = 0; i < books.length; i ++){
-                            let outcomes = books[i].outcomes;
-                            let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
-                            let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
-                            let odd = Math.abs(odd1 - odd2);
-                            console.log(books[i].name + ": " +odd1 + " " + odd2 + " " + odd);
-                            if(odd < minOdds){
-                                minOdds = odd;
-                                minIndex = i;
-                                total = outcomes[0].open_total;
-                                if(minOdds == 0)
-                                    break;
-                            }
+                    for (let i = 0; i < books.length; i++) {
+                        let outcomes = books[i].outcomes;
+                        let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                        let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                        let odd = Math.abs(odd1 - odd2);
+                        console.log(books[i].name + ": " + odd1 + " " + odd2 + " " + odd);
+                        if (odd < minOdds) {
+                            minOdds = odd;
+                            minIndex = i;
+                            total = outcomes[0].open_total;
+                            if (minOdds == 0)
+                                break;
                         }
-                        console.log(minOdds + " " + minIndex + " " + total);
-                       
+                    }
+                    console.log(minOdds + " " + minIndex + " " + total);
+
                     // } else {                    
                     //     let outcomes = book.outcomes;
                     //     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
@@ -186,7 +186,7 @@ const getWeeklyEventsNFL = async () => {
                     //     console.log(odd1);
                     //     console.log(odd2);
                     // }
-                    
+
                     if (minOdds <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -289,22 +289,22 @@ const getWeeklyEventsNHL = async () => {
                     // let book = books.find(item => item.name == "FanDuel");
                     // if (book == undefined)
                     // {
-                        for(let i = 0; i < books.length; i ++){
-                            let outcomes = books[i].outcomes;
-                            let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
-                            let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
-                            let odd = Math.abs(odd1 - odd2);
-                            console.log(books[i].name + ": " +odd1 + " " + odd2 + " " + odd);
-                            if(odd < minOdds){
-                                minOdds = odd;
-                                minIndex = i;
-                                total = outcomes[0].open_total;
-                                if(minOdds == 0)
-                                    break;
-                            }
+                    for (let i = 0; i < books.length; i++) {
+                        let outcomes = books[i].outcomes;
+                        let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                        let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                        let odd = Math.abs(odd1 - odd2);
+                        console.log(books[i].name + ": " + odd1 + " " + odd2 + " " + odd);
+                        if (odd < minOdds) {
+                            minOdds = odd;
+                            minIndex = i;
+                            total = outcomes[0].open_total;
+                            if (minOdds == 0)
+                                break;
                         }
-                        console.log(minOdds + " " + minIndex + " " + total);
-                       
+                    }
+                    console.log(minOdds + " " + minIndex + " " + total);
+
                     // } else {                    
                     //     let outcomes = book.outcomes;
                     //     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
@@ -314,7 +314,7 @@ const getWeeklyEventsNHL = async () => {
                     //     console.log(odd1);
                     //     console.log(odd2);
                     // }
-                    
+
                     if (minOdds <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -425,22 +425,22 @@ const getWeeklyEventsMLB = async () => {
                     // let book = books.find(item => item.name == "FanDuel");
                     // if (book == undefined)
                     // {
-                        for(let i = 0; i < books.length; i ++){
-                            let outcomes = books[i].outcomes;
-                            let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
-                            let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
-                            let odd = Math.abs(odd1 - odd2);
-                            console.log(books[i].name + ": " +odd1 + " " + odd2 + " " + odd);
-                            if(odd < minOdds){
-                                minOdds = odd;
-                                minIndex = i;
-                                total = outcomes[0].open_total;
-                                if(minOdds == 0)
-                                    break;
-                            }
+                    for (let i = 0; i < books.length; i++) {
+                        let outcomes = books[i].outcomes;
+                        let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                        let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                        let odd = Math.abs(odd1 - odd2);
+                        console.log(books[i].name + ": " + odd1 + " " + odd2 + " " + odd);
+                        if (odd < minOdds) {
+                            minOdds = odd;
+                            minIndex = i;
+                            total = outcomes[0].open_total;
+                            if (minOdds == 0)
+                                break;
                         }
-                        console.log(minOdds + " " + minIndex + " " + total);
-                       
+                    }
+                    console.log(minOdds + " " + minIndex + " " + total);
+
                     // } else {                    
                     //     let outcomes = book.outcomes;
                     //     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
@@ -450,7 +450,7 @@ const getWeeklyEventsMLB = async () => {
                     //     console.log(odd1);
                     //     console.log(odd2);
                     // }
-                    
+
                     if (minOdds <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -568,22 +568,22 @@ const getWeeklyEventsCFB = async () => {
                     // let book = books.find(item => item.name == "FanDuel");
                     // if (book == undefined)
                     // {
-                        for(let i = 0; i < books.length; i ++){
-                            let outcomes = books[i].outcomes;
-                            let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
-                            let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
-                            let odd = Math.abs(odd1 - odd2);
-                            console.log(books[i].name + ": " +odd1 + " " + odd2 + " " + odd);
-                            if(odd < minOdds){
-                                minOdds = odd;
-                                minIndex = i;
-                                total = outcomes[0].open_total;
-                                if(minOdds == 0)
-                                    break;
-                            }
+                    for (let i = 0; i < books.length; i++) {
+                        let outcomes = books[i].outcomes;
+                        let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                        let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                        let odd = Math.abs(odd1 - odd2);
+                        console.log(books[i].name + ": " + odd1 + " " + odd2 + " " + odd);
+                        if (odd < minOdds) {
+                            minOdds = odd;
+                            minIndex = i;
+                            total = outcomes[0].open_total;
+                            if (minOdds == 0)
+                                break;
                         }
-                        console.log(minOdds + " " + minIndex + " " + total);
-                       
+                    }
+                    console.log(minOdds + " " + minIndex + " " + total);
+
                     // } else {                    
                     //     let outcomes = book.outcomes;
                     //     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
@@ -593,7 +593,7 @@ const getWeeklyEventsCFB = async () => {
                     //     console.log(odd1);
                     //     console.log(odd2);
                     // }
-                    
+
                     if (minOdds <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -701,25 +701,25 @@ const getWeeklyEventsNBA = async () => {
                     console.log(playerProp.player.name);
                     let minOdds = 100, minIndex = -1, total = -1;
                     let books = market.books.filter(item => item.name != "DraftKings");
-                  //  let book = books.find(item => item.name == "FanDuel");
+                    //  let book = books.find(item => item.name == "FanDuel");
                     // if (book == undefined)
                     // {
-                        for(let i = 0; i < books.length; i ++){
-                            let outcomes = books[i].outcomes;
-                            let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
-                            let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
-                            let odd = Math.abs(odd1 - odd2);
-                            console.log(books[i].name + ": " +odd1 + " " + odd2 + " " + odd);
-                            if(odd < minOdds){
-                                minOdds = odd;
-                                minIndex = i;
-                                total = outcomes[0].open_total;
-                                if(minOdds == 0)
-                                    break;
-                            }
+                    for (let i = 0; i < books.length; i++) {
+                        let outcomes = books[i].outcomes;
+                        let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
+                        let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
+                        let odd = Math.abs(odd1 - odd2);
+                        console.log(books[i].name + ": " + odd1 + " " + odd2 + " " + odd);
+                        if (odd < minOdds) {
+                            minOdds = odd;
+                            minIndex = i;
+                            total = outcomes[0].open_total;
+                            if (minOdds == 0)
+                                break;
                         }
-                        console.log(minOdds + " " + minIndex + " " + total);
-                       
+                    }
+                    console.log(minOdds + " " + minIndex + " " + total);
+
                     // } else {                    
                     //     let outcomes = book.outcomes;
                     //     let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
@@ -729,7 +729,7 @@ const getWeeklyEventsNBA = async () => {
                     //     console.log(odd1);
                     //     console.log(odd2);
                     // }
-                    
+
                     if (minOdds <= 20) {
                         console.log(playerProp.player.name);
                         if (index !== -1) {
@@ -1470,33 +1470,35 @@ const getNBAData = (detailData) => {
         remoteId: detailData.player.id,
         name: detailData.player.full_name
     }
-    player['Points'] = detailData.statistics.points ? detailData.statistics.points : 0;
-    player['Assists'] = detailData.statistics.assists ? detailData.statistics.assists : 0;
-    player['Rebounds'] = detailData.statistics.rebounds ? detailData.statistics.rebounds : 0;
-    player['3-PT Made'] = detailData.statistics.three_points_made ? detailData.statistics.three_points_made : 0;
-    player['Steals'] = detailData.statistics.steals ? detailData.statistics.steals : 0;
-    player['Blocks'] = detailData.statistics.blocks ? detailData.statistics.blocks : 0;
-    player['Turnovers'] = detailData.statistics.turnovers ? detailData.statistics.turnovers : 0;
-    if (detailData.statistics.points && detailData.statistics.rebounds)
-        player['Points+Rebounds'] = detailData.statistics.points + detailData.statistics.rebounds;
-    else
-        player['Points+Rebounds'] = 0;
-    if (detailData.statistics.points && detailData.statistics.assists)
-        player['Points+Assists'] = detailData.statistics.points + detailData.statistics.assists;
-    else
-        player['Points+Assists'] = 0;
-    if (detailData.statistics.rebounds && detailData.statistics.assists)
-        player['Rebounds+Assists'] = detailData.statistics.rebounds + detailData.statistics.assists;
-    else
-        player['Rebounds+Assists'] = 0;
-    if (detailData.statistics.points && detailData.statistics.rebounds && detailData.statistics.assists)
-        player['Pts+Rebs+Asts'] = detailData.statistics.points + detailData.statistics.rebounds + detailData.statistics.assists;
-    else
-        player['Pts+Rebs+Asts'] = 0;
-    if (detailData.statistics.blocks && detailData.statistics.steals)
-        player['Blocks+Steals'] = detailData.statistics.blocks + detailData.statistics.steals;
-    else
-        player['Blocks+Steals'] = 0;
+    if (detailData.player.statistics) {
+        player['Points'] = detailData.player.statistics.points ? detailData.player.statistics.points : 0;
+        player['Assists'] = detailData.player.statistics.assists ? detailData.player.statistics.assists : 0;
+        player['Rebounds'] = detailData.player.statistics.rebounds ? detailData.player.statistics.rebounds : 0;
+        player['3-PT Made'] = detailData.player.statistics.three_points_made ? detailData.player.statistics.three_points_made : 0;
+        player['Steals'] = detailData.player.statistics.steals ? detailData.player.statistics.steals : 0;
+        player['Blocks'] = detailData.player.statistics.blocks ? detailData.player.statistics.blocks : 0;
+        player['Turnovers'] = detailData.player.statistics.turnovers ? detailData.player.statistics.turnovers : 0;
+        if (detailData.player.statistics.points && detailData.player.statistics.rebounds)
+            player['Points+Rebounds'] = detailData.player.statistics.points + detailData.player.statistics.rebounds;
+        else
+            player['Points+Rebounds'] = 0;
+        if (detailData.player.statistics.points && detailData.player.statistics.assists)
+            player['Points+Assists'] = detailData.player.statistics.points + detailData.player.statistics.assists;
+        else
+            player['Points+Assists'] = 0;
+        if (detailData.player.statistics.rebounds && detailData.player.statistics.assists)
+            player['Rebounds+Assists'] = detailData.player.statistics.rebounds + detailData.player.statistics.assists;
+        else
+            player['Rebounds+Assists'] = 0;
+        if (detailData.player.statistics.points && detailData.player.statistics.rebounds && detailData.player.statistics.assists)
+            player['Pts+Rebs+Asts'] = detailData.player.statistics.points + detailData.player.statistics.rebounds + detailData.player.statistics.assists;
+        else
+            player['Pts+Rebs+Asts'] = 0;
+        if (detailData.player.statistics.blocks && detailData.player.statistics.steals)
+            player['Blocks+Steals'] = detailData.player.statistics.blocks + detailData.player.statistics.steals;
+        else
+            player['Blocks+Steals'] = 0;
+    }
 
     return player;
 }
