@@ -142,14 +142,15 @@ const fetchNFLGameSummary = async (matchId) => {
 }
 
 const fetchNBAGameSummary = async (matchId) => {
+    console.log(`${NBA_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiNBAKey}`);
     return axios.get(`${NBA_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiNBAKey}`)
-        .then(response => {
-            const statistics = response.data;
-            return statistics;
-        })
-        .catch(error => {
-            console.log('Error retrieving NBA Summary:' + error);
-        });
+    .then(response => {
+        const statistics = response.data;
+        return statistics;
+    })
+    .catch(error => {
+        console.log('Error retrieving NBA Summary:' + error);
+    });
 }
 
 const fetchCFBGameSummary = async (matchId) => {
