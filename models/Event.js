@@ -40,6 +40,10 @@ const EventSchema = new mongoose.Schema({
     },
     matchId: {
         type: String
+    },
+    saveStats: {
+        type: Number,
+        default: 0
     }
 
 }, { timestamps: true });
