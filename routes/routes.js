@@ -16,6 +16,7 @@ const referralController = require('../controllers/referralController');
 const eventController = require('../controllers/eventController');
 const configureController = require('../controllers/configureController');
 const bonusController = require('../controllers/bonusController');
+const playStatController = require('../controllers/playStatController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -296,4 +297,7 @@ router.post('/admin/updateNFLPlayers', playerController.updateNFLPlayers);
 router.post('/admin/cancelBetById', admin, betController.cancelBetByBetId);
 router.post('/admin/checkResult', eventController.checkResult);
 router.post('/admin/setNHLImage', playerController.setNHLImage);
+
+router.post('/admin/nbastats', playStatController.NBAstats);
+router.post('/admin/nflstats', playStatController.NFLstats);
 module.exports = router;
