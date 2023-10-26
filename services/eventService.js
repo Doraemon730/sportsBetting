@@ -58,7 +58,7 @@ const fetchPlayerMapping = async (start) => {
         });
 }
 const fetchWeeklyEventsNFL = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${NFL_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=16&start=0`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${NFL_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
         .then(response => {
             const events = response.data.schedules;
 
@@ -70,7 +70,7 @@ const fetchWeeklyEventsNFL = async () => {
 }
 
 const fetchWeeklyEventsNHL = async () => {
-    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${NHL_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}&offset=0&limit=16&start=0`)
+    return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/competitions/${NHL_COMPETITION_ID}/schedules.json?api_key=${apiOddsKey}`)
         .then(response => {
             const events = response.data.schedules;
 

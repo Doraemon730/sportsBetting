@@ -227,6 +227,9 @@ const getWeeklyEventsNHL = async () => {
         //console.log("NFL events count =" + events.length);
 
         let now = new Date();
+        console.log(now);
+        console.log(events.length);
+        console.log(JSON.stringify(events[events.length - 1]));
         events = events.filter(item => new Date(item.sport_event.start_time) > now);
         console.log("NHL events count =" + events.length);
         for (const event of events) {
@@ -289,7 +292,7 @@ const getWeeklyEventsNHL = async () => {
                     let minOdds = 100, minIndex = -1, total = -1;
                     //let books = market.books.filter(item => item.name != "DraftKings");
                     //let book = books.find(item => item.name == "FanDuel");
-                    let book = market.books.find(item => item.name == "FanDuel");
+                    let book = market.books.find(item => item.name == "MGM");
                     if (book)
                     {
                         let outcomes = book.outcomes;
@@ -1928,31 +1931,31 @@ const updateNBABet = async (event) => {
                                 result = play.statistics.turnovers != undefined ? play.statistics.turnovers : -1;
                                 break;
                             case 'Points+Rebounds':
-                                if (play.statistics.points && play.statistics.rebounds)
+                                if (play.statistics.points != undefined && play.statistics.rebounds != undefined)
                                     result = play.statistics.points + play.statistics.rebounds;
                                 else
                                     result = 0;
                                 break;
                             case 'Points+Assists':
-                                if (play.statistics.points && play.statistics.assists)
+                                if (play.statistics.points != undefined && play.statistics.assists != undefined)
                                     result = play.statistics.points + play.statistics.assists;
                                 else
                                     result = 0;
                                 break;
                             case 'Rebounds+Assists':
-                                if (play.statistics.rebounds && play.statistics.assists)
+                                if (play.statistics.rebounds != undefined && play.statistics.assists != undefined)
                                     result = play.statistics.rebounds + play.statistics.assists;
                                 else
                                     result = 0;
                                 break;
                             case 'Pts+Rebs+Asts':
-                                if (play.statistics.points && play.statistics.rebounds && play.statistics.assists)
+                                if (play.statistics.points != undefined && play.statistics.rebounds != undefined && play.statistics.assists != undefined)
                                     result = play.statistics.points + play.statistics.rebounds + play.statistics.assists;
                                 else
                                     result = 0;
                                 break;
                             case 'Blocks+Steals':
-                                if (play.statistics.blocks && play.statistics.steals)
+                                if (play.statistics.blocks != undefined && play.statistics.steals != undefined)
                                     result = play.statistics.blocks + play.statistics.steals;
                                 else
                                     result = 0;

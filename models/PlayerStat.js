@@ -9,8 +9,7 @@ const PlayerStatSchema = new mongoose.Schema({
   stats: [
     {
       gameName: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'props'
+        type: String
       },
       date: {
         type: Date,
