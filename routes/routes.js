@@ -189,7 +189,7 @@ router.post('/player/props',
     playerController.getPlayerProp);
 
 router.post('/admin/player/setDiscount',
-     admin,
+    admin,
     discountController.setDiscount);
 
 // Promotion routes
@@ -297,7 +297,7 @@ router.post('/admin/updateNFLPlayers', playerController.updateNFLPlayers);
 router.post('/admin/cancelBetById', admin, betController.cancelBetByBetId);
 router.post('/admin/checkResult', eventController.checkResult);
 router.post('/admin/setNHLImage', playerController.setNHLImage);
-
+router.post('/test/testReferral', userController.testReferral);
 router.post('/admin/nbastats', playStatController.NBAstats);
 router.post('/admin/nflstats', playStatController.NFLstats);
 module.exports = router;

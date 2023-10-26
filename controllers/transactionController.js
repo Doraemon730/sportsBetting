@@ -86,7 +86,7 @@ const depositBalance = async (req, res) => {
             user.level = "Unranked";
             let credits = parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
             user.credits += credits;
-            // await updateTotalBalanceAndCredits(0, credits);
+            await updateTotalBalanceAndCredits(0, credits);
             user.firstDepositAmount = parseFloat(amountUSD);
             await updateTotalUsers();
         }
