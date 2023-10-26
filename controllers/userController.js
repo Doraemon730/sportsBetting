@@ -16,6 +16,12 @@ const { updateTotalBalanceAndCredits } = require('../controllers/statisticsContr
 
 const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
+const testReferral = async (req, res) => {
+  const { referralCode } = req.body;
+  const users = await User.find({ referralCode: { $regex: new RegExp("^" + referralCode.toLowerCase(), "i") } });
+  res.json(users)
+}
+
 const registerUser = async (req, res) => {
   const { email, firstName, lastName, password, referralCode } = req.body;
   console.log("EMAIL: " + email + ",Password: " + password);
@@ -460,5 +466,6 @@ module.exports = {
   getWalletBalance,
   addBalanceAndCredits,
   getTotalBalance,
-  claimRewards
+  claimRewards,
+  testReferral
 };
