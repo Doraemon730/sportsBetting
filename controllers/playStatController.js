@@ -503,6 +503,19 @@ const recordStats = async () => {
     }
 }
 
+const getPlayerStats = async (req, res) => {
+    try {
+        let {playerId} = req.body;
+        let stats = await PlayerStat.findOne({playerId: new ObjectId(playerId)});
+        if(stats)
+            res.json(stats);
+        else
+            res.status(404).send("Player not found");
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Server Error");
+    }
+}
 module.exports = {
     recordNFLStat,
     recordMLBStat,
@@ -512,5 +525,6 @@ module.exports = {
     recordNBAStat,
     recordStats,
     NBAstats,
-    NFLstats
+    NFLstats,
+    getPlayerStats
 }
