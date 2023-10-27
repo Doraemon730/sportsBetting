@@ -43,7 +43,7 @@ const recordNFLStat = async (event) => {
         const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
         let index = -1;
         for(let player of rushingStats) {
-            let play = await Player.find({remoteId: player.id});
+            let play = await Player.findOne({remoteId: player.id});
             if(!play)
                 continue;
             let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
@@ -81,7 +81,7 @@ const recordNFLStat = async (event) => {
             }
 
             let play2 = passingStats.find(item => item.id == play.remoteId);
-            if(play1) {
+            if(play2) {
                 result.props.push({
                     propName: 'Pass+Rush Yards',
                     value: player.yards + play2.yards
@@ -96,7 +96,7 @@ const recordNFLStat = async (event) => {
             await playerStat.save();
         }
         for(let player of passingStats) {
-            let play = await Player.find({remoteId: player.id});
+            let play = await Player.findOne({remoteId: player.id});
             if(!play)
                 continue;
             let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
@@ -109,7 +109,8 @@ const recordNFLStat = async (event) => {
             }
             console.log(playerStat);                               
             index = playerStat.stats.length;
-            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date == event.startTime)
+            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
+            console.log(i);
             if(i == -1 && index >= 5)
                 contitnue;
             if(i == -1) {
@@ -119,7 +120,7 @@ const recordNFLStat = async (event) => {
                     props:[]
                 };
                 result.props.push({
-                    propName: 'Pass Yard',
+                    propName: 'Pass Yards',
                     value: player.yards
                 });
                 result.props.push({
@@ -166,7 +167,7 @@ const recordNFLStat = async (event) => {
         }
 
         for(let player of receivingStats) {
-            let play = await Player.find({remoteId: player.id});
+            let play = await Player.findOne({remoteId: player.id});
             if(!play)
                 continue;
             let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
@@ -179,7 +180,8 @@ const recordNFLStat = async (event) => {
             }
             console.log(playerStat);                               
             index = playerStat.stats.length;
-            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date == event.startTime)
+            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
+            console.log(i);
             if(i == -1 && index >= 5)
                 contitnue;
             if(i == -1) {
@@ -212,7 +214,7 @@ const recordNFLStat = async (event) => {
             }
         }
         for(let player of fieldGoalStats) {
-            let play = await Player.find({remoteId: player.id});
+            let play = await Player.findOne({remoteId: player.id});
             if(!play)
                 continue;
             let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
@@ -225,7 +227,8 @@ const recordNFLStat = async (event) => {
             }
             console.log(playerStat);                               
             index = playerStat.stats.length;
-            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date == event.startTime)
+            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
+            console.log(i);
             if(i == -1 && index >= 5)
                 contitnue;
             if(i == -1) {
@@ -249,7 +252,7 @@ const recordNFLStat = async (event) => {
             }
         }
         for(let player of defenseStats) {
-            let play = await Player.find({remoteId: player.id});
+            let play = await Player.findOne({remoteId: player.id});
             if(!play)
                 continue;
             let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
@@ -262,7 +265,8 @@ const recordNFLStat = async (event) => {
             }
             console.log(playerStat);                               
             index = playerStat.stats.length;
-            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date == event.startTime)
+            let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
+            console.log(i);
             if(i == -1 && index >= 5)
                 contitnue;
             if(i == -1) {
@@ -326,7 +330,7 @@ const recordNBAStat = async (event) => {
 
         for(let player of players) {
 
-            let play = await Player.find({remoteId: player.id});
+            let play = await Player.findOne({remoteId: player.id});
             if(!play)
                 continue;
             let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
@@ -471,30 +475,30 @@ const NFLstats = async(req, res) => {
     res.json("Stats updated");
 }
 const recordStats = async () => {
-    const events = await Event.find({state: 3});
+    const events = await Event.find({state: 3, saveStats: 0});
     for(const event of events){
         if (String(event.sportId) == '650e0b6fb80ab879d1c142c8') {
             console.log("NFL " + event._id);
-            await recordNFLEvent(event);
+            await recordNFLStat(event);
         }
         else if (String(event.sportId) == String('65108fcf4fa2698548371fc0')) {
             console.log("MLB " + event._id);
-            await recordMLBEvent(event);
+            await recordMLBStat(event);
         }
         else if (String(event.sportId) == '65131974db50d0c2c8bf7aa7') {
             console.log("Soccer " + event._id);
-            await recordSoccerEvent(event);
+            await recordSoccerStat(event);
         }
         else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
             console.log("NHL " + event._id);
-            await recordNHLEvent(event);
+            await recordNHLStat(event);
         } else if ((String(event.sportId) == '652f31fdfb0c776ae3db47e1')) {
             console.log("CFB " + event._id);
-            await recordCFBEvent(event);
+            await recordCFBStat(event);
         }
         else if ((String(event.sportId) == '64f78bc5d0686ac7cf1a6855')) {
             console.log("NBA " + event._id);
-            await recordNBAEvent(event);
+            await recordNBAStat(event);
         }
     }
 }
