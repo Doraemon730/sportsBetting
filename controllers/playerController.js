@@ -226,6 +226,7 @@ const getTopPlayerBy = async (req, res) => {
         if (!discountPlayer) {
           return player;
         }
+        player.originalOdds = player.odds
         player.odds = discountPlayer.discount;
         return player;
       }));

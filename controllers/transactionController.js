@@ -99,6 +99,7 @@ const depositBalance = async (req, res) => {
         req.release();
         res.json({ message: "Deposit Success!", user })
     } catch (error) {
+        req.release();
         console.log(error)
         res.status(500).send('Server error');
     }

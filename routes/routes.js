@@ -192,7 +192,7 @@ router.post('/admin/player/setDiscount',
     admin,
     discountController.setDiscount);
 
-router.post('/player/getLastStats',
+router.post('/player/getStats',
 
     playStatController.getPlayerStats
 );
