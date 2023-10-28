@@ -1842,6 +1842,17 @@ const updateNFLBet = async (event) => {
                                     break;
                             }
                             break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                            }
                         default:
                             break;
                     }
@@ -1907,59 +1918,62 @@ const updateNBABet = async (event) => {
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id == player.remoteId);
                     if (play) {
-
-                        switch (pick.prop.propName) {
-                            case 'Points':
-                                result = play.statistics.points != undefined ? play.statistics.points : -1;
-                                break;
-                            case 'Assists':
-                                result = play.statistics.assists != undefined ? play.statistics.assists : -1;
-                                break;
-                            case 'Rebounds':
-                                result = play.statistics.rebounds != undefined ? play.statistics.rebounds : -1;
-                                break;
-                            case '3-PT Made':
-                                result = play.statistics.three_points_made != undefined ? play.statistics.three_points_made : -1;
-                                break;
-                            case 'Steals':
-                                result = play.statistics.steals != undefined ? play.statistics.steals : -1;
-                                break;
-                            case 'Blocks':
-                                result = play.statistics.blocks != undefined ? play.statistics.blocks : -1;
-                                break;
-                            case 'Turnovers':
-                                result = play.statistics.turnovers != undefined ? play.statistics.turnovers : -1;
-                                break;
-                            case 'Points+Rebounds':
-                                if (play.statistics.points != undefined && play.statistics.rebounds != undefined)
-                                    result = play.statistics.points + play.statistics.rebounds;
-                                else
-                                    result = 0;
-                                break;
-                            case 'Points+Assists':
-                                if (play.statistics.points != undefined && play.statistics.assists != undefined)
-                                    result = play.statistics.points + play.statistics.assists;
-                                else
-                                    result = 0;
-                                break;
-                            case 'Rebounds+Assists':
-                                if (play.statistics.rebounds != undefined && play.statistics.assists != undefined)
-                                    result = play.statistics.rebounds + play.statistics.assists;
-                                else
-                                    result = 0;
-                                break;
-                            case 'Pts+Rebs+Asts':
-                                if (play.statistics.points != undefined && play.statistics.rebounds != undefined && play.statistics.assists != undefined)
-                                    result = play.statistics.points + play.statistics.rebounds + play.statistics.assists;
-                                else
-                                    result = 0;
-                                break;
-                            case 'Blocks+Steals':
-                                if (play.statistics.blocks != undefined && play.statistics.steals != undefined)
-                                    result = play.statistics.blocks + play.statistics.steals;
-                                else
-                                    result = 0;
-                                break;
+                        if(!play.played)
+                            result = -1;
+                        else {
+                            switch (pick.prop.propName) {
+                                case 'Points':
+                                    result = play.statistics.points != undefined ? play.statistics.points : -1;
+                                    break;
+                                case 'Assists':
+                                    result = play.statistics.assists != undefined ? play.statistics.assists : -1;
+                                    break;
+                                case 'Rebounds':
+                                    result = play.statistics.rebounds != undefined ? play.statistics.rebounds : -1;
+                                    break;
+                                case '3-PT Made':
+                                    result = play.statistics.three_points_made != undefined ? play.statistics.three_points_made : -1;
+                                    break;
+                                case 'Steals':
+                                    result = play.statistics.steals != undefined ? play.statistics.steals : -1;
+                                    break;
+                                case 'Blocks':
+                                    result = play.statistics.blocks != undefined ? play.statistics.blocks : -1;
+                                    break;
+                                case 'Turnovers':
+                                    result = play.statistics.turnovers != undefined ? play.statistics.turnovers : -1;
+                                    break;
+                                case 'Points+Rebounds':
+                                    if (play.statistics.points != undefined && play.statistics.rebounds != undefined)
+                                        result = play.statistics.points + play.statistics.rebounds;
+                                    else
+                                        result = 0;
+                                    break;
+                                case 'Points+Assists':
+                                    if (play.statistics.points != undefined && play.statistics.assists != undefined)
+                                        result = play.statistics.points + play.statistics.assists;
+                                    else
+                                        result = 0;
+                                    break;
+                                case 'Rebounds+Assists':
+                                    if (play.statistics.rebounds != undefined && play.statistics.assists != undefined)
+                                        result = play.statistics.rebounds + play.statistics.assists;
+                                    else
+                                        result = 0;
+                                    break;
+                                case 'Pts+Rebs+Asts':
+                                    if (play.statistics.points != undefined && play.statistics.rebounds != undefined && play.statistics.assists != undefined)
+                                        result = play.statistics.points + play.statistics.rebounds + play.statistics.assists;
+                                    else
+                                        result = 0;
+                                    break;
+                                case 'Blocks+Steals':
+                                    if (play.statistics.blocks != undefined && play.statistics.steals != undefined)
+                                        result = play.statistics.blocks + play.statistics.steals;
+                                    else
+                                        result = 0;
+                                    break;
+                            }
                         }
                     }
                     console.log(result);
@@ -2172,6 +2186,18 @@ const updateNBABet = async (event) => {
                                 default:
                                     bet.prize = 0;
                                     bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
                                     break;
                             }
                             break;
@@ -2480,6 +2506,18 @@ const updateCFBBet = async (event) => {
                                 default:
                                     bet.prize = 0;
                                     bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
                                     break;
                             }
                             break;
@@ -2826,9 +2864,22 @@ const updateMLBBet = async (event) => {
                                     bet.prize = bet.entryFee * BET_6_6_LOW;
                                     bet.status = "win"
                                     break;
+
                                 default:
                                     bet.prize = 0;
                                     bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
                                     break;
                             }
                             break;
@@ -3126,6 +3177,18 @@ const updateNHLBet = async (event) => {
                                     break;
                             }
                             break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                            }
+                            break;
                         default:
                             break;
                     }
@@ -3410,6 +3473,18 @@ const updateSoccerBet = async (event) => {
                                 default:
                                     bet.prize = 0;
                                     bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
                                     break;
                             }
                             break;
