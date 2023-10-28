@@ -96,8 +96,10 @@ const depositBalance = async (req, res) => {
         await updateCapital(0, parseFloat(amountETH));
         user.password = undefined;
         user.privateKey = undefined;
+        req.release();
         res.json({ message: "Deposit Success!", user })
     } catch (error) {
+        req.release();
         console.log(error)
         res.status(500).send('Server error');
     }

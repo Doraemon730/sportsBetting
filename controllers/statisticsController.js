@@ -346,92 +346,93 @@ const getStatistics = async (req, res) => {
                 daily_loss: 0,
                 total_bet_users: statistic2[0].total_bet_users,
             }]
-            result.push(statistic1[0])
-            statistic2[0].total_bet_users = statistic1[0].total_bet_users
-            result.push(statistic2[0])
-
-            let statistic14 = await Statistics.aggregate([
-                {
-                    $match: {
-                        date: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14) }
-                    }
-                },
-                {
-                    $group: {
-                        _id: null, // Group all documents into a single group
-                        daily_bets: { $sum: '$daily_bets' },
-                        daily_bet_amount: { $sum: '$daily_bet_amount' },
-                        daily_bet_users: { $sum: '$daily_bet_users' },
-                        daily_wins: { $sum: '$daily_wins' },
-                        daily_loss: { $sum: '$daily_loss' },
-                        total_bet_users: { $sum: '$total_bet_users' },
-                    }
-                }
-            ])
-            statistic14[0].total_bet_users = statistic1[0].total_bet_users
-            result.push(statistic14[0])
-
-            let statistic30 = await Statistics.aggregate([
-                {
-                    $match: {
-                        date: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30) }
-                    }
-                },
-                {
-                    $group: {
-                        _id: null, // Group all documents into a single group
-                        daily_bets: { $sum: '$daily_bets' },
-                        daily_bet_amount: { $sum: '$daily_bet_amount' },
-                        daily_bet_users: { $sum: '$daily_bet_users' },
-                        daily_wins: { $sum: '$daily_wins' },
-                        daily_loss: { $sum: '$daily_loss' },
-                        total_bet_users: { $sum: '$total_bet_users' },
-                    }
-                }
-            ])
-            statistic30[0].total_bet_users = statistic1[0].total_bet_users
-            result.push(statistic30[0])
-
-            let statistic365 = await Statistics.aggregate([
-                {
-                    $match: {
-                        date: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365) }
-                    }
-                },
-                {
-                    $group: {
-                        _id: null, // Group all documents into a single group
-                        daily_bets: { $sum: '$daily_bets' },
-                        daily_bet_amount: { $sum: '$daily_bet_amount' },
-                        daily_bet_users: { $sum: '$daily_bet_users' },
-                        daily_wins: { $sum: '$daily_wins' },
-                        daily_loss: { $sum: '$daily_loss' },
-                        total_bet_users: { $sum: '$total_bet_users' },
-                    }
-                }
-            ])
-            statistic365[0].total_bet_users = statistic1[0].total_bet_users
-            result.push(statistic365[0])
-
-            let statisticMax = await Statistics.aggregate([
-                {
-                    $group: {
-                        _id: null, // Group all documents into a single group
-                        daily_bets: { $sum: '$daily_bets' },
-                        daily_bet_amount: { $sum: '$daily_bet_amount' },
-                        daily_bet_users: { $sum: '$daily_bet_users' },
-                        daily_wins: { $sum: '$daily_wins' },
-                        daily_loss: { $sum: '$daily_loss' },
-                        total_bet_users: { $sum: '$total_bet_users' },
-                    }
-                }
-            ])
-            statisticMax[0].total_bet_users = statistic1[0].total_bet_users
-            result.push(statisticMax[0])
-            return res.json(result);
         }
+        result.push(statistic1[0])
+        statistic2[0].total_bet_users = statistic1[0].total_bet_users
+        result.push(statistic2[0])
+
+        let statistic14 = await Statistics.aggregate([
+            {
+                $match: {
+                    date: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14) }
+                }
+            },
+            {
+                $group: {
+                    _id: null, // Group all documents into a single group
+                    daily_bets: { $sum: '$daily_bets' },
+                    daily_bet_amount: { $sum: '$daily_bet_amount' },
+                    daily_bet_users: { $sum: '$daily_bet_users' },
+                    daily_wins: { $sum: '$daily_wins' },
+                    daily_loss: { $sum: '$daily_loss' },
+                    total_bet_users: { $sum: '$total_bet_users' },
+                }
+            }
+        ])
+        statistic14[0].total_bet_users = statistic1[0].total_bet_users
+        result.push(statistic14[0])
+
+        let statistic30 = await Statistics.aggregate([
+            {
+                $match: {
+                    date: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30) }
+                }
+            },
+            {
+                $group: {
+                    _id: null, // Group all documents into a single group
+                    daily_bets: { $sum: '$daily_bets' },
+                    daily_bet_amount: { $sum: '$daily_bet_amount' },
+                    daily_bet_users: { $sum: '$daily_bet_users' },
+                    daily_wins: { $sum: '$daily_wins' },
+                    daily_loss: { $sum: '$daily_loss' },
+                    total_bet_users: { $sum: '$total_bet_users' },
+                }
+            }
+        ])
+        statistic30[0].total_bet_users = statistic1[0].total_bet_users
+        result.push(statistic30[0])
+
+        let statistic365 = await Statistics.aggregate([
+            {
+                $match: {
+                    date: { $gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 365) }
+                }
+            },
+            {
+                $group: {
+                    _id: null, // Group all documents into a single group
+                    daily_bets: { $sum: '$daily_bets' },
+                    daily_bet_amount: { $sum: '$daily_bet_amount' },
+                    daily_bet_users: { $sum: '$daily_bet_users' },
+                    daily_wins: { $sum: '$daily_wins' },
+                    daily_loss: { $sum: '$daily_loss' },
+                    total_bet_users: { $sum: '$total_bet_users' },
+                }
+            }
+        ])
+        statistic365[0].total_bet_users = statistic1[0].total_bet_users
+        result.push(statistic365[0])
+
+        let statisticMax = await Statistics.aggregate([
+            {
+                $group: {
+                    _id: null, // Group all documents into a single group
+                    daily_bets: { $sum: '$daily_bets' },
+                    daily_bet_amount: { $sum: '$daily_bet_amount' },
+                    daily_bet_users: { $sum: '$daily_bet_users' },
+                    daily_wins: { $sum: '$daily_wins' },
+                    daily_loss: { $sum: '$daily_loss' },
+                    total_bet_users: { $sum: '$total_bet_users' },
+                }
+            }
+        ])
+        statisticMax[0].total_bet_users = statistic1[0].total_bet_users
+        result.push(statisticMax[0])
+        return res.json(result);
     } catch (error) {
         console.log(error);
+        res.status(500).json("Server Error")
     }
 }
 
