@@ -25,7 +25,7 @@ const generateRandomString = length => {
 
 const sendEmail = async (email, subject, text) => {
     const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+        host: 'us2.smtp.mailhostbox.com',
         port: 587,
         auth: {
             user: process.env.FROM_MAIL,

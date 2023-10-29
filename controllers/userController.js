@@ -222,8 +222,9 @@ const sendResetPasswordEmail = async (req, res) => {
 
   const emailHash = crypto.createHash('sha256').update(email).digest('hex');
   const subject = "Password Reset";
-  const text = `Please send this link to reset your password: reset-password/${emailHash}`;
+  const text = `Please click this link to reset your password: https://wageron.io/reset-password?emailHash=${emailHash}`;
   try {
+    console.log(user.email)
     result = await sendEmail(email, subject, text);
     const recovery = new Recovery({
       email,
@@ -232,6 +233,7 @@ const sendResetPasswordEmail = async (req, res) => {
     await recovery.save();
     res.json(result);
   } catch (err) {
+    console.log(err.message)
     res.status(500).send('Server error');
   }
 }
