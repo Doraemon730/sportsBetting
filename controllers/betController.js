@@ -22,7 +22,7 @@ const startBetting = async (req, res) => {
         let { entryFee, betType, picks, currencyType } = req.body;
         let orginEntry = entryFee;
         const jsonArray = JSON.parse(picks);
-        if (jsonArray.length < 2 || jsonArray.length > 6) {
+        if (jsonArray.length < 2 || jsonArray.length > 8 || jsonArray.length == 7) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
 
