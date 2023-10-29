@@ -12,6 +12,7 @@ const BET_5_5_LOW = 10
 const BET_4_6_LOW = 0.4
 const BET_5_6_LOW = 2
 const BET_6_6_LOW = 25
+const BET_8_8_HIGH = 100
 const NBA_API_BASEURL = "https://api.sportradar.us/nba/trial/v8"
 const NBA_COMPETITION_ID = "sr:competition:132"
 const NFL_API_BASEURL = "https://api.sportradar.us/nfl/official/trial/v7"
