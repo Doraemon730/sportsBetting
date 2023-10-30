@@ -41,9 +41,10 @@ const startBetting = async (req, res) => {
         const entryFeeSave = entryFee;
         let temp = user.credits;
         let creditSave = 0;
-        user.credits -= entryFee;
-        creditSave = user.credits > 0 ? entryFee : temp;
-        user.credits = user.credits > 0 ? user.credits : 0;
+        let credits = 0
+        credits -= entryFee;
+        creditSave = credits > 0 ? entryFee : temp;
+        credits = credits > 0 ? credits : 0;
         entryFee = entryFee - temp;
         entryFee = entryFee > 0 ? entryFee : 0;
 
@@ -152,6 +153,7 @@ const startBetting = async (req, res) => {
 
         }
         user.ETH_balance -= entryFeeEther;
+        user.credits = credits;
         user.totalBetAmount += parseFloat(entryFeeSave);
         user = setUserLevel(user);
         await updateTotalBalanceAndCredits(0 - entryFeeEther, 0 - creditSave);
