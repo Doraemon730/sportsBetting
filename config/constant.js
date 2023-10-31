@@ -48,7 +48,7 @@ const MLS_COMPETITION_ID = "sr:competition:242";
 const SAUDI_COMPETITION_ID = "sr:competition:955";
 const SOCCER_API_BASEURL = "https://api.sportradar.com/soccer/trial/v4";
 
-const SPORTSBOOK_RANGE = 30
+const SPORTSBOOK_RANGE = 20
 const YEAR = 2023
 
 module.exports = {
