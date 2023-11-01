@@ -190,6 +190,7 @@ const startFirstFreeBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
         let { entryFee, betType, picks, currencyType } = req.body;
+        let orginEntry = entryFee;
         const jsonArray = JSON.parse(picks);
 
         if (jsonArray.length !== 6) {
