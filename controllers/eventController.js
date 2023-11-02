@@ -60,7 +60,8 @@ const {
     BET_5_5_LOW,
     BET_4_6_LOW,
     BET_5_6_LOW,
-    BET_6_6_LOW
+    BET_6_6_LOW,
+    BET_8_8_HIGH
 } = require('../config/constant');
 const {
     fetchSoccerPlayerProfile
@@ -73,6 +74,8 @@ const CFB_API_KEY = process.env.NCAA_API_KEY;
 const NBA_API_KEY = process.env.NBA_API_KEY;
 const mutex = require('async-mutex')
 const lock = new mutex.Mutex();
+const redis = require('redis');
+const client = redis.createClient();
 
 let players = [];
 
@@ -161,8 +164,7 @@ const getWeeklyEventsNFL = async () => {
                     //let books = market.books.filter(item => item.name != "DraftKings");
                     //let book = books.find(item => item.name == "FanDuel");
                     let book = market.books.find(item => item.name == "FanDuel");
-                    if (book)
-                    {
+                    if (book) {
                         let outcomes = book.outcomes;
                         let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                         let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
@@ -170,7 +172,7 @@ const getWeeklyEventsNFL = async () => {
                         total = outcomes[0].total;
                         console.log(odd1);
                         console.log(odd2);
-                    } 
+                    }
                     // if(!book || minOdds > 20)
                     // {
                     //     for (let i = 0; i < books.length; i++) {
@@ -293,8 +295,7 @@ const getWeeklyEventsNHL = async () => {
                     //let books = market.books.filter(item => item.name != "DraftKings");
                     //let book = books.find(item => item.name == "FanDuel");
                     let book = market.books.find(item => item.name == "MGM");
-                    if (book)
-                    {
+                    if (book) {
                         let outcomes = book.outcomes;
                         let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                         let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
@@ -302,7 +303,7 @@ const getWeeklyEventsNHL = async () => {
                         total = outcomes[0].total;
                         console.log(odd1);
                         console.log(odd2);
-                    } 
+                    }
                     // if(!book || minOdds > 20)
                     // {
                     //     for (let i = 0; i < books.length; i++) {
@@ -430,8 +431,7 @@ const getWeeklyEventsMLB = async () => {
                     // let books = market.books.filter(item => item.name != "DraftKings");
                     // let book = books.find(item => item.name == "FanDuel");
                     let book = market.books.find(item => item.name == "FanDuel");
-                    if (book)
-                    {
+                    if (book) {
                         let outcomes = book.outcomes;
                         let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                         let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
@@ -439,7 +439,7 @@ const getWeeklyEventsMLB = async () => {
                         total = outcomes[0].total;
                         console.log(odd1);
                         console.log(odd2);
-                    } 
+                    }
                     // if(!book || minOdds > 20)
                     // {
                     //     for (let i = 0; i < books.length; i++) {
@@ -574,8 +574,7 @@ const getWeeklyEventsCFB = async () => {
                     //let books = market.books.filter(item => item.name != "DraftKings");
                     //let book = books.find(item => item.name == "FanDuel");
                     let book = market.books.find(item => item.name == "FanDuel");
-                    if (book)
-                    {
+                    if (book) {
                         let outcomes = book.outcomes;
                         let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                         let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
@@ -583,8 +582,8 @@ const getWeeklyEventsCFB = async () => {
                         total = outcomes[0].total;
                         console.log(odd1);
                         console.log(odd2);
-                    } 
-                    
+                    }
+
                     // if(!book || minOdds > 20)
                     // {
                     //     for (let i = 0; i < books.length; i++) {
@@ -712,8 +711,7 @@ const getWeeklyEventsNBA = async () => {
                     // let books = market.books.filter(item => item.name != "DraftKings");
                     // let book = books.find(item => item.name == "FanDuel");
                     let book = market.books.find(item => item.name == "FanDuel");
-                    if (book)
-                    {
+                    if (book) {
                         let outcomes = book.outcomes;
                         let odd1 = Math.abs(parseInt(outcomes[0].odds_american));
                         let odd2 = Math.abs(parseInt(outcomes[1].odds_american));
@@ -721,7 +719,7 @@ const getWeeklyEventsNBA = async () => {
                         total = outcomes[0].total;
                         console.log(odd1);
                         console.log(odd2);
-                    } 
+                    }
                     // if(!book || minOdds > 20)
                     // {
                     //     for (let i = 0; i < books.length; i++) {
@@ -1172,32 +1170,37 @@ const getLiveDataByEvent = async () => {
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
                                 await setLiveDatatoDB(broadcastingData);
+                                //await setLiveDatatoCache(broadcastingData);
                             }
                             if (sportType == "NHL") {
                                 broadcastingData.player = getNHLData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
-                                await setLiveDatatoDB(broadcastingData)
+                                await setLiveDatatoDB(broadcastingData);
+                                //await setLiveDatatoCache(broadcastingData);
                             }
                             if (sportType == "MLB") {
                                 if (detailData.player.hasOwnProperty('statistics')) {
                                     broadcastingData.player = getMLBData(detailData.player);
                                     console.log(JSON.stringify(broadcastingData))
                                     global.io.sockets.emit('broadcast', { broadcastingData });
-                                    await setLiveDatatoDB(broadcastingData)
+                                    await setLiveDatatoDB(broadcastingData);
+                                    //await setLiveDatatoCache(broadcastingData);
                                 }
                             }
                             if (sportType == "CFB") {
                                 broadcastingData.player = getCFBData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
-                                await setLiveDatatoDB(broadcastingData)
+                                await setLiveDatatoDB(broadcastingData);
+                                //await setLiveDatatoCache(broadcastingData);
                             }
                             if (sportType == "NBA") {
                                 broadcastingData.player = getNBAData(detailData);
                                 console.log(JSON.stringify(broadcastingData))
                                 global.io.sockets.emit('broadcast', { broadcastingData });
-                                await setLiveDatatoDB(broadcastingData)
+                                await setLiveDatatoDB(broadcastingData);
+                                //await setLiveDatatoCache(broadcastingData);
                             }
                         }
                     }
@@ -1336,6 +1339,64 @@ const setLiveDatatoDB = async (broadcastingData) => {
         release();
     }
 }
+
+const setLiveDatatoCache = async (broadcastingData) => {
+    try {
+        const remoteId = broadcastingData.player.remoteId;
+        const cacheKey = `liveData:${remoteId}`;
+
+        // Attempt to get the cached data from Redis
+        client.get(cacheKey, async (cacheError, cachedData) => {
+            if (cacheError) {
+                console.error('Error reading cache:', cacheError);
+                return;
+            }
+
+            if (cachedData) {
+                // Data found in cache
+                const cachedLiveData = JSON.parse(cachedData);
+
+                // Update the cached data if needed (e.g., if new data is greater)
+                if (broadcastingData.player.liveData > cachedLiveData.liveData) {
+                    cachedLiveData.liveData = broadcastingData.player.liveData;
+                    // Update the cache with the new data
+                    client.set(cacheKey, JSON.stringify(cachedLiveData));
+                    client.expire(cacheKey, 3600 * 6);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error updating the database:', error);
+    }
+};
+
+const getCacheData = async (req, res) => {
+    try {
+        const { playerIdList } = req.body;
+        let result = []
+        for (const remoteId of playerIdList) {
+            const cacheKey = `liveData:${remoteId}`;
+            client.get(cacheKey, async (cacheError, cachedData) => {
+                if (cacheError) {
+                    console.error('Error reading cache:', cacheError);
+                    return;
+                }
+                if (cachedData) {
+                    // Data found in cache
+                    const cachedLiveData = JSON.parse(cachedData);
+                    let data = {}
+                    data.remoteId = remoteId;
+                    data.value = cachedLiveData;
+                    result.push(data)
+                }
+            });
+        }
+        res.json(result);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const testlive = async (req, res) => {
     try {
         let { remoteId } = req.body;
@@ -1531,11 +1592,11 @@ const updateNFLBet = async (event) => {
     try {
         console.log(event.matchId, true);
         const statistics = await fetchNFLGameSummary(event.matchId);
-        if(!statistics)
+        if (!statistics)
             return;
         console.log("summaryNFL" + event._id, true);
         console.log(statistics.status, true);
-        
+
         if (statistics.status != "closed" && statistics.status != "complete")
             return;
 
@@ -1652,10 +1713,10 @@ const updateNFLBet = async (event) => {
                     }
                 }
             }
-            if(bet.betType == "high" && lost > 0){
+            if (bet.betType == "high" && lost > 0) {
                 console.log("lost");
                 bet.prize = 0;
-                bet.status = "lost";                
+                bet.status = "lost";
                 bet.willFinishAt = new Date();
                 await bet.save();
                 await updateBetResult(false);
@@ -1918,7 +1979,7 @@ const updateNBABet = async (event) => {
                     const player = await Player.findById(pick.playerId);
                     play = players.find(item => item.id == player.remoteId);
                     if (play) {
-                        if(!play.played)
+                        if (!play.played)
                             result = -1;
                         else {
                             switch (pick.prop.propName) {
@@ -1999,10 +2060,10 @@ const updateNBABet = async (event) => {
                 }
             }
             console.log("1840:  " + finished);
-            if(bet.betType == "high" && lost > 0){
+            if (bet.betType == "high" && lost > 0) {
                 console.log("lost");
                 bet.prize = 0;
-                bet.status = "lost";                
+                bet.status = "lost";
                 bet.willFinishAt = new Date();
                 await bet.save();
                 await updateBetResult(false);
@@ -2319,10 +2380,10 @@ const updateCFBBet = async (event) => {
                     }
                 }
             }
-            if(bet.betType == "high" && lost > 0){
+            if (bet.betType == "high" && lost > 0) {
                 console.log("lost");
                 bet.prize = 0;
-                bet.status = "lost";                
+                bet.status = "lost";
                 bet.willFinishAt = new Date();
                 await bet.save();
                 await updateBetResult(false);
@@ -2684,10 +2745,10 @@ const updateMLBBet = async (event) => {
                 }
             }
             console.log("2491:  " + finished);
-            if(bet.betType == "high" && lost > 0){
+            if (bet.betType == "high" && lost > 0) {
                 console.log("lost");
                 bet.prize = 0;
-                bet.status = "lost";                
+                bet.status = "lost";
                 bet.willFinishAt = new Date();
                 await bet.save();
                 await updateBetResult(false);
@@ -2928,7 +2989,7 @@ const updateNHLBet = async (event) => {
     try {
         console.log(event);
         const summary = await fetchNHLGameSummary(event.matchId);
-        if (!summary )
+        if (!summary)
             return;
         if (summary.status != 'closed' && summary.status != 'complete')
             return;
@@ -2991,10 +3052,10 @@ const updateNHLBet = async (event) => {
                 }
             }
             console.log("1146:  " + finished);
-            if(bet.betType == "high" && lost > 0){
+            if (bet.betType == "high" && lost > 0) {
                 console.log("lost");
                 bet.prize = 0;
-                bet.status = "lost";                
+                bet.status = "lost";
                 bet.willFinishAt = new Date();
                 await bet.save();
                 await updateBetResult(false);
@@ -3284,10 +3345,10 @@ const updateSoccerBet = async (event) => {
                 }
             }
             console.log("win: " + win + " lost: " + lost);
-            if(bet.betType == "high" && lost > 0){
+            if (bet.betType == "high" && lost > 0) {
                 console.log("lost");
                 bet.prize = 0;
-                bet.status = "lost";                
+                bet.status = "lost";
                 bet.willFinishAt = new Date();
                 await bet.save();
                 await updateBetResult(false);
@@ -3544,7 +3605,7 @@ const updateBet = async (eventId) => {
             updateCFBBet(event);
         } else if (String(event.sportId) == '64f78bc5d0686ac7cf1a6855') {
             updateNBABet(event);
-        } 
+        }
     } catch (error) {
         console.log(error);
     }
@@ -3620,22 +3681,22 @@ const changeEventState = async (req, res) => {
 }
 
 const checkResult = async (req, res) => {
-    try{
+    try {
         let { id } = req.body;
         let event = await Event.findById(id);
-        if(event.state != 3)
+        if (event.state != 3)
             return res.json("Event is not finished");
         let win = 0, lost = 0, winEntry = 0, winPrize = 0, lostEntry = 0;
-        for(let betId of event.participants){
+        for (let betId of event.participants) {
             let bet = await Bet.findById(betId);
-            if(!bet)
+            if (!bet)
                 continue;
-            if(bet.status == "win"){
-                win ++;
+            if (bet.status == "win") {
+                win++;
                 winEntry += bet.entryFee;
                 winPrize += bet.prize;
-            } else if(bet.status == "lost") {
-                lost ++;
+            } else if (bet.status == "lost") {
+                lost++;
                 lostEntry += bet.entryFee;
             }
         }
@@ -3649,7 +3710,7 @@ const checkResult = async (req, res) => {
             profit: winEntry + lostEntry - winPrize
         };
         res.json(result);
-    } catch(error) {
+    } catch (error) {
         console.log(error);
     }
 }
@@ -3668,5 +3729,6 @@ module.exports = {
     getWeeklyEventsCFB,
     testlive,
     getWeeklyEventsNBA,
-    checkResult
+    checkResult,
+    getCacheData
 }

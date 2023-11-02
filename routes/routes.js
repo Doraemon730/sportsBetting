@@ -95,6 +95,10 @@ router.post('/bet/start',
     betController.startBetting
 );
 
+router.post('/event/getCacheData',
+    auth,
+    eventController.getCacheData)
+
 router.post('/bet/startWedFreeBetting',
     auth,
     checkWednesday,
@@ -261,7 +265,7 @@ router.post('/user/getbalance', auth, userController.getWalletBalance);
 router.post('/test/changeEventState', admin, eventController.changeEventState);
 router.post('/admin/giveRewards', admin, betController.giveRewards);
 
-router.post('/admin/getTotalBalance', admin, userController.getTotalBalance);
+router.post('/admin/getTotalBalance', userController.getTotalBalance);
 
 router.post('/admin/getNFLTeams', teamController.addNFLTeamsToDatabase);
 router.post('/admin/getNFLContest', contestController.addNFLContestsToDatabase);
