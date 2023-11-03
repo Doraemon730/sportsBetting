@@ -253,6 +253,10 @@ router.post('/admin/referral/getAllReferrals',
     admin,
     referralController.getAllReferrals)
 
+router.post('/admin/referral/getReferralInfo',
+    admin,
+    referralController.getReferralInfo)
+
 router.post('/admin/configure/setBetAmountLimit',
     admin,
     configureController.setBetAmountLimit);
