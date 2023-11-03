@@ -25,6 +25,9 @@ const startBetting = async (req, res) => {
         if (jsonArray.length < 2 || jsonArray.length > 8 || jsonArray.length == 7) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
+        if (jsonArray.length == 8 && entryFee > 10) {
+            return res.status(400).json({ message: "Invalid Betting. Max Amount is $10" });
+        }
 
         let user = await User.findOne({ _id: userId });
         if (user.isPending) {
@@ -190,6 +193,7 @@ const startFirstFreeBetting = async (req, res) => {
     try {
         const userId = new ObjectId(req.user.id);
         let { entryFee, betType, picks, currencyType } = req.body;
+        let orginEntry = entryFee;
         const jsonArray = JSON.parse(picks);
 
         if (jsonArray.length !== 6) {

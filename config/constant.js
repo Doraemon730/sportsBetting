@@ -66,6 +66,7 @@ module.exports = {
     BET_4_6_LOW,
     BET_5_6_LOW,
     BET_6_6_LOW,
+    BET_8_8_HIGH,
     NBA_API_BASEURL,
     NFL_API_BASEURL,
     LOCALE,
