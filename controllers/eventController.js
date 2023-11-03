@@ -690,7 +690,8 @@ const getWeeklyEventsNBA = async () => {
                 console.log(playerProp.player.name, true);
                 //const play = players.find(item => String(item.id) == String(playerProp.player.id));
 
-
+                if (playerProp.player.id == "sr:player:607830")
+                    continue;
                 const player = await Player.findOne({
                     srId: playerProp.player.id,
                     sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')
