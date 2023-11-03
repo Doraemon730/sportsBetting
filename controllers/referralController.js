@@ -163,4 +163,76 @@ const getReferralPrize = async (invitedUserId, betAmount) => {
     await user.save();
 }
 
-module.exports = { setReferral, getAllReferrals, getReferralPrize };
+const getReferralInfo = async (req, res) => {
+    const { id } = req.body;
+    const users = await Referral.aggregate([{
+        $match: { _id: new ObjectId(id) }
+    }, {
+        $project: { invites: '$invitesList' }
+    }, {
+        $lookup: {
+            from: 'users',
+            localField: 'invites.invitedUserId',
+            foreignField: '_id',
+            as: 'userInfo'
+        }
+    }, {
+        $project: { userInfo: '$userInfo' }
+    }, {
+        $unwind: '$userInfo',
+        // preserveNullAndEmptyArrays: true
+    }, {
+        $lookup: {
+            from: 'bets',
+            localField: 'userInfo._id',
+            foreignField: 'userId',
+            as: 'betInfo'
+        }
+
+    }, {
+        $unwind: '$betInfo'
+    },
+    {
+        $group: {
+            _id: {
+                userId: '$userInfo._id', // Group by user ID
+                status: '$betInfo.status' // Group by bet status
+            },
+            count: { $sum: 1 } // Count the number of bets for each status
+        }
+    },
+    {
+        $group: {
+            _id: '$_id.userId', // Group by user ID to combine the counts
+            statusCounts: {
+                $push: {
+                    status: '$_id.status',
+                    count: '$count'
+                }
+            }
+        }
+    },
+    {
+        $lookup: {
+            from: 'users',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'user'
+        }
+    },
+    {
+        $project: {
+            'user.firstName': 1,
+            'user.lastName': 1,
+            'user.email': 1,
+            'user.ETH_balance': 1,
+            'user.credits': 1,
+            'user.firstDepositAmount': 1,
+            statusCounts: 1,
+            _id: 0
+        }
+    }]);
+    return res.json(users)
+}
+
+module.exports = { setReferral, getAllReferrals, getReferralPrize, getReferralInfo };
