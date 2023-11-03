@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Promotion = require('../models/Promotion');
 const Referral = require('../models/Referral');
 const Recovery = require('../models/Recovery');
+const Verification = require('../models/Verification');
 const { Web3 } = require('web3');
 const crypto = require('crypto');
 const { ObjectId } = require('mongoose').Types;
@@ -13,6 +14,7 @@ const { updateTotal } = require('../controllers/statisticsController');
 const { isEmpty, USD2Ether } = require('../utils/util');
 const { addUserWallet } = require('../services/webSocketService'); // Import your WebSocket service
 const { updateTotalBalanceAndCredits } = require('../controllers/statisticsController');
+
 
 const ethereumNodeURL = process.env.ETHEREUM_NODE_URL;
 
@@ -222,7 +224,81 @@ const sendResetPasswordEmail = async (req, res) => {
 
   const emailHash = crypto.createHash('sha256').update(email).digest('hex');
   const subject = "Password Reset";
-  const text = `Please click this link to reset your password: https://wageron.io/reset-password?emailHash=${emailHash}`;
+  const text = `<!DOCTYPE html>
+  <html>
+  <head>
+      <style>
+          body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f6f6f6;
+          }
+      
+          .email-container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              background-color: #ffffff;
+              border-radius: 8px;
+          }
+      
+          .welcome-text {
+              color: #333;
+              font-size: 20px;
+              font-weight: bold;
+          }
+      
+          .main-text {
+              color: #666;
+              font-size: 16px;
+              line-height: 1.5;
+          }
+      
+          .reset-link {
+            display: inline-block;
+            font-weight: 700;
+            text-decoration: none;
+            color: #FFFFFF !important;
+            background-color: #4CAF50;
+            border: solid #4CAF50;
+            border-radius: 5px;
+            padding: 10px 20px;
+            transition: all 0.3s;
+            margin: 20px 0;
+            
+        }
+
+        .reset-link:hover {
+            color: #4CAF50 !important;
+            background-color: #FFFFFF;
+            border-color: #4CAF50;
+        }
+      
+          .closing-text {
+              color: #666;
+              font-size: 16px;
+          }
+      
+          .signature {
+              color: #333;
+              font-size: 16px;
+              font-weight: bold;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="email-container">
+      <img src="https://wageron.io/img/logo.png" alt="WagerOn Logo" style="display: block; margin: 0 auto 20px;">
+          <p class="welcome-text">Dear ${email},</p>
+          <p class="main-text">We received a request to reset the password for your WagerOn account.</p>
+          <a class="reset-link" href="https://wageron.io/reset-password?emailHash=${emailHash}">Reset Password</a>
+          <p class="main-text">If you did not request to reset your password, please disregard this email.</p>
+          <p class="closing-text">Best Regards,</p>
+          <p class="signature">The WagerOn Team</p>
+      </div>
+  </body>
+  </html>`;
   try {
     console.log(user.email)
     result = await sendEmail(email, subject, text);
@@ -452,6 +528,134 @@ const claimRewards = async (req, res) => {
   }
 }
 
+const requestVerify = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const user = await User.findById(id);
+    if(!user)
+      return res.status(400).send("User not found");
+    console.log("USER:" + user);
+    if(user.verified)
+      return res.status(204).send("User already verified");
+
+    const email = user.email;
+    
+    const verifyCode = Math.floor(100000 + Math.random() * 900000);
+    const expiredAt = new Date().getTime() + 900000;
+    
+    const message = `<!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f6f6f6;
+            }
+    
+            .email-container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border-radius: 8px;
+            }
+    
+            .welcome-text {
+                color: #333;
+                font-size: 20px;
+                font-weight: bold;
+            }
+    
+            .main-text {
+                color: #666;
+                font-size: 16px;
+                line-height: 1.5;
+            }
+    
+            .code {
+                font-size: 18px;
+                color: #333;
+                font-weight: bold;
+                background-color: #f0f0f0;
+                padding: 10px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+    
+            .closing-text {
+                color: #666;
+                font-size: 16px;
+            }
+    
+            .signature {
+                color: #333;
+                font-size: 16px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="email-container">
+          <img src="https://wageron.io/img/logo.png" alt="WagerOn Logo" style="display: block; margin: 0 auto 20px;">
+            <p class="welcome-text">Dear ${email},</p>
+            <p class="main-text">Welcome to WagerOn!</p>
+            <p class="main-text">To start enjoying your favorite sports betting site, please verify your email address.</p>
+            <p class="code">Verification Code: ${verifyCode}</p>
+            <p class="main-text">If you didn’t request this email, please ignore it.</p>
+            <p class="closing-text">We're excited to have you with us! Happy Wager!</p>
+            <p class="signature">Game on,</p>
+            <p class="signature">The WagerOn Team</p>
+        </div>
+    </body>
+    </html>`;
+    const subject = "WagerOn Verification Code"    
+    let result = await sendEmail(email, subject, message);
+    const verify = new Verification({
+      userId: user._id,
+      email,
+      verifyCode,
+      expiredAt
+    });
+    await verify.save();
+    res.json(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const verifyUser = async (req, res) => {
+  try {
+    const id = req.user.id;
+    const { code } = req.body;
+    console.log(id);
+    console.log(code);
+    const verification = await Verification.findOne({userId: new ObjectId(id), verified: false}).sort({createdAt: -1});
+    if (!verification) {
+      return res.status(400).send("Verification is not Valid");
+    }
+    const now = new Date().getTime();    
+    if (now > verification.expiredAt.getTime()) {
+      return res.status(400).send("Verification is expired");
+    }
+    if( code != verification.verifyCode) {
+      return res.status(400).send("Verification Code is not correct");
+    }
+    const user = await User.findByIdAndUpdate(id,{verified: true});
+    if(!user){
+      return res.status(400).send("User Not Found")
+    }
+    verification.verified = true;
+    await verification.save();
+    res.status(200).send("Account verified successfully!");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Server Error");
+  }
+}
+
 
 module.exports = {
   registerUser,
@@ -469,5 +673,7 @@ module.exports = {
   addBalanceAndCredits,
   getTotalBalance,
   claimRewards,
-  testReferral
+  testReferral,
+  requestVerify,
+  verifyUser
 };
