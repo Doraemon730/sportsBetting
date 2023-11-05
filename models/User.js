@@ -101,6 +101,10 @@ const UserSchema = new mongoose.Schema({
     receiveDate: {
       type: Date
     }
+  },
+  verified: {
+    type: Boolean,
+    default: false
   }
 });
 
