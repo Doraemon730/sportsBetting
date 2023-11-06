@@ -78,17 +78,18 @@ const depositBalance = async (req, res) => {
 
         user.ETH_balance += parseFloat(amountETH);
         // await updateTotalBalanceAndCredits(amountETH, 0);
+        if (user.referralCode != "" && user.referralCode != "null") {
+            if (amountUSD >= 25 && user.freeSix == 0)
+                user.freeSix = 1;
 
-        if (amountUSD >= 25 && user.freeSix == 0)
-            user.freeSix = 1;
-
-        if (user.level === "") {
-            user.level = "Unranked";
-            let credits = parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
-            user.credits += credits;
-            await updateTotalBalanceAndCredits(0, credits);
-            user.firstDepositAmount = parseFloat(amountUSD);
-            await updateTotalUsers();
+            if (user.level === "") {
+                user.level = "Unranked";
+                let credits = parseFloat(amountUSD) > 100 ? 100 : parseFloat(amountUSD);
+                user.credits += credits;
+                await updateTotalBalanceAndCredits(0, credits);
+                user.firstDepositAmount = parseFloat(amountUSD);
+                await updateTotalUsers();
+            }
         }
 
         await transaction.save();
@@ -116,6 +117,7 @@ const withdrawBalance = async (req, res) => {
             console.log(user.isPending)
 
             if (user.isPending) {
+                req.release();
                 return res.status(400).json({
                     message: "You can't withdraw now!"
                 })
@@ -130,6 +132,7 @@ const withdrawBalance = async (req, res) => {
             if (amountETH > user.ETH_balance) {
                 user.isPending = false;
                 await user.save();
+                req.release();
                 return res.status(400).json({
                     message: "You don't have enough balance"
                 });
@@ -137,6 +140,7 @@ const withdrawBalance = async (req, res) => {
             if (!checkWithdraw(user)) {
                 user.isPending = false;
                 await user.save();
+                req.release();
                 return res.status(400).json({
                     message: "You can't withdraw now!"
                 })
@@ -317,6 +321,10 @@ const getTransactionsByUserId = async (req, res) => {
 }
 
 const checkWithdraw = (user) => {
+
+    if (user.referralCode == "" || user.referralCode == "null")
+        return true
+
     if (user.myReferralCode == "TOMMY")
         return false
     const firstCredit = user.firstDepositAmount > 100 ? 100 : user.firstDepositAmount;
