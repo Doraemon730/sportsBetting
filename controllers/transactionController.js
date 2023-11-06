@@ -117,6 +117,7 @@ const withdrawBalance = async (req, res) => {
             console.log(user.isPending)
 
             if (user.isPending) {
+                req.release();
                 return res.status(400).json({
                     message: "You can't withdraw now!"
                 })
@@ -131,6 +132,7 @@ const withdrawBalance = async (req, res) => {
             if (amountETH > user.ETH_balance) {
                 user.isPending = false;
                 await user.save();
+                req.release();
                 return res.status(400).json({
                     message: "You don't have enough balance"
                 });
@@ -138,6 +140,7 @@ const withdrawBalance = async (req, res) => {
             if (!checkWithdraw(user)) {
                 user.isPending = false;
                 await user.save();
+                req.release();
                 return res.status(400).json({
                     message: "You can't withdraw now!"
                 })
