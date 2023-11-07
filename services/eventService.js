@@ -32,8 +32,11 @@ const {
     CFB_COMPETITION_ID,
     CFB_API_BASEURL,
     NBA_COMPETITION_ID,
-    GOAL_API_BASEURL
+    GOAL_NBA_MATCH_DATA_URL,
+    GOAL_NFL_MATCH_DATA_URL,
+	GOAL_API_BASEURL
 } = require('../config/constant');
+const { confirmArray } = require('../utils/util')
 
 const fetchEventMapping = async () => {
     return axios.get(`${ODDS_API_BASEURL}/${LOCALE}/sport_events/mappings.json?api_key=${apiOddsKey}`)
@@ -293,6 +296,42 @@ const fetchSoccerEventSummary = async (eventId) => {
         })
 }
 
+const fetchNBAMatchData = async () => {
+    const currentDate = new Date();
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+
+    axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            const matchData = confirmArray(response.data.scores.category.match)
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NBA data from Goal:' + error);
+        });
+
+}
+
+const fetchNFLMatchData = async () => {
+    const currentDate = new Date();
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+
+    axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            const matchData = confirmArray(response.data.scores.category.match)
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL data from Goal:' + error);
+        });
+
+}
+
 const fetchNBAEventsFromGoal = async () => {
     const today = moment();
     const tomorrow = moment().add(1, 'days');
@@ -314,6 +353,7 @@ const fetchNBAEventsFromGoal = async () => {
     
     
 }
+
 module.exports = {
     fetchWeeklyEventsNFL,
     fetchEventPlayerProps,
@@ -338,6 +378,8 @@ module.exports = {
     fetchCFBGameSummary,
     fetchWeeklyEventsNBA,
     fetchNBAGameSummary,
-    fetchNBAEventsFromGoal
+    fetchNBAMatchData,
+    fetchNFLMatchData,
+	fetchNBAEventsFromGoal
 };
 

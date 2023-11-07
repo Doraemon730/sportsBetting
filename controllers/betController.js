@@ -669,6 +669,25 @@ const cancelBet = async (req, res) => {
                 user.ETH_balance += entryETH;
                 await updateTotalBalanceAndCredits(entryETH, bet.credit);
             }
+
+            for (const pick in bet.picks) {
+                let date = new Date();
+                date.setDate(date.getDate());
+                date.setHours(0, 0, 0, 0);
+                const discount = await Discount.findOne({
+                    playerId: pick.playerId,
+                    propName: pick.prop.propName,
+                    discount: pick.prop.odds,
+                    date: date
+                });
+                if (discount) {
+                    if (discount.users.indexOf(pick.userId) > -1) {
+                        discount.users.splice(discount.users.indexOf(pick.userId), 1)
+                    }
+                }
+                await discount.save();
+            }
+
             user.totalBetAmount -= bet.entryFee
             user = setUserLevel(user);
             await user.save();
