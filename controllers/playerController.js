@@ -790,10 +790,31 @@ const updatePlayerFromGoal = async (req, res) => {
   try {
     const teams = await Team.find({sportId: ObjectId('64f78bc5d0686ac7cf1a6855')});
     for (let team of teams){
-      const players = await fetchNBAPlayersFromGoal(team.gId);
-      console.log(players);
+      const gplayers = await fetchNBAPlayersFromGoal(team.gId);
+      const splayers = await Player.find({sportId:ObjectId('64f78bc5d0686ac7cf1a6855'), teamId: team._id});
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          const nbaPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: gplayer.age,
+            jerseyNumber: gplayer.number,
+            gId: gplayer.id
+          });
+          await nbaPlayer.save();
+          console.log(JSON.stringify(nbaplayer));
+        }
+      }      
+      console.log(splayers);
     }
-    res.json(success);
+    res.json('success');
   } catch (error) {
     console.log(error);
     res.status(500).send('Server error');
