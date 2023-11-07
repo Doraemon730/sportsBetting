@@ -317,5 +317,5 @@ router.post('/users/requestCode', auth, userController.requestVerify);
 router.post('/users/verifyCode', auth, userController.verifyUser);
 
 router.post('/admin/goalnbateam', teamController.updateNBATeamsFromGoal);
-router.post('/admin/goalnbaplayer', playerController.updateNBATeamsFromGoal);
+router.post('/admin/goalnbaplayer', playerController.updatePlayerFromGoal);
 module.exports = router;
