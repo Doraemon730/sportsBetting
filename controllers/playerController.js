@@ -17,7 +17,8 @@ const {
   fetchPlayerManifest,
   fetchPlayerImage,
   fetchMLBPlayerNumber,
-  fetchImageFromPrize
+  fetchImageFromPrize,
+  fetchNBAPlayersFromGoal
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
@@ -784,6 +785,21 @@ const resetOdds = async (req, res) => {
   res.json("Success");
 }
 
+
+const updatePlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: ObjectId('64f78bc5d0686ac7cf1a6855')});
+    for (let team of teams){
+      const players = await fetchNBAPlayersFromGoal(team.gId);
+      console.log(players);
+    }
+    res.json(success);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -804,5 +820,6 @@ module.exports = {
   getImage,
   setNBAImage,
   updateNFLPlayers,
-  setNHLImage
+  setNHLImage,
+  updatePlayerFromGoal
 };

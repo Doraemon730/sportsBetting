@@ -315,4 +315,7 @@ router.post('/admin/nbastats',  admin, playStatController.NBAstats);
 router.post('/admin/nflstats',  admin, playStatController.NFLstats);
 router.post('/users/requestCode', auth, userController.requestVerify);
 router.post('/users/verifyCode', auth, userController.verifyUser);
+
+router.post('/admin/goalnbateam', teamController.updateNBATeamsFromGoal);
+router.post('/admin/goalnbaplayer', playerController.updateNBATeamsFromGoal);
 module.exports = router;

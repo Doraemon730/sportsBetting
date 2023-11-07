@@ -200,10 +200,12 @@ const updateNBATeamsFromGoal = async (req, res) => {
     try {
         let teams = [];        
         const leagues = await fetchNBATeamsFromGoal();
-        for(let division of leagues) {
-            for(let team of division.teams) {
-                teams.push(team);
-            }
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            for(let division of league.division)
+                for(let team of division.team) {
+                    teams.push(team);
+                }
         }
 
         let NBATeams = await Team.find({sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
@@ -211,7 +213,7 @@ const updateNBATeamsFromGoal = async (req, res) => {
             let team = teams.find((t) => t.name.includes(nbaTeam.name));
             console.log(nbaTeam.name + ":" + team.name);
             nbaTeam.name = team.name;
-            nbaTeam.gid = team.id;
+            nbaTeam.gId = team.id;
             await nbaTeam.save();
         }
         res.json(NBATeams);
@@ -230,5 +232,6 @@ module.exports = {
     remove,
     addSoccerTeam,
     addCFBTeamToDatabase,
-    getTeamListBySport
+    getTeamListBySport,
+    updateNBATeamsFromGoal
 }
