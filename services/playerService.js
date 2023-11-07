@@ -23,7 +23,8 @@ const {
   NFL_IMAGE_TYPE,
   YEAR,
   SOCCER_API_BASEURL,
-  MLB_API_BASEURL
+  MLB_API_BASEURL,
+  GOAL_API_BASEURL
 } = require('../config/constant');
 
 
@@ -163,6 +164,16 @@ const fetchImageFromPrize = async (fileName) => {
   })
 }
 
+const fetchNBAPlayersFromGoal = async (teamId) => {
+  return axios.get(`${GOAL_API_BASEURL}/bsktbl/${teamId}_roasters?json=1`)
+    .then(response => { 
+      const leagues = response.data.team.player;
+      console.log(leagues);
+      return leagues;
+    }).catch(error => {
+      console.log(error);
+    })
+}
 
 
 module.exports = {
@@ -173,5 +184,6 @@ module.exports = {
   fetchPlayerImage,
   fetchSoccerPlayerProfile,
   fetchMLBPlayerNumber,
-  fetchImageFromPrize
+  fetchImageFromPrize,
+  fetchNBAPlayersFromGoal
 };

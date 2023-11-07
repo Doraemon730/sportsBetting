@@ -52,8 +52,12 @@ const SPORTSBOOK_RANGE = 20
 const YEAR = 2023
 
 
+
 const GOAL_NBA_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb/bsktbl/nba-scores?json=1";
 const GOAL_NFL_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb/football/nfl-scores?json=1";
+
+const GOAL_API_BASEURL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb";
+
 
 module.exports = {
     ETHER_PRICE_API,
@@ -106,5 +110,7 @@ module.exports = {
     NBA_COMPETITION_ID,
     SPORTSBOOK_RANGE,
     GOAL_NBA_MATCH_DATA_URL,
-    GOAL_NFL_MATCH_DATA_URL
+    GOAL_NFL_MATCH_DATA_URL,
+    GOAL_API_BASEURL
+
 }

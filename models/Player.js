@@ -29,6 +29,9 @@ const PlayerSchema = new mongoose.Schema({
   teamName: {
     type: String
   },
+  gId: {
+    type: String
+  },
   odds: [
     {
       id: {
