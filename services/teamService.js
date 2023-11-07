@@ -14,7 +14,8 @@ const {
   NFL_API_BASEURL,
   NHL_API_BASEURL,
   MLB_API_BASEURL,
-  CFB_API_BASEURL
+  CFB_API_BASEURL,
+  GOAL_API_BASEURL
 } = require('../config/constant');
 
 // NBA
@@ -141,6 +142,17 @@ const fetchCFBTeamsFromRemoteId = async (remoteId) => {
     })
 }
 
+const fetchNBATeamsFromGoal = async () => {
+  return axios.get(`${GOAL_API_BASEURL}/bsktbl/nba-standings?json=1`)
+    .then(response => { 
+      const leagues = response.data.standings.category.league;
+      console.log(leagues);
+      return leagues;
+    }).catch(error => {
+      console.log(error);
+    })
+}
+
 module.exports = {
   fetchNBATeamsFromRemoteId,
   fetchNBATeams,
@@ -150,5 +162,7 @@ module.exports = {
   fetchNHLTeamsFromRemoteId,
   fetchMLBTeams,
   fetchMLBTeamsFromRemoteId,
-  fetchCFBTeamsFromRemoteId
+  fetchCFBTeamsFromRemoteId,
+  fetchNBATeamsFromGoal
+
 };

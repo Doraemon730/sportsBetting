@@ -51,6 +51,9 @@ const SOCCER_API_BASEURL = "https://api.sportradar.com/soccer/trial/v4";
 const SPORTSBOOK_RANGE = 20
 const YEAR = 2023
 
+
+const GOAL_API_BASEURL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb";
+
 module.exports = {
     ETHER_PRICE_API,
     BET_2_2_HIGH,
@@ -100,5 +103,6 @@ module.exports = {
     CFB_API_BASEURL,
     CFB_COMPETITION_ID,
     NBA_COMPETITION_ID,
-    SPORTSBOOK_RANGE
+    SPORTSBOOK_RANGE,
+    GOAL_API_BASEURL
 }
