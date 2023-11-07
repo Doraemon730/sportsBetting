@@ -318,4 +318,5 @@ router.post('/users/verifyCode', auth, userController.verifyUser);
 
 router.post('/admin/goalnbateam', teamController.updateNBATeamsFromGoal);
 router.post('/admin/goalnbaplayer', playerController.updatePlayerFromGoal);
+router.post('/props/update', propController.updateProps);
 module.exports = router;

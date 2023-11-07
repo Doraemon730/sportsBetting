@@ -43,7 +43,8 @@ const {
     fetchWeeklyEventsCFB,
     fetchCFBGameSummary,
     fetchWeeklyEventsNBA,
-    fetchNBAGameSummary
+    fetchNBAGameSummary,
+    fetchNBAEventsFromGoal
 } = require('../services/eventService');
 
 const { USD2Ether, Ether2USD } = require('../utils/util');
@@ -3715,6 +3716,16 @@ const checkResult = async (req, res) => {
         console.log(error);
     }
 }
+
+
+const getNBAEventsfromGoal = asycn (req, res) => {
+    try{
+        
+    } catch (error) {
+      console.log(error);
+      res.status(500).send('Server Error');
+    }
+  }
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,

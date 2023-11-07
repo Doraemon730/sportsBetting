@@ -82,4 +82,12 @@ const isEmpty = stringVariable => {
     }
 }
 
-module.exports = { generateReferralCode, sendEmail, Ether2USD, USD2Ether, isEmpty, };
+const confirmArray = obj => {
+    let result = [];
+    if(Array.isArray(obj))
+        result.push(...obj);
+    else 
+        result.push(obj);            
+    return result;
+}
+module.exports = { generateReferralCode, sendEmail, Ether2USD, USD2Ether, isEmpty, confirmArray};
