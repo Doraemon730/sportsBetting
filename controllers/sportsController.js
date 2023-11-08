@@ -11,10 +11,15 @@ const getAllSports = async (req, res) => {
                     foreignField: 'sportId',
                     as: 'props',
                 },
-                $match: {
-                    'props.available': true
-                }
-            },]);
+            },
+            { 
+                $unwind: "$props"  
+            },
+            { 
+                $match: { 
+                    "props.available": true 
+                } 
+            }]);
         // sports = sports.filter(item => item.name !== "CFB");    
 
         res.status(200).json(sports);

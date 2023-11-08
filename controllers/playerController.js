@@ -47,7 +47,8 @@ const getTopPlayerBy = async (req, res) => {
 
     sportId = new ObjectId(sportId);
     let props = await Prop.find({
-      sportId: sportId
+      sportId: sportId,
+      available: true
     }).select('_id displayName');
     if (props.length == 0)
       return res.status(404).json("There is not props");
@@ -83,6 +84,11 @@ const getTopPlayerBy = async (req, res) => {
           path: '$prop',
           preserveNullAndEmptyArrays: true
         } // Unwind the 'prop' array created by the lookup
+      },
+      {
+        $match:{
+          'prop.available':true
+        }
       },
       {
         $lookup: {
@@ -124,6 +130,7 @@ const getTopPlayerBy = async (req, res) => {
               playerId: '$_id',
               playerName: '$name',
               remoteId: '$remoteId',
+              gId:'$gId',
               playerPosition: '$position',
               contestId: '$odds.event',
               playerNumber: '$jerseyNumber',
