@@ -22,7 +22,10 @@ const TeamSchema = new mongoose.Schema({
   },
   market: {
     type: String
+  },
+  gId:{
+    type:String
   }
-});
+}, {timestamps:true});
 
 module.exports = mongoose.model('team', TeamSchema);
