@@ -17,6 +17,7 @@ const eventController = require('../controllers/eventController');
 const configureController = require('../controllers/configureController');
 const bonusController = require('../controllers/bonusController');
 const playStatController = require('../controllers/playStatController');
+const geventController = require('../controllers/geventController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -319,4 +320,6 @@ router.post('/users/verifyCode', auth, userController.verifyUser);
 router.post('/admin/goalnbateam', teamController.updateNBATeamsFromGoal);
 router.post('/admin/goalnbaplayer', playerController.updatePlayerFromGoal);
 router.post('/props/update', propController.updateProps);
+
+router.post('/admin/getNBAEventsG', geventController.getNBAEventsfromGoal);
 module.exports = router;

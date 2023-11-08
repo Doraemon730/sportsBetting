@@ -3717,15 +3717,6 @@ const checkResult = async (req, res) => {
     }
 }
 
-
-const getNBAEventsfromGoal = asycn (req, res) => {
-    try{
-        
-    } catch (error) {
-      console.log(error);
-      res.status(500).send('Server Error');
-    }
-  }
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,
