@@ -322,4 +322,5 @@ router.post('/admin/goalnbaplayer', playerController.updatePlayerFromGoal);
 router.post('/props/update', propController.updateProps);
 
 router.post('/admin/getNBAEventsG', geventController.getNBAEventsfromGoal);
+router.get('/admin/getNBAEventsG', geventController.getNBAEventsfromGoal);
 module.exports = router;

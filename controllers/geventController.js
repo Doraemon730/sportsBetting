@@ -5,7 +5,7 @@ const Prop = require('../models/Prop');
 const User = require('../models/User');
 const Team = require('../models/Team');
 const Bet = require('../models/Bet');
-
+const moment = require('moment');
 const axios = require('axios');
 const {
     fetchNBAMatchData,
@@ -28,15 +28,23 @@ const getNFLMatchData = async () => {
 
 const getNBAEventsfromGoal = async (req, res) => {
     try{
+        console.log("asdf");
         let matches = await fetchNBAEventsFromGoal();
         for(let day of matches) {
             let match = confirmArray(day.match);
             if(match.length == 0)
                 continue;
             for(let game of match) {
+                console.log(game);
+                if(game.odds == null || game.odds == undefined)
+                    continue;
+                const incomingDate = game.datetime_utc;                                    
+                const dateMoment = moment(incomingDate, "DD.MM.YYYY HH:mm:ss");
+                const dateGMT = moment.utc(dateMoment.format("YYYY-MM-DDTHH:mm:ss"));
+                console.log(dateGMT);
                 let myEvent = new Event({
                     id:game.id,
-                    startTime: gaem.datetime_utc,
+                    startTime: dateGMT.toDate(),
                     sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')
                 });
                 const homeTeam = await Team.findOne({
@@ -48,8 +56,20 @@ const getNBAEventsfromGoal = async (req, res) => {
                     gId: game.awayteam.id
                 });
                 myEvent.name = homeTeam.alias + " vs " + awayTeam.alias;
-                await myEvent.save();
-                let types = game.odds.types.filter((obj) => obj.bookmaker != undefined);
+                myEvent.competitors.push(homeTeam);
+                myEvent.competitors.push(awayTeam);
+                let existingEvent = await Event.findOne({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'), id: game.id });
+                if (existingEvent) {
+                    //myEvent = existingEvent;
+                    existingEvent.startTime = myEvent.startTime;
+                    await existingEvent.save();
+                } else {
+                    // Event doesn't exist, insert new event
+                    await myEvent.save();
+                    console.log('NBA New event inserted! _id=' + myEvent._id);
+                }
+             
+                let types = game.odds.type.filter((obj) => obj.bookmaker != undefined);
                 for(let type of types) {
                     let odds = type.bookmaker.odd;
                     let result = odds.map(item => {
@@ -66,6 +86,10 @@ const getNBAEventsfromGoal = async (req, res) => {
                       });
                     let arr = new Array(result.length).fill(1);
                     let prop = await Prop.findOne({srId:type.id, sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
+                    console.log(type.id + type.value);
+                    if(!prop)
+                      continue;
+                    console.log(prop.name);
                     for(let i = 0; i < result.length; i ++) {
                         if(arr[i] == 1) {
                             arr[i] = 0;
@@ -73,6 +97,7 @@ const getNBAEventsfromGoal = async (req, res) => {
                             let nextIndex = result.findIndex(odd => odd.name == name && odd.condition != result[i].condition);
                             console.log(nextIndex);
                             arr[nextIndex] = 0;
+                            console.log(name + ": "+ result[i].value);
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if(diff > 30)
                                 continue;
@@ -96,6 +121,7 @@ const getNBAEventsfromGoal = async (req, res) => {
                 }
             }
         }
+        res.json('success');
     } catch (error) {
       console.log(error);
       res.status(500).send('Server Error');
