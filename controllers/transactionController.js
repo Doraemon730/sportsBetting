@@ -90,6 +90,10 @@ const depositBalance = async (req, res) => {
                 user.firstDepositAmount = parseFloat(amountUSD);
                 await updateTotalUsers();
             }
+        } else {
+            user.level = "Unranked";
+            user.firstDepositAmount = parseFloat(amountUSD);
+            await updateTotalUsers();
         }
 
         await transaction.save();
