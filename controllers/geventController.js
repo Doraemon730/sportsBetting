@@ -126,9 +126,9 @@ const getNFLMatchData = async () => {
 }
 
 
-const getNBAEventsfromGoal = async (req, res) => {
+const getNBAEventsfromGoal = async () => {
     try {
-        console.log("asdf");
+        console.log("------");
         let matches = await fetchNBAEventsFromGoal();
         for (let day of matches) {
             let match = confirmArray(day.match);
@@ -221,14 +221,23 @@ const getNBAEventsfromGoal = async (req, res) => {
                 }
             }
         }
-        res.json('success');
+        console.log('success');
     } catch (error) {
         console.log(error);
-        res.status(500).send('Server Error');
+        //res.status(500).send('Server Error');
+    }
+}
+
+const getSportEventAll = async () => {
+    try {
+        await getNBAEventsfromGoal();
+    } catch (error) {
+        console.log(error);
     }
 }
 module.exports = {
     getNBAMatchData,
     getNFLMatchData,
-    getNBAEventsfromGoal
+    getNBAEventsfromGoal,
+    getSportEventAll
 }
