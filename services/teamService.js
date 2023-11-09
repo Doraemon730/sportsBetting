@@ -153,6 +153,16 @@ const fetchNBATeamsFromGoal = async () => {
     })
 }
 
+const fetchNFLTeamsFromGoal = async () => {
+  return axios.get(`${GOAL_API_BASEURL}/football/nfl-standings?json=1`)
+    .then(response => { 
+      const leagues = response.data.standings.category.league;
+      //console.log(JSON.stringify(leagues));
+      return leagues;
+    }).catch(error => {
+      console.log(error);
+    })
+}
 module.exports = {
   fetchNBATeamsFromRemoteId,
   fetchNBATeams,
@@ -163,6 +173,7 @@ module.exports = {
   fetchMLBTeams,
   fetchMLBTeamsFromRemoteId,
   fetchCFBTeamsFromRemoteId,
-  fetchNBATeamsFromGoal
+  fetchNBATeamsFromGoal,
+  fetchNFLTeamsFromGoal
 
 };

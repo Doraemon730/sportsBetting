@@ -6,6 +6,10 @@ const EventSchema = new mongoose.Schema({
         type: String,
         index: true
     },
+    gId: {
+        type: String,
+        index: true
+    },
     sportId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'sport'

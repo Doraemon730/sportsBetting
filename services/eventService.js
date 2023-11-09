@@ -369,8 +369,23 @@ const fetchNBAEventsFromGoal = async () => {
         .catch(error => {
             console.log('Error retrieving NBA Events From Goal Serve' + error);
         })
+}
 
-
+const fetchNFLEventsFromGoal = async () => {
+    const today = moment();
+    const tomorrow = moment().add(6, 'days');
+    const date1 = today.format('DD.MM.YYYY');
+    const date2 = tomorrow.format('DD.MM.YYYY');
+    console.log(date1 + " to " + date2);
+    return axios.get(`${GOAL_API_BASEURL}/football/nfl-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
+        .then(response => {
+            const matches = [];
+            let week = response.data.shedules.tournament[1].find(w => w.matches != undefined);
+            return week.matches;
+        })
+        .catch(error => {
+            console.log('Error retrieving NBA Events From Goal Serve' + error);
+        })
 }
 
 module.exports = {
@@ -400,6 +415,7 @@ module.exports = {
     fetchNBAMatchData,
     fetchNFLMatchData,
     fetchNHLMatchData,
-    fetchNBAEventsFromGoal
+    fetchNBAEventsFromGoal,
+    fetchNFLEventsFromGoal
 };
 

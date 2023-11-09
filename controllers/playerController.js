@@ -18,7 +18,8 @@ const {
   fetchPlayerImage,
   fetchMLBPlayerNumber,
   fetchImageFromPrize,
-  fetchNBAPlayersFromGoal
+  fetchNBAPlayersFromGoal,
+  fetchNFLPlayersFromGoal
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
@@ -829,6 +830,47 @@ const updatePlayerFromGoal = async (req, res) => {
   }
 }
 
+const updateNFLPlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
+    for (let team of teams){
+      const positions = await fetchNFLPlayersFromGoal(team.gId);
+      let gplayers = [];
+      for(let position of positions){
+        gplayers.push(...position.player);
+      }
+      const splayers = await Player.find({sportId:new ObjectId('650e0b6fb80ab879d1c142c8'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.position = gplayer.position;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          const nbaPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('650e0b6fb80ab879d1c142c8'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: gplayer.age,
+            jerseyNumber: gplayer.number,
+            gId: gplayer.id
+          });
+          await nbaPlayer.save();
+          console.log(JSON.stringify(nbaPlayer));
+        }
+      }      
+      console.log(splayers);
+    }
+    res.json('success');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -850,5 +892,6 @@ module.exports = {
   setNBAImage,
   updateNFLPlayers,
   setNHLImage,
-  updatePlayerFromGoal
+  updatePlayerFromGoal,
+  updateNFLPlayerFromGoal
 };
