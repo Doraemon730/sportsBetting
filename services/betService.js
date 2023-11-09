@@ -6,6 +6,7 @@ const { getETHPriceFromMarket } = require('../controllers/transactionController'
 const { getLiveDataByEvent, getWeekEventAll, checkEvents } = require('../controllers/eventController');
 const { getRewards } = require('../controllers/betController');
 const { recordStats } = require('../controllers/playStatController');
+const { getSportEventAll } = require('../controllers/geventController');
 
 require('../utils/log');
 //betJob = cron.schedule
@@ -58,6 +59,7 @@ const cronMatchJob = () => {
 
 const cronWeekEventJob = () => {
   getWeekEventAll();
+  getSportEventAll();
   const time = new Date().toString();
   console.log('Cron Job for Week Event' + time);
 }

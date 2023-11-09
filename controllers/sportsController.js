@@ -3,15 +3,33 @@ const { ObjectId } = require("mongodb");
 require('../utils/log');
 const getAllSports = async (req, res) => {
     try {
-        let sports = await Sport.aggregate([
-            {
+
+            { 
                 $lookup: {
-                    from: 'props',
-                    localField: '_id',
-                    foreignField: 'sportId',
-                    as: 'props',
-                },
-            }]);
+                  from: 'props', 
+                  localField: '_id', 
+                  foreignField: 'sportId',
+                  as: 'result'
+                }
+              },
+              { 
+                $unwind: '$result' 
+              },
+              { 
+                $match: { 
+                  'result.available': true 
+                }
+              },
+              {
+                $group: {
+                  _id: '$_id',
+                  name: { $first: '$name' }, // replace 'name' with your other field names
+                  props: {
+                    $push: '$result'
+                  }
+                }
+              },
+        ]);
         // sports = sports.filter(item => item.name !== "CFB");    
 
         res.status(200).json(sports);

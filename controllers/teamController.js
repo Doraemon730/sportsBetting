@@ -4,7 +4,8 @@ const {
     fetchNFLTeams,
     fetchNHLTeams,
     fetchMLBTeams,
-    fetchNBATeamsFromGoal
+    fetchNBATeamsFromGoal,
+    fetchNFLTeamsFromGoal
 } = require('../services/teamService');
 require('../utils/log');
 const {
@@ -222,6 +223,33 @@ const updateNBATeamsFromGoal = async (req, res) => {
         res.status(500).send(Error);
     }
 }
+const updateNFLTeamsFromGoal = async (req, res) => {
+    try {
+        let teams = [];        
+        const leagues = await fetchNFLTeamsFromGoal();
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            for(let division of league.division)
+                for(let team of division.team) {
+                    teams.push(team);
+                }
+        }
+
+        let NFLTeams = await Team.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
+        for(let nflTeam of NFLTeams) {
+            let team = teams.find((t) => t.name.includes(nflTeam.name));
+            console.log(nflTeam.name + ":" + team.name);
+            nflTeam.name = team.name;
+            nflTeam.gId = team.id;
+            await nflTeam.save();
+        }
+        res.json(NFLTeams);
+        console.log(NFLTeams);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(Error);
+    }
+}
 module.exports = {
     addNBATeamsToDatabase,
     getIdfromRemoteId,
@@ -233,5 +261,6 @@ module.exports = {
     addSoccerTeam,
     addCFBTeamToDatabase,
     getTeamListBySport,
-    updateNBATeamsFromGoal
+    updateNBATeamsFromGoal,
+    updateNFLTeamsFromGoal
 }
