@@ -165,11 +165,12 @@ const fetchImageFromPrize = async (fileName) => {
 }
 
 const fetchNBAPlayersFromGoal = async (teamId) => {
-  return axios.get(`${GOAL_API_BASEURL}/bsktbl/${teamId}_roasters?json=1`)
+
+  return axios.get(`${GOAL_API_BASEURL}/bsktbl/${teamId}_rosters?json=1`)
     .then(response => { 
-      const leagues = response.data.team.player;
-      console.log(leagues);
-      return leagues;
+      const players = response.data.team.player;
+      //console.log(players);
+      return players;
     }).catch(error => {
       console.log(error);
     })

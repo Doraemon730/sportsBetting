@@ -146,7 +146,7 @@ const fetchNBATeamsFromGoal = async () => {
   return axios.get(`${GOAL_API_BASEURL}/bsktbl/nba-standings?json=1`)
     .then(response => { 
       const leagues = response.data.standings.category.league;
-      console.log(leagues);
+      //console.log(JSON.stringify(leagues));
       return leagues;
     }).catch(error => {
       console.log(error);
