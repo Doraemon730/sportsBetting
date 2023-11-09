@@ -12,6 +12,8 @@ const axios = require('axios');
 const {
     fetchNBAMatchData,
     fetchNFLMatchData,
+    fetchNHLMatchData,
+    fetchCFBMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal
 } = require('../services/eventService');
@@ -66,13 +68,13 @@ const getNBAMatchData = async () => {
     try {
         let matchList = fetchNBAMatchData();
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final') {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
                     let event = await Event.findOne({ gId: match.id })
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
-                    if (bets.lenght == 0)
+                    if (bets.length == 0)
                         continue;
                     let broadcastingData = {
                         contestId: event._id
@@ -136,8 +138,8 @@ const getNBAMatchData = async () => {
                         await bet.save();
                 }
             }
-            if (match.status == 'Final' || match.status == "Final/OT") {
-              updateNBABet(match)            
+            if (match.status == 'Final' || match.status == "Final/OT" || match.status == 'After Over Time') {
+                updateNBABet(match)
             }
         }
 
@@ -293,13 +295,12 @@ const summarizeNFLPlayerStats = match => {
 
     return players;
 }
-
 const updateNBABet = async (match) => {
     try {
         console.log(match);
-        let event = await Event.findOne({gId: match.id})
+        let event = await Event.findOne({ gId: match.id })
         if (!event || event.status == 3)
-            return;          
+            return;
         let players = [];
         players.push(...match.player_stats.hometeam.starters.player);
         players.push(...match.player_stats.hometeam.bench.player);
@@ -625,15 +626,15 @@ const updateNBABet = async (match) => {
 
 const getNFLMatchData = async () => {
     try {
-        let matchList = fetchNBAMatchData();
+        let matchList = fetchNFLMatchData();
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final') {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
                     let event = await Event.findOne({ gid: match.id })
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
-                    if (bets.lenght == 0)
+                    if (bets.length == 0)
                         continue;
                     let broadcastingData = {
                         contestId: event._id
@@ -692,7 +693,7 @@ const getNFLMatchData = async () => {
                         await bet.save();
                 }
             }
-            if (match.status === 'Final') {
+            if (match.status === 'Final' || match.status == 'After Over Time') {
                 await Event.updateOne({
                     gid: match.id
                 }, {
@@ -707,6 +708,164 @@ const getNFLMatchData = async () => {
     }
 }
 
+const getNHLPlayerStats = player => {
+    let stats = {
+        gid: player.id,
+        name: player.name
+    }
+    stats['Total Shots'] = parseInt(player.shots_on_goal);
+    stats['Total Assists'] = parseInt(player.assists);
+    stats['Total Points'] = parseInt(player.goals) + parseInt(player.assists);
+    stats['Total Power Play Points'] = parseInt(player.pp_goals) + parseInt(player.pp_assists);
+    return stats;
+}
+
+const getNHLMatchData = async () => {
+    try {
+        let matchList = fetchNHLMatchData();
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
+                if (match.player_stats) {
+                    let event = await Event.findOne({ gid: match.id })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.length == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = [];
+                    players.push(...match.player_stats.hometeam.player);
+                    players.push(...match.player_stats.awayteam.player);
+
+                    for (const player of players) {
+                        broadcastingData.player = getNHLPlayerStats(player);
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks; j++) {
+                                if (bets[i].picks[j].gid == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Total Shots':
+                                            bets[i].picks[j].liveData = parseInt(player.shots_on_goal);
+                                            break;
+                                        case 'Total Assists':
+                                            bets[i].picks[j].liveData = parseInt(player.assists);
+                                            break;
+                                        case 'Total Points':
+                                            bets[i].picks[j].liveData = parseInt(player.goals) + parseInt(player.assists);
+                                            break;
+                                        case 'Total Power Play Points':
+                                            bets[i].picks[j].liveData = parseInt(player.pp_goals) + parseInt(player.pp_assists);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (const bet of bets)
+                        await bet.save();
+                }
+            }
+            if (match.status === 'Final' || match.status == 'After Over Time') {
+                await Event.updateOne({
+                    gid: match.id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+
+}
+
+const getCFBMatchData = async () => {
+    try {
+        let matchList = fetchCFBMatchData();
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
+                if (match.player_stats) {
+                    let event = await Event.findOne({ gid: match.id })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.length == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = summarizeNFLPlayerStats(match);
+
+                    for (const player of players) {
+                        broadcastingData.player = player;
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks; j++) {
+                                if (bets[i].picks[j].gid == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Pass Yards':
+                                            bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
+                                            break;
+                                        case 'Pass Completions':
+                                            bets[i].picks[j].liveData = player['Pass Completions'] != undefined ? player['Pass Completions'] : 0;
+                                            break;
+                                        case 'Pass TDs':
+                                            bets[i].picks[j].liveData = player['Pass TDs'] != undefined ? player['Pass TDs'] : 0;
+                                            break;
+                                        case 'Rush Yards':
+                                            bets[i].picks[j].liveData = player['Rush Yards'] != undefined ? player['Rush Yards'] : 0;
+                                            break;
+                                        case 'Receiving Yards':
+                                            bets[i].picks[j].liveData = player['Receiving Yards'] != undefined ? player['Receiving Yards'] : 0;
+                                            break;
+                                        case 'Receptions':
+                                            bets[i].picks[j].liveData = player['Receptions'] != undefined ? player['Receptions'] : 0;
+                                            break;
+                                        case 'INT':
+                                            bets[i].picks[j].liveData = player['INT'] != undefined ? player['INT'] : 0;
+                                            break;
+                                        case 'Pass Attempts':
+                                            bets[i].picks[j].liveData = player['Pass Attempts'] != undefined ? player['Pass Attempts'] : 0;
+                                            break;
+                                        case 'FG Made':
+                                            bets[i].picks[j].liveData = player['FG Made'] != undefined ? player['FG Made'] : 0;
+                                            break;
+                                        case 'Tackles+Ast':
+                                            bets[i].picks[j].liveData = player['Tackles+Ast'] != undefined ? player['Tackles+Ast'] : 0;
+                                            break;
+                                        case 'Rush+Rec Yards':
+                                            bets[i].picks[j].liveData = player['Rush+Rec Yards'] != undefined ? player['Rush+Rec Yards'] : 0;
+                                            break;
+                                        case 'Pass+Rush Yards':
+                                            bets[i].picks[j].liveData = player['Pass+Rush Yards'] != undefined ? player['Pass+Rush Yards'] : 0;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (const bet of bets)
+                        await bet.save();
+                }
+            }
+            if (match.status == 'Final' || match.status == 'After Over Time') {
+                await Event.updateOne({
+                    gid: match.id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 const getNBAEventsfromGoal = async () => {
     try {
@@ -811,6 +970,13 @@ const getNBAEventsfromGoal = async () => {
     }
 }
 
+const getMatchData = () => {
+    getNBAMatchData();
+    getNFLMatchData();
+    getNHLMatchData();
+    getCFBMatchData();
+}
+
 const getNFLEventsfromGoal = async () => {
     try {
         console.log("------");
@@ -886,7 +1052,7 @@ const getNFLEventsfromGoal = async () => {
                             console.log(name + ": " + result[i].value);
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if (diff > 30)
-                                continue;                            
+                                continue;
                             let player = await Player.findOne({ name: new RegExp(name, 'i') });
                             if (!player)
                                 continue;
@@ -923,6 +1089,9 @@ const getSportEventAll = async () => {
 module.exports = {
     getNBAMatchData,
     getNFLMatchData,
+    getNHLMatchData,
+    getCFBMatchData,
     getNBAEventsfromGoal,
-    getSportEventAll
+    getSportEventAll,
+    getMatchData
 }
