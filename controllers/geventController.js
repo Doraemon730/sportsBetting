@@ -12,13 +12,10 @@ const axios = require('axios');
 const {
     fetchNBAMatchData,
     fetchNFLMatchData,
-<<<<<<< HEAD
     fetchNHLMatchData,
-    fetchNBAEventsFromGoal
-=======
+    fetchCFBMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal
->>>>>>> 2ee260636e7d606f05d0651846cb54401a25a05b
 } = require('../services/eventService');
 const { USD2Ether, Ether2USD } = require('../utils/util');
 const {
@@ -71,7 +68,7 @@ const getNBAMatchData = async () => {
     try {
         let matchList = fetchNBAMatchData();
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final') {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
                     let event = await Event.findOne({ gId: match.id })
                     if (!event)
@@ -141,7 +138,7 @@ const getNBAMatchData = async () => {
                         await bet.save();
                 }
             }
-            if (match.status == 'Final' || match.status == "Final/OT") {
+            if (match.status == 'Final' || match.status == "Final/OT" || match.status == 'After Over Time') {
                 updateNBABet(match)
             }
         }
@@ -631,7 +628,7 @@ const getNFLMatchData = async () => {
     try {
         let matchList = fetchNFLMatchData();
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final') {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
                     let event = await Event.findOne({ gid: match.id })
                     if (!event)
@@ -696,7 +693,7 @@ const getNFLMatchData = async () => {
                         await bet.save();
                 }
             }
-            if (match.status === 'Final') {
+            if (match.status === 'Final' || match.status == 'After Over Time') {
                 await Event.updateOne({
                     gid: match.id
                 }, {
@@ -727,7 +724,7 @@ const getNHLMatchData = async () => {
     try {
         let matchList = fetchNHLMatchData();
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final') {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
                     let event = await Event.findOne({ gid: match.id })
                     if (!event)
@@ -770,7 +767,7 @@ const getNHLMatchData = async () => {
                         await bet.save();
                 }
             }
-            if (match.status === 'Final') {
+            if (match.status === 'Final' || match.status == 'After Over Time') {
                 await Event.updateOne({
                     gid: match.id
                 }, {
@@ -786,7 +783,89 @@ const getNHLMatchData = async () => {
 
 }
 
+const getCFBMatchData = async () => {
+    try {
+        let matchList = fetchCFBMatchData();
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
+                if (match.player_stats) {
+                    let event = await Event.findOne({ gid: match.id })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.length == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = summarizeNFLPlayerStats(match);
 
+                    for (const player of players) {
+                        broadcastingData.player = player;
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks; j++) {
+                                if (bets[i].picks[j].gid == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Pass Yards':
+                                            bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
+                                            break;
+                                        case 'Pass Completions':
+                                            bets[i].picks[j].liveData = player['Pass Completions'] != undefined ? player['Pass Completions'] : 0;
+                                            break;
+                                        case 'Pass TDs':
+                                            bets[i].picks[j].liveData = player['Pass TDs'] != undefined ? player['Pass TDs'] : 0;
+                                            break;
+                                        case 'Rush Yards':
+                                            bets[i].picks[j].liveData = player['Rush Yards'] != undefined ? player['Rush Yards'] : 0;
+                                            break;
+                                        case 'Receiving Yards':
+                                            bets[i].picks[j].liveData = player['Receiving Yards'] != undefined ? player['Receiving Yards'] : 0;
+                                            break;
+                                        case 'Receptions':
+                                            bets[i].picks[j].liveData = player['Receptions'] != undefined ? player['Receptions'] : 0;
+                                            break;
+                                        case 'INT':
+                                            bets[i].picks[j].liveData = player['INT'] != undefined ? player['INT'] : 0;
+                                            break;
+                                        case 'Pass Attempts':
+                                            bets[i].picks[j].liveData = player['Pass Attempts'] != undefined ? player['Pass Attempts'] : 0;
+                                            break;
+                                        case 'FG Made':
+                                            bets[i].picks[j].liveData = player['FG Made'] != undefined ? player['FG Made'] : 0;
+                                            break;
+                                        case 'Tackles+Ast':
+                                            bets[i].picks[j].liveData = player['Tackles+Ast'] != undefined ? player['Tackles+Ast'] : 0;
+                                            break;
+                                        case 'Rush+Rec Yards':
+                                            bets[i].picks[j].liveData = player['Rush+Rec Yards'] != undefined ? player['Rush+Rec Yards'] : 0;
+                                            break;
+                                        case 'Pass+Rush Yards':
+                                            bets[i].picks[j].liveData = player['Pass+Rush Yards'] != undefined ? player['Pass+Rush Yards'] : 0;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (const bet of bets)
+                        await bet.save();
+                }
+            }
+            if (match.status == 'Final' || match.status == 'After Over Time') {
+                await Event.updateOne({
+                    gid: match.id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 const getNBAEventsfromGoal = async () => {
     try {
@@ -1004,6 +1083,7 @@ module.exports = {
     getNBAMatchData,
     getNFLMatchData,
     getNHLMatchData,
+    getCFBMatchData,
     getNBAEventsfromGoal,
     getSportEventAll
 }

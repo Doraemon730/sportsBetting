@@ -35,6 +35,7 @@ const {
     GOAL_NBA_MATCH_DATA_URL,
     GOAL_NFL_MATCH_DATA_URL,
     GOAL_NHL_MATCH_DATA_URL,
+    GOAL_CFB_MATCH_DATA_URL,
     GOAL_API_BASEURL
 } = require('../config/constant');
 const { confirmArray } = require('../utils/util')
@@ -333,6 +334,24 @@ const fetchNFLMatchData = async () => {
 
 }
 
+const fetchCFBMatchData = async () => {
+    const currentDate = new Date();
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+
+    axios.get(`${GOAL_CFB_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            const matchData = confirmArray(response.data.scores.category.match)
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving CFB data from Goal:' + error);
+        });
+
+}
+
 const fetchNHLMatchData = async () => {
     const currentDate = new Date();
     const day = String(currentDate.getDate()).padStart(2, '0');
@@ -415,6 +434,7 @@ module.exports = {
     fetchNBAMatchData,
     fetchNFLMatchData,
     fetchNHLMatchData,
+    fetchCFBMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal
 };
