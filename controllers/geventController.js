@@ -36,93 +36,324 @@ const getNBAPlayerStats = player => {
 }
 
 const getNBAMatchData = async () => {
-    let matchList = fetchNBAMatchData();
-    for (const match of matchList) {
-        if (match.status != 'Not Started' && match.status != 'Final') {
-            if (match.player_stats) {
-                let event = await Event.findOne({ gid: match.id })
-                if (!event)
-                    continue;
-                let bets = await Bet.findOne({ 'picks.contestId': new ObjectId(event._id) })
-                if (bets.lenght == 0)
-                    continue;
-                let broadcastingData = {
-                    contestId: event._id
-                }
-                let players = [];
-                players.push(...match.player_stats.hometeam.starters.player);
-                players.push(...match.player_stats.hometeam.bench.player);
-                players.push(...match.player_stats.awayteam.starters.player);
-                players.push(...match.player_stats.awayteam.bench.player);
+    try {
+        let matchList = fetchNBAMatchData();
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final') {
+                if (match.player_stats) {
+                    let event = await Event.findOne({ gid: match.id })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.lenght == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = [];
+                    players.push(...match.player_stats.hometeam.starters.player);
+                    players.push(...match.player_stats.hometeam.bench.player);
+                    players.push(...match.player_stats.awayteam.starters.player);
+                    players.push(...match.player_stats.awayteam.bench.player);
 
-                for (const player of players) {
-                    broadcastingData.player = getNBAPlayerStats(player);
-                    global.io.sockets.emit('broadcast', { broadcastingData });
-                    for (let i = 0; i < bets.length; i++) {
-                        for (let j = 0; j < bets[i].picks; j++) {
-                            if (bets[i].picks[j].gid == player.id) {
-                                switch (bets[i].picks[j].prop.propName) {
-                                    case 'Points':
-                                        bets[i].picks[j].liveData = parseInt(player.points);
-                                        break;
-                                    case 'Assists':
-                                        bets[i].picks[j].liveData = parseInt(player.assists);
-                                        break;
-                                    case 'Rebounds':
-                                        bets[i].picks[j].liveData = parseInt(player.total_rebounds);
-                                        break;
-                                    case '3-PT Made':
-                                        bets[i].picks[j].liveData = parseInt(player.threepoint_goals_made);
-                                        break;
-                                    case 'Steals':
-                                        bets[i].picks[j].liveData = parseInt(player.steals);
-                                        break;
-                                    case 'Blocks':
-                                        bets[i].picks[j].liveData = parseInt(player.blocks);
-                                        break;
-                                    case 'Turnovers':
-                                        bets[i].picks[j].liveData = parseInt(player.turnovers);
-                                        break;
-                                    case 'Points+Rebounds':
-                                        bets[i].picks[j].liveData = parseInt(player.points) + parseInt(player.total_rebounds);
-                                        break;
-                                    case 'Points+Assists':
-                                        bets[i].picks[j].liveData = parseInt(player.points) + parseInt(player.assists);
-                                        break;
-                                    case 'Rebounds+Assists':
-                                        bets[i].picks[j].liveData = parseInt(player.total_rebounds) + parseInt(player.assists);
-                                        break;
-                                    case 'Pts+Rebs+Asts':
-                                        bets[i].picks[j].liveData = parseInt(player.points) + parseInt(player.total_rebounds) + parseInt(player.assists);
-                                        break;
-                                    case 'Blocks+Steals':
-                                        bets[i].picks[j].liveData = parseInt(player.blocks) + parseInt(player.steals);
-                                        break;
+                    for (const player of players) {
+                        broadcastingData.player = getNBAPlayerStats(player);
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks; j++) {
+                                if (bets[i].picks[j].gid == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Points':
+                                            bets[i].picks[j].liveData = parseInt(player.points);
+                                            break;
+                                        case 'Assists':
+                                            bets[i].picks[j].liveData = parseInt(player.assists);
+                                            break;
+                                        case 'Rebounds':
+                                            bets[i].picks[j].liveData = parseInt(player.total_rebounds);
+                                            break;
+                                        case '3-PT Made':
+                                            bets[i].picks[j].liveData = parseInt(player.threepoint_goals_made);
+                                            break;
+                                        case 'Steals':
+                                            bets[i].picks[j].liveData = parseInt(player.steals);
+                                            break;
+                                        case 'Blocks':
+                                            bets[i].picks[j].liveData = parseInt(player.blocks);
+                                            break;
+                                        case 'Turnovers':
+                                            bets[i].picks[j].liveData = parseInt(player.turnovers);
+                                            break;
+                                        case 'Points+Rebounds':
+                                            bets[i].picks[j].liveData = parseInt(player.points) + parseInt(player.total_rebounds);
+                                            break;
+                                        case 'Points+Assists':
+                                            bets[i].picks[j].liveData = parseInt(player.points) + parseInt(player.assists);
+                                            break;
+                                        case 'Rebounds+Assists':
+                                            bets[i].picks[j].liveData = parseInt(player.total_rebounds) + parseInt(player.assists);
+                                            break;
+                                        case 'Pts+Rebs+Asts':
+                                            bets[i].picks[j].liveData = parseInt(player.points) + parseInt(player.total_rebounds) + parseInt(player.assists);
+                                            break;
+                                        case 'Blocks+Steals':
+                                            bets[i].picks[j].liveData = parseInt(player.blocks) + parseInt(player.steals);
+                                            break;
+                                    }
                                 }
                             }
                         }
                     }
+                    for (const bet of bets)
+                        await bet.save();
                 }
-                for (const bet of bets)
-                    await bet.save();
+            }
+            if (match.status === 'Final') {
+                await Event.updateOne({
+                    gid: match.id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
             }
         }
-        if (match.status === 'Final') {
-            await Event.updateOne({
-                gid: match.id
-            }, {
-                $set: {
-                    state: 2
-                }
-            })
-        }
+    } catch (err) {
+        console.log(err)
     }
 
 }
 
+const summarizeNFLPlayerStats = match => {
+
+    let players = [];
+    let tempPlayers = [];
+    if (match.defensive) {
+        if (match.defensive.awayteam)
+            tempPlayers.push(...confirmArray(match.defensive.awayteam.player))
+        if (match.defensive.hometeam)
+            tempPlayers.push(...confirmArray(match.defensive.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item[id] == player.id)
+            if (index >= 0) {
+                players[index]['Tackles+Ast'] = parseInt(player.tackles);
+            } else {
+                let newPlayer = {}
+                newPlayer['Tackles+Ast'] = parseInt(player.tackles);
+                player.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.passing) {
+        if (match.passing.awayteam)
+            tempPlayers.push(...confirmArray(match.passing.awayteam.player))
+        if (match.passing.hometeam)
+            tempPlayers.push(...confirmArray(match.passing.hometeam.player))
+        for (const player of tempPlayers) {
+            const parts = player.comp_att.split("/");
+            const completions = parseInt(parts[0], 10);
+            const attempts = parseInt(parts[1], 10);
+            const index = players.findIndex(item => item[id] == player.id)
+            if (index >= 0) {
+                players[index]['Pass Yards'] = parseInt(player.yards);
+                players[index]['Pass Completions'] = completions;
+                players[index]['Pass TDs'] = parseInt(player.passing_touch_downs);
+                players[index]['Pass Attempts'] = attempts;
+                if (players[index]['Rush Yards'] != undefined)
+                    players[index]['Pass+Rush Yards'] = players[index]['Pass Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Pass+Rush Yards'] = players[index]['Pass Yards']
+            } else {
+                let newPlayer = {}
+                newPlayer['Pass Yards'] = parseInt(player.yards);
+                newPlayer['Pass Completions'] = completions;
+                newPlayer['Pass TDs'] = parseInt(player.passing_touch_downs);
+                newPlayer['Pass Attempts'] = attempts;
+                newPlayer['Pass+Rush Yards'] = players[index]['Pass Yards']
+                player.push(newPlayer)
+            }
+        }
+    }
+    tempPlayers = [];
+    if (match.rushing) {
+        if (match.rushing.awayteam)
+            tempPlayers.push(...confirmArray(match.rushing.awayteam.player))
+        if (match.rushing.hometeam)
+            tempPlayers.push(...confirmArray(match.rushing.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item[id] == player.id)
+            if (index >= 0) {
+                players[index]['Rush Yards'] = parseInt(player.yards);
+                if (players[index]['Pass Yards'] != undefined)
+                    players[index]['Pass+Rush Yards'] = players[index]['Pass Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Pass+Rush Yards'] = players[index]['Rush Yards']
+
+                if (players[index]['Receiving Yards'] != undefined)
+                    players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Rush+Rec Yards'] = players[index]['Rush Yards']
+            } else {
+                let newPlayer = {}
+                newPlayer['Rush Yards'] = parseInt(player.yards);
+                newPlayer['Pass+Rush Yards'] = players[index]['Rush Yards']
+                newPlayer['Rush+Rec Yards'] = players[index]['Rush Yards']
+                player.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.receiving) {
+        if (match.receiving.awayteam)
+            tempPlayers.push(...confirmArray(match.receiving.awayteam.player))
+        if (match.receiving.hometeam)
+            tempPlayers.push(...confirmArray(match.receiving.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item[id] == player.id)
+            if (index >= 0) {
+                players[index]['Receiving Yards'] = parseInt(player.yards);
+                players[index]['Receptions'] = parseInt(player.total_receptions);
+                if (players[index]['Rushing Yards'] != undefined)
+                    players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards']
+            } else {
+                let newPlayer = {}
+                newPlayer['Receiving Yards'] = parseInt(player.yards);
+                newPlayer['Receptions'] = parseInt(player.total_receptions);
+                newPlayer['Rush+Rec Yards'] = players[index]['Receiving Yards']
+                player.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.interceptions) {
+        if (match.interceptions.awayteam)
+            tempPlayers.push(...confirmArray(match.interceptions.awayteam.player))
+        if (match.interceptions.hometeam)
+            tempPlayers.push(...confirmArray(match.interceptions.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item[id] == player.id)
+            if (index >= 0) {
+                players[index]['INT'] = parseInt(player.total_interceptions);
+            } else {
+                let newPlayer = {}
+                newPlayer['INT'] = parseInt(player.total_interceptions);
+                player.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.kicking) {
+        if (match.kicking.awayteam)
+            tempPlayers.push(...confirmArray(match.kicking.awayteam.player))
+        if (match.kicking.hometeam)
+            tempPlayers.push(...confirmArray(match.kicking.hometeam.player))
+        for (const player of tempPlayers) {
+            const parts = player.field_goals.split("/");
+            const fg = parseInt(parts[0], 10);
+            const index = players.findIndex(item => item[id] == player.id)
+            if (index >= 0) {
+                players[index]['FG Made'] = fg;
+            } else {
+                let newPlayer = {}
+                newPlayer['FG Made'] = fg;
+                player.push(newPlayer)
+            }
+        }
+    }
+
+    return players;
+}
+
 
 const getNFLMatchData = async () => {
-    let matchData = fetchNFLMatchData();
+    try {
+        let matchList = fetchNBAMatchData();
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final') {
+                if (match.player_stats) {
+                    let event = await Event.findOne({ gid: match.id })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.lenght == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = summarizeNFLPlayerStats(match);
+
+                    for (const player of players) {
+                        broadcastingData.player = player;
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks; j++) {
+                                if (bets[i].picks[j].gid == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Pass Yards':
+                                            bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
+                                            break;
+                                        case 'Pass Completions':
+                                            bets[i].picks[j].liveData = player['Pass Completions'] != undefined ? player['Pass Completions'] : 0;
+                                            break;
+                                        case 'Pass TDs':
+                                            bets[i].picks[j].liveData = player['Pass TDs'] != undefined ? player['Pass TDs'] : 0;
+                                            break;
+                                        case 'Rush Yards':
+                                            bets[i].picks[j].liveData = player['Rush Yards'] != undefined ? player['Rush Yards'] : 0;
+                                            break;
+                                        case 'Receiving Yards':
+                                            bets[i].picks[j].liveData = player['Receiving Yards'] != undefined ? player['Receiving Yards'] : 0;
+                                            break;
+                                        case 'Receptions':
+                                            bets[i].picks[j].liveData = player['Receptions'] != undefined ? player['Receptions'] : 0;
+                                            break;
+                                        case 'INT':
+                                            bets[i].picks[j].liveData = player['INT'] != undefined ? player['INT'] : 0;
+                                            break;
+                                        case 'Pass Attempts':
+                                            bets[i].picks[j].liveData = player['Pass Attempts'] != undefined ? player['Pass Attempts'] : 0;
+                                            break;
+                                        case 'FG Made':
+                                            bets[i].picks[j].liveData = player['FG Made'] != undefined ? player['FG Made'] : 0;
+                                            break;
+                                        case 'Tackles+Ast':
+                                            bets[i].picks[j].liveData = player['Tackles+Ast'] != undefined ? player['Tackles+Ast'] : 0;
+                                            break;
+                                        case 'Rush+Rec Yards':
+                                            bets[i].picks[j].liveData = player['Rush+Rec Yards'] != undefined ? player['Rush+Rec Yards'] : 0;
+                                            break;
+                                        case 'Pass+Rush Yards':
+                                            bets[i].picks[j].liveData = player['Pass+Rush Yards'] != undefined ? player['Pass+Rush Yards'] : 0;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (const bet of bets)
+                        await bet.save();
+                }
+            }
+            if (match.status === 'Final') {
+                await Event.updateOne({
+                    gid: match.id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
 }
 
 
