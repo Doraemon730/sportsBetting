@@ -34,7 +34,8 @@ const {
     NBA_COMPETITION_ID,
     GOAL_NBA_MATCH_DATA_URL,
     GOAL_NFL_MATCH_DATA_URL,
-	GOAL_API_BASEURL
+    GOAL_NHL_MATCH_DATA_URL,
+    GOAL_API_BASEURL
 } = require('../config/constant');
 const { confirmArray } = require('../utils/util')
 
@@ -332,6 +333,24 @@ const fetchNFLMatchData = async () => {
 
 }
 
+const fetchNHLMatchData = async () => {
+    const currentDate = new Date();
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+
+    axios.get(`${GOAL_NHL_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            const matchData = confirmArray(response.data.scores.category.match)
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NHL data from Goal:' + error);
+        });
+
+}
+
 const fetchNBAEventsFromGoal = async () => {
     const today = moment();
     const tomorrow = moment().add(1, 'days');
@@ -341,17 +360,17 @@ const fetchNBAEventsFromGoal = async () => {
     return axios.get(`${GOAL_API_BASEURL}/bsktbl/nba-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
         .then(response => {
             const matches = [];
-            if(Array.isArray(response.data.shedules.matches))
+            if (Array.isArray(response.data.shedules.matches))
                 matches.push(...response.data.shedules.matches);
-            else 
-                matches.push(response.data.shedules.matches);            
+            else
+                matches.push(response.data.shedules.matches);
             return matches;
         })
         .catch(error => {
             console.log('Error retrieving NBA Events From Goal Serve' + error);
         })
-    
-    
+
+
 }
 
 module.exports = {
@@ -380,6 +399,7 @@ module.exports = {
     fetchNBAGameSummary,
     fetchNBAMatchData,
     fetchNFLMatchData,
-	fetchNBAEventsFromGoal
+    fetchNHLMatchData,
+    fetchNBAEventsFromGoal
 };
 

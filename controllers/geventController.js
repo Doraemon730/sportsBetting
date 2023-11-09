@@ -12,6 +12,7 @@ const axios = require('axios');
 const {
     fetchNBAMatchData,
     fetchNFLMatchData,
+    fetchNHLMatchData,
     fetchNBAEventsFromGoal
 } = require('../services/eventService');
 
@@ -45,7 +46,7 @@ const getNBAMatchData = async () => {
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
-                    if (bets.lenght == 0)
+                    if (bets.length == 0)
                         continue;
                     let broadcastingData = {
                         contestId: event._id
@@ -271,10 +272,9 @@ const summarizeNFLPlayerStats = match => {
     return players;
 }
 
-
 const getNFLMatchData = async () => {
     try {
-        let matchList = fetchNBAMatchData();
+        let matchList = fetchNFLMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final') {
                 if (match.player_stats) {
@@ -282,7 +282,7 @@ const getNFLMatchData = async () => {
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
-                    if (bets.lenght == 0)
+                    if (bets.length == 0)
                         continue;
                     let broadcastingData = {
                         contestId: event._id
@@ -355,6 +355,82 @@ const getNFLMatchData = async () => {
         console.log(err)
     }
 }
+
+const getNHLPlayerStats = player => {
+    let stats = {
+        gid: player.id,
+        name: player.name
+    }
+    stats['Total Shots'] = parseInt(player.shots_on_goal);
+    stats['Total Assists'] = parseInt(player.assists);
+    stats['Total Points'] = parseInt(player.goals) + parseInt(player.assists);
+    stats['Total Power Play Points'] = parseInt(player.pp_goals) + parseInt(player.pp_assists);
+    return stats;
+}
+
+const getNHLMatchData = async () => {
+    try {
+        let matchList = fetchNHLMatchData();
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final') {
+                if (match.player_stats) {
+                    let event = await Event.findOne({ gid: match.id })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.length == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = [];
+                    players.push(...match.player_stats.hometeam.player);
+                    players.push(...match.player_stats.awayteam.player);
+
+                    for (const player of players) {
+                        broadcastingData.player = getNHLPlayerStats(player);
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks; j++) {
+                                if (bets[i].picks[j].gid == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Total Shots':
+                                            bets[i].picks[j].liveData = parseInt(player.shots_on_goal);
+                                            break;
+                                        case 'Total Assists':
+                                            bets[i].picks[j].liveData = parseInt(player.assists);
+                                            break;
+                                        case 'Total Points':
+                                            bets[i].picks[j].liveData = parseInt(player.goals) + parseInt(player.assists);
+                                            break;
+                                        case 'Total Power Play Points':
+                                            bets[i].picks[j].liveData = parseInt(player.pp_goals) + parseInt(player.pp_assists);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (const bet of bets)
+                        await bet.save();
+                }
+            }
+            if (match.status === 'Final') {
+                await Event.updateOne({
+                    gid: match.id
+                }, {
+                    $set: {
+                        state: 2
+                    }
+                })
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+
+}
+
 
 
 const getNBAEventsfromGoal = async (req, res) => {
@@ -461,5 +537,6 @@ const getNBAEventsfromGoal = async (req, res) => {
 module.exports = {
     getNBAMatchData,
     getNFLMatchData,
+    getNHLMatchData,
     getNBAEventsfromGoal
 }
