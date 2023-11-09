@@ -3,7 +3,7 @@ const { ObjectId } = require("mongodb");
 require('../utils/log');
 const getAllSports = async (req, res) => {
     try {
-
+        let sports = await Sport.aggregate([
             { 
                 $lookup: {
                   from: 'props', 
