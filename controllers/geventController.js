@@ -63,6 +63,7 @@ const getNBAEventsfromGoal = async (req, res) => {
                     //myEvent = existingEvent;
                     existingEvent.startTime = myEvent.startTime;
                     await existingEvent.save();
+                    myEvent = existingEvent;
                 } else {
                     // Event doesn't exist, insert new event
                     await myEvent.save();
