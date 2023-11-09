@@ -14,10 +14,6 @@ const {
     fetchNFLMatchData,
     fetchNBAEventsFromGoal
 } = require('../services/eventService');
-const {
-    ObjectId
-} = require("mongodb");
-const { confirmArray } = require('../utils/util');
 
 const getNBAPlayerStats = player => {
     let stats = {

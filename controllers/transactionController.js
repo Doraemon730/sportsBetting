@@ -91,11 +91,12 @@ const depositBalance = async (req, res) => {
                 await updateTotalUsers();
             }
         } else {
-            user.level = "Unranked";
-            user.firstDepositAmount = parseFloat(amountUSD);
-            await updateTotalUsers();
+            if (user.level === "") {
+                user.level = "Unranked";
+                user.firstDepositAmount = parseFloat(amountUSD);
+                await updateTotalUsers();
+            }
         }
-
         await transaction.save();
         await user.save();
         await updateCapital(0, parseFloat(amountETH));
