@@ -970,6 +970,13 @@ const getNBAEventsfromGoal = async () => {
     }
 }
 
+const getMatchData = () => {
+    getNBAMatchData();
+    getNFLMatchData();
+    getNHLMatchData();
+    getCFBMatchData();
+}
+
 const getNFLEventsfromGoal = async () => {
     try {
         console.log("------");
@@ -1085,5 +1092,6 @@ module.exports = {
     getNHLMatchData,
     getCFBMatchData,
     getNBAEventsfromGoal,
-    getSportEventAll
+    getSportEventAll,
+    getMatchData
 }
