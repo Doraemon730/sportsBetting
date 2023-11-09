@@ -80,11 +80,22 @@ const getProps = async (req, res) => {
     }
 }
 
+const updateProps = async (req, res) => {
+    try {
+        let {sportId} = req.body;
+        await Prop.updateMany({sportId:new ObjectId(sportId)}, {available: false});
+        res.send("Success");
+    } catch(error) {
+        console.log(error);
+        res.status(500).send("Server Error");
+    }
+}
 
 module.exports = {
     addProp,
     getPropsBySport,
     getProps,
     getPropById,
-    getProp
+    getProp,
+    updateProps
 }

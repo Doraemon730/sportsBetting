@@ -43,7 +43,8 @@ const {
     fetchWeeklyEventsCFB,
     fetchCFBGameSummary,
     fetchWeeklyEventsNBA,
-    fetchNBAGameSummary
+    fetchNBAGameSummary,
+    fetchNBAEventsFromGoal
 } = require('../services/eventService');
 
 const { USD2Ether, Ether2USD } = require('../utils/util');
@@ -3715,6 +3716,7 @@ const checkResult = async (req, res) => {
         console.log(error);
     }
 }
+
 module.exports = {
     getWeeklyEventsNFL,
     getWeeklyEventsMLB,

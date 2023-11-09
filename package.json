@@ -25,6 +25,7 @@
     "geoip-lite": "^1.4.7",
     "https": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
+    "moment": "^2.29.4",
     "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
     "node-cron": "^3.0.2",

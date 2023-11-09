@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 const axios = require('axios');
+const moment = require('moment');
 require('../utils/log');
 const apiOddsKey = process.env.ODDS_API_KEY;
 const apiNBAKey = process.env.NBA_API_KEY;
@@ -32,7 +33,8 @@ const {
     CFB_API_BASEURL,
     NBA_COMPETITION_ID,
     GOAL_NBA_MATCH_DATA_URL,
-    GOAL_NFL_MATCH_DATA_URL
+    GOAL_NFL_MATCH_DATA_URL,
+	GOAL_API_BASEURL
 } = require('../config/constant');
 const { confirmArray } = require('../utils/util')
 
@@ -330,6 +332,28 @@ const fetchNFLMatchData = async () => {
 
 }
 
+const fetchNBAEventsFromGoal = async () => {
+    const today = moment();
+    const tomorrow = moment().add(1, 'days');
+    const date1 = today.format('DD.MM.YYYY');
+    const date2 = tomorrow.format('DD.MM.YYYY');
+    console.log(date1 + " to " + date2);
+    return axios.get(`${GOAL_API_BASEURL}/bsktbl/nba-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
+        .then(response => {
+            const matches = [];
+            if(Array.isArray(response.data.shedules.matches))
+                matches.push(...response.data.shedules.matches);
+            else 
+                matches.push(response.data.shedules.matches);            
+            return matches;
+        })
+        .catch(error => {
+            console.log('Error retrieving NBA Events From Goal Serve' + error);
+        })
+    
+    
+}
+
 module.exports = {
     fetchWeeklyEventsNFL,
     fetchEventPlayerProps,
@@ -355,6 +379,7 @@ module.exports = {
     fetchWeeklyEventsNBA,
     fetchNBAGameSummary,
     fetchNBAMatchData,
-    fetchNFLMatchData
+    fetchNFLMatchData,
+	fetchNBAEventsFromGoal
 };
 

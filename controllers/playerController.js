@@ -1,6 +1,6 @@
 const Contest = require("../models/Contest");
 const Player = require("../models/Player");
-const CFPlayer = require('../models/CFPlayer');
+const Team = require('../models/Team');
 const Discount = require("../models/Discount");
 const Event = require('../models/Event');
 const Prop = require('../models/Prop');
@@ -47,7 +47,8 @@ const getTopPlayerBy = async (req, res) => {
 
     sportId = new ObjectId(sportId);
     let props = await Prop.find({
-      sportId: sportId
+      sportId: sportId,
+      available: true
     }).select('_id displayName');
     if (props.length == 0)
       return res.status(404).json("There is not props");
@@ -83,6 +84,11 @@ const getTopPlayerBy = async (req, res) => {
           path: '$prop',
           preserveNullAndEmptyArrays: true
         } // Unwind the 'prop' array created by the lookup
+      },
+      {
+        $match:{
+          'prop.available':true
+        }
       },
       {
         $lookup: {
@@ -124,6 +130,7 @@ const getTopPlayerBy = async (req, res) => {
               playerId: '$_id',
               playerName: '$name',
               remoteId: '$remoteId',
+              gId:'$gId',
               playerPosition: '$position',
               contestId: '$odds.event',
               playerNumber: '$jerseyNumber',
@@ -788,10 +795,11 @@ const resetOdds = async (req, res) => {
 
 const updatePlayerFromGoal = async (req, res) => {
   try {
-    const teams = await Team.find({sportId: ObjectId('64f78bc5d0686ac7cf1a6855')});
+    const teams = await Team.find({sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
     for (let team of teams){
       const gplayers = await fetchNBAPlayersFromGoal(team.gId);
-      const splayers = await Player.find({sportId:ObjectId('64f78bc5d0686ac7cf1a6855'), teamId: team._id});
+      const splayers = await Player.find({sportId:new ObjectId('64f78bc5d0686ac7cf1a6855'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
       for(let gplayer of gplayers) {
         let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
         if(splayer){
@@ -809,7 +817,7 @@ const updatePlayerFromGoal = async (req, res) => {
             gId: gplayer.id
           });
           await nbaPlayer.save();
-          console.log(JSON.stringify(nbaplayer));
+          console.log(JSON.stringify(nbaPlayer));
         }
       }      
       console.log(splayers);
