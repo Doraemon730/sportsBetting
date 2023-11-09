@@ -670,7 +670,7 @@ const cancelBet = async (req, res) => {
                 await updateTotalBalanceAndCredits(entryETH, bet.credit);
             }
 
-            for (const pick in bet.picks) {
+            for (const pick of bet.picks) {
                 let date = new Date();
                 date.setDate(date.getDate());
                 date.setHours(0, 0, 0, 0);
