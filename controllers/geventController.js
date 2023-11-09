@@ -12,7 +12,8 @@ const axios = require('axios');
 const {
     fetchNBAMatchData,
     fetchNFLMatchData,
-    fetchNBAEventsFromGoal
+    fetchNBAEventsFromGoal,
+    fetchNFLEventsFromGoal
 } = require('../services/eventService');
 const { USD2Ether, Ether2USD } = require('../utils/util');
 const {
@@ -575,6 +576,108 @@ const getNBAEventsfromGoal = async () => {
     }
 }
 
+const getNFLEventsfromGoal = async () => {
+    try {
+        console.log("------");
+        let matches = await fetchNFLEventsFromGoal();
+        for (let day of matches) {
+            let match = confirmArray(day.match);
+            if (match.length == 0)
+                continue;
+            for (let game of match) {
+                console.log(game);
+                if (game.odds == null || game.odds == undefined)
+                    continue;
+                const incomingDate = game.datetime_utc;
+                const dateMoment = moment(incomingDate, "DD.MM.YYYY HH:mm:ss");
+                const dateGMT = moment.utc(dateMoment.format("YYYY-MM-DDTHH:mm:ss"));
+                console.log(dateGMT);
+                let myEvent = new Event({
+                    gId: game.id,
+                    startTime: dateGMT.toDate(),
+                    sportId: new ObjectId('650e0b6fb80ab879d1c142c8')
+                });
+                const homeTeam = await Team.findOne({
+                    sportId: new ObjectId('650e0b6fb80ab879d1c142c8'),
+                    gId: game.hometeam.id
+                });
+                const awayTeam = await Team.findOne({
+                    sportId: new ObjectId('650e0b6fb80ab879d1c142c8'),
+                    gId: game.awayteam.id
+                });
+                myEvent.name = homeTeam.alias + " vs " + awayTeam.alias;
+                myEvent.competitors.push(homeTeam);
+                myEvent.competitors.push(awayTeam);
+                let existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id: game.id });
+                if (existingEvent) {
+                    //myEvent = existingEvent;
+                    existingEvent.startTime = myEvent.startTime;
+                    await existingEvent.save();
+                    myEvent = existingEvent;
+                } else {
+                    // Event doesn't exist, insert new event
+                    await myEvent.save();
+                    console.log('NBA New event inserted! _id=' + myEvent._id);
+                }
+
+                let types = game.odds.type.filter((obj) => obj.bookmaker != undefined);
+                for (let type of types) {
+                    let odds = type.bookmaker.odd;
+                    let result = odds.map(item => {
+                        let name = item.name.split(/ (\w+:)/)[0];
+                        let condition = item.name.split(/ (\w+:)/)[1].replace(':', '');
+                        let value = item.name.split(/ (\w+:)/)[2].replace(':', '');;
+
+                        return {
+                            name,
+                            condition,
+                            value: parseFloat(value),
+                            us: item.us
+                        };
+                    });
+                    let arr = new Array(result.length).fill(1);
+                    let prop = await Prop.findOne({ srId: type.id, sportId: new ObjectId('650e0b6fb80ab879d1c142c8') });
+                    console.log(type.id + type.value);
+                    if (!prop)
+                        continue;
+                    console.log(prop.name);
+                    for (let i = 0; i < result.length; i++) {
+                        if (arr[i] == 1) {
+                            arr[i] = 0;
+                            let name = result[i].name;
+                            let nextIndex = result.findIndex(odd => odd.name == name && odd.condition != result[i].condition);
+                            console.log(nextIndex);
+                            arr[nextIndex] = 0;
+                            console.log(name + ": " + result[i].value);
+                            let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
+                            if (diff > 30)
+                                continue;                            
+                            let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                            if (!player)
+                                continue;
+                            const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
+                            if (index !== -1) {
+                                player.odds[index].value = result[i].value;
+                                player.odds[index].event = myEvent._id;
+                            } else {
+                                player.odds.push({
+                                    id: prop._id,
+                                    value: result[i].value,
+                                    event: myEvent._id
+                                });
+                            }
+                            await player.save();
+                        }
+                    }
+                }
+            }
+        }
+        console.log('success');
+    } catch (error) {
+        console.log(error);
+        //res.status(500).send('Server Error');
+    }
+}
 const getSportEventAll = async () => {
     try {
         await getNBAEventsfromGoal();
