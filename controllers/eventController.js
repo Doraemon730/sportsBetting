@@ -1376,23 +1376,23 @@ const getCacheData = async (req, res) => {
     try {
         const { playerIdList } = req.body;
         let result = []
-        for (const remoteId of playerIdList) {
-            const cacheKey = `liveData:${remoteId}`;
-            client.get(cacheKey, async (cacheError, cachedData) => {
-                if (cacheError) {
-                    console.error('Error reading cache:', cacheError);
-                    return;
-                }
-                if (cachedData) {
-                    // Data found in cache
-                    const cachedLiveData = JSON.parse(cachedData);
-                    let data = {}
-                    data.remoteId = remoteId;
-                    data.value = cachedLiveData;
-                    result.push(data)
-                }
-            });
-        }
+        // for (const remoteId of playerIdList) {
+        //     const cacheKey = `liveData:${remoteId}`;
+        //     client.get(cacheKey, async (cacheError, cachedData) => {
+        //         if (cacheError) {
+        //             console.error('Error reading cache:', cacheError);
+        //             return;
+        //         }
+        //         if (cachedData) {
+        //             // Data found in cache
+        //             const cachedLiveData = JSON.parse(cachedData);
+        //             let data = {}
+        //             data.remoteId = remoteId;
+        //             data.value = cachedLiveData;
+        //             result.push(data)
+        //         }
+        //     });
+        // }
         res.json(result);
     } catch (err) {
         console.log(err);

@@ -22,7 +22,8 @@ const {
   MonthlyRewardJob,
   WeekEventJob,
   CheckResultJob,
-  RecordStatJob
+  RecordStatJob,
+  MatchDataJob
 } = require('./services/betService');
 
 
@@ -138,4 +139,5 @@ httpServer.listen(PORT, () => {
   CheckResultJob.start();
   //walletMonitor.start();
   RecordStatJob.start();
+  MatchDataJob.start();
 });
