@@ -329,9 +329,12 @@ router.post('/admin/getNFLEventsG', geventController.getNFLEventsfromGoal);
 
 router.post('/admin/goalnhlteam', teamController.updateNHLTeamsFromGoal);
 router.post('/admin/goalnhlplayer', playerController.updateNHLPlayerFromGoal);
+router.post('/admin/getNHLEventsG', geventController.getNHLEventsfromGoal);
 
 router.post('/admin/goalfbsteam', teamController.updateFBSTeamsFromGoal);
 router.post('/admin/goalfbsplayer', playerController.updateFBSPlayerFromGoal);
+router.post('/admin/getfbsEventsG', geventController.getFBSEventsfromGoal);
+
 router.post('/props/update', propController.updateProps);
 
 
