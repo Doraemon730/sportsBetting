@@ -19,7 +19,7 @@ const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
 const cronWeekEventSchedule = '10 * * * *';
 const cronCheckResultSchedule = '*/9 * * * *'; // Runs every hour
 const cronRecordStatSchedule = '22 2 * * *';
-const cronMatchDataJobSchedule = '*/3 * * * *';
+const cronMatchDataJobSchedule = '*/1 * * * *';
 
 // Define the function to be executed by the cron job
 const cronWednesdayJob = () => {
@@ -66,7 +66,7 @@ const cronWeekEventJob = () => {
 }
 
 const cronCheckResultJob = () => {
-  checkEvents();
+  //checkEvents();
   const time = new Date().toString();
   console.log('Cron Job for Check Results ' + time, true);
 }
