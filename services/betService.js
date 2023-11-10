@@ -6,7 +6,7 @@ const { getETHPriceFromMarket } = require('../controllers/transactionController'
 const { getLiveDataByEvent, getWeekEventAll, checkEvents } = require('../controllers/eventController');
 const { getRewards } = require('../controllers/betController');
 const { recordStats } = require('../controllers/playStatController');
-const { getSportEventAll } = require('../controllers/geventController');
+const { getSportEventAll, getMatchData } = require('../controllers/geventController');
 
 require('../utils/log');
 //betJob = cron.schedule
@@ -19,6 +19,7 @@ const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
 const cronWeekEventSchedule = '10 * * * *';
 const cronCheckResultSchedule = '*/9 * * * *'; // Runs every hour
 const cronRecordStatSchedule = '22 2 * * *';
+const cronMatchDataJobSchedule = '*/3 * * * *';
 
 // Define the function to be executed by the cron job
 const cronWednesdayJob = () => {
@@ -75,6 +76,12 @@ const cronRecordStatsJobs = () => {
   const time = new Date().toString();
   console.log('Cron Job for Record Stats ' + time, true);
 }
+
+const cronMatchDataJobs = () => {
+  getMatchData();
+  const time = new Date().toString();
+  console.log('Cron Job for Record Stats ' + time, true);
+}
 // Set up the cron job
 module.exports = {
   WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
@@ -85,5 +92,6 @@ module.exports = {
   MonthlyRewardJob: cron.schedule(cronMonthlySchedule, cronMonthlyRewardJob),
   WeekEventJob: cron.schedule(cronWeekEventSchedule, cronWeekEventJob),
   CheckResultJob: cron.schedule(cronCheckResultSchedule, cronCheckResultJob),
-  RecordStatJob: cron.schedule(cronRecordStatSchedule, cronRecordStatsJobs)
+  RecordStatJob: cron.schedule(cronRecordStatSchedule, cronRecordStatsJobs),
+  MatchDataJob: cron.schedule(cronMatchDataJobSchedule, cronMatchDataJobs)
 };

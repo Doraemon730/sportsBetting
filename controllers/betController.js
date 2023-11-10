@@ -681,11 +681,12 @@ const cancelBet = async (req, res) => {
                     date: date
                 });
                 if (discount) {
-                    if (discount.users.indexOf(pick.userId) > -1) {
+                    console.log(bet.userId);
+                    if (discount.users.indexOf((bet.userId)) > -1) {
                         discount.users.splice(discount.users.indexOf(pick.userId), 1)
                     }
+                    await discount.save();
                 }
-                await discount.save();
             }
 
             user.totalBetAmount -= bet.entryFee
@@ -699,6 +700,7 @@ const cancelBet = async (req, res) => {
         } else
             res.status(400).json("Bet cannot be removed as it's been over 5 minutes");
     } catch (error) {
+        console.log(error)
         res.status(500).send('Server error');
     }
 }
