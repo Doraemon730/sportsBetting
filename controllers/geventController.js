@@ -8,6 +8,8 @@ const Bet = require('../models/Bet');
 const { confirmArray } = require('../utils/util')
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
+const { updateCapital } = require('./capitalController');
+const { updateBetResult, updateTotalBalanceAndCredits } = require('./statisticsController');
 const axios = require('axios');
 const {
     fetchNBAMatchData,
@@ -45,7 +47,7 @@ const client = redis.createClient();
 
 const getNBAPlayerStats = player => {
     let stats = {
-        gid: player.id,
+        gId: player.id,
         name: player.name
     }
     stats['Points'] = parseInt(player.points);
@@ -90,7 +92,7 @@ const getNBAMatchData = async () => {
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
                             for (let j = 0; j < bets[i].picks; j++) {
-                                if (bets[i].picks[j].gid == player.id) {
+                                if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Points':
                                             bets[i].picks[j].liveData = parseInt(player.points);
@@ -159,19 +161,22 @@ const summarizeNFLPlayerStats = match => {
         if (match.defensive.hometeam)
             tempPlayers.push(...confirmArray(match.defensive.hometeam.player))
         for (const player of tempPlayers) {
-            const index = players.findIndex(item => item[id] == player.id)
+            const index = players.findIndex(item => item.id == player.id)
             if (index >= 0) {
                 players[index]['Tackles+Ast'] = parseInt(player.tackles);
             } else {
                 let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
                 newPlayer['Tackles+Ast'] = parseInt(player.tackles);
-                player.push(newPlayer)
+                players.push(newPlayer)
             }
         }
     }
 
     tempPlayers = [];
     if (match.passing) {
+        console.log("PASSING")
         if (match.passing.awayteam)
             tempPlayers.push(...confirmArray(match.passing.awayteam.player))
         if (match.passing.hometeam)
@@ -180,7 +185,8 @@ const summarizeNFLPlayerStats = match => {
             const parts = player.comp_att.split("/");
             const completions = parseInt(parts[0], 10);
             const attempts = parseInt(parts[1], 10);
-            const index = players.findIndex(item => item[id] == player.id)
+            const index = players.findIndex(item => item.id == player.id)
+            console.log(index)
             if (index >= 0) {
                 players[index]['Pass Yards'] = parseInt(player.yards);
                 players[index]['Pass Completions'] = completions;
@@ -191,13 +197,22 @@ const summarizeNFLPlayerStats = match => {
                 else
                     players[index]['Pass+Rush Yards'] = players[index]['Pass Yards']
             } else {
-                let newPlayer = {}
+                let newPlayer = {
+                    // 'Pass Yards': parseInt(player.yards),
+                    // 'Pass Completions': completions,
+                    // 'Pass TDs': parseInt(player.passing_touch_downs),
+                    // 'Pass Attempts': attempts,
+                    // 'Pass+Rush Yards': 
+                };
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                console.log(newPlayer)
                 newPlayer['Pass Yards'] = parseInt(player.yards);
                 newPlayer['Pass Completions'] = completions;
                 newPlayer['Pass TDs'] = parseInt(player.passing_touch_downs);
                 newPlayer['Pass Attempts'] = attempts;
-                newPlayer['Pass+Rush Yards'] = players[index]['Pass Yards']
-                player.push(newPlayer)
+                newPlayer['Pass+Rush Yards'] = parseInt(player.yards);
+                players.push(newPlayer)
             }
         }
     }
@@ -208,7 +223,7 @@ const summarizeNFLPlayerStats = match => {
         if (match.rushing.hometeam)
             tempPlayers.push(...confirmArray(match.rushing.hometeam.player))
         for (const player of tempPlayers) {
-            const index = players.findIndex(item => item[id] == player.id)
+            const index = players.findIndex(item => item.id == player.id)
             if (index >= 0) {
                 players[index]['Rush Yards'] = parseInt(player.yards);
                 if (players[index]['Pass Yards'] != undefined)
@@ -222,10 +237,12 @@ const summarizeNFLPlayerStats = match => {
                     players[index]['Rush+Rec Yards'] = players[index]['Rush Yards']
             } else {
                 let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
                 newPlayer['Rush Yards'] = parseInt(player.yards);
-                newPlayer['Pass+Rush Yards'] = players[index]['Rush Yards']
-                newPlayer['Rush+Rec Yards'] = players[index]['Rush Yards']
-                player.push(newPlayer)
+                newPlayer['Pass+Rush Yards'] = parseInt(player.yards);
+                newPlayer['Rush+Rec Yards'] = parseInt(player.yards);
+                players.push(newPlayer)
             }
         }
     }
@@ -237,7 +254,7 @@ const summarizeNFLPlayerStats = match => {
         if (match.receiving.hometeam)
             tempPlayers.push(...confirmArray(match.receiving.hometeam.player))
         for (const player of tempPlayers) {
-            const index = players.findIndex(item => item[id] == player.id)
+            const index = players.findIndex(item => item.id == player.id)
             if (index >= 0) {
                 players[index]['Receiving Yards'] = parseInt(player.yards);
                 players[index]['Receptions'] = parseInt(player.total_receptions);
@@ -247,10 +264,12 @@ const summarizeNFLPlayerStats = match => {
                     players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards']
             } else {
                 let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
                 newPlayer['Receiving Yards'] = parseInt(player.yards);
                 newPlayer['Receptions'] = parseInt(player.total_receptions);
-                newPlayer['Rush+Rec Yards'] = players[index]['Receiving Yards']
-                player.push(newPlayer)
+                newPlayer['Rush+Rec Yards'] = parseInt(player.yards);
+                players.push(newPlayer)
             }
         }
     }
@@ -262,13 +281,15 @@ const summarizeNFLPlayerStats = match => {
         if (match.interceptions.hometeam)
             tempPlayers.push(...confirmArray(match.interceptions.hometeam.player))
         for (const player of tempPlayers) {
-            const index = players.findIndex(item => item[id] == player.id)
+            const index = players.findIndex(item => item.id == player.id)
             if (index >= 0) {
                 players[index]['INT'] = parseInt(player.total_interceptions);
             } else {
                 let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
                 newPlayer['INT'] = parseInt(player.total_interceptions);
-                player.push(newPlayer)
+                players.push(newPlayer)
             }
         }
     }
@@ -282,16 +303,20 @@ const summarizeNFLPlayerStats = match => {
         for (const player of tempPlayers) {
             const parts = player.field_goals.split("/");
             const fg = parseInt(parts[0], 10);
-            const index = players.findIndex(item => item[id] == player.id)
+            const index = players.findIndex(item => item.id == player.id)
             if (index >= 0) {
                 players[index]['FG Made'] = fg;
             } else {
                 let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
                 newPlayer['FG Made'] = fg;
-                player.push(newPlayer)
+                players.push(newPlayer)
             }
         }
     }
+    console.log(JSON.stringify(players[0]))
+    console.log(players.length)
 
     return players;
 }
@@ -626,16 +651,25 @@ const updateNBABet = async (match) => {
 
 const getNFLMatchData = async () => {
     try {
-        let matchList = fetchNFLMatchData();
+        let matchList = await fetchNFLMatchData();
+        console.log("NFL___________________________")
         for (const match of matchList) {
+            console.log(match.contestID)
+            console.log(match.status)
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
-                if (match.player_stats) {
-                    let event = await Event.findOne({ gid: match.id })
+                if (true) {
+                    console.log(match.contestID)
+                    let event = await Event.findOne({ gId: match.contestID })
+                    
+                    console.log(JSON.stringify(event))
                     if (!event)
                         continue;
+                        console.log("2111")
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    console.log("111")
                     if (bets.length == 0)
                         continue;
+                        console.log("1311")
                     let broadcastingData = {
                         contestId: event._id
                     }
@@ -645,8 +679,11 @@ const getNFLMatchData = async () => {
                         broadcastingData.player = player;
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
-                                if (bets[i].picks[j].gid == player.id) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
+                                console.log(bets[i].picks[j].gId)
+                                if (bets[i].picks[j].gId == player.id) {
+                                    console.log("!@#!@#!@#$!@#$!@#$")
+                                    console.log(bets[i].picks[j].gId)
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Pass Yards':
                                             bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
@@ -694,13 +731,7 @@ const getNFLMatchData = async () => {
                 }
             }
             if (match.status === 'Final' || match.status == 'After Over Time') {
-                await Event.updateOne({
-                    gid: match.id
-                }, {
-                    $set: {
-                        state: 2
-                    }
-                })
+                updateNFLBet(match);
             }
         }
     } catch (err) {
@@ -710,7 +741,7 @@ const getNFLMatchData = async () => {
 
 const getNHLPlayerStats = player => {
     let stats = {
-        gid: player.id,
+        gId: player.id,
         name: player.name
     }
     stats['Total Shots'] = parseInt(player.shots_on_goal);
@@ -719,14 +750,336 @@ const getNHLPlayerStats = player => {
     stats['Total Power Play Points'] = parseInt(player.pp_goals) + parseInt(player.pp_assists);
     return stats;
 }
+const updateNFLBet = async (match) => {
+    try {
+        console.log(match);
+        let event = await Event.findOne({gId: match.contestID})
+        if (!event || event.state == 3)
+            return;
+        console.log(JSON.stringify(event));
+        let players = summarizeNFLPlayerStats(match);
+        console.log("bets " + event.participants, true);
+        for (const betId of event.participants) {
+            let bet = await Bet.findById(betId);
+            //const pick = bet.picks.find(item => item.contestId == event._id);
+            if (!bet || bet.status != 'pending')
+                continue;
+            console.log("id" + bet._id);
+            let finished = 0, win = 0, refund = 0, lost = 0;
+            for (const pick of bet.picks) {
+                if (String(pick.contestId) == String(event._id)) {
+                    let result, player, play1;
+                    const play = await Player.findById(pick.playerId);
+                    console.log("player " + player);
+                    player = players.find(item => item.id == play.gId);
+                    if (player) {
+                        if (player.minutes == "0")
+                            result = -1;
+                        else {
+                            switch (pick.prop.propName) {
+                                case 'Pass Yards':
+                                    result = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
+                                    break;
+                                case 'Pass Completions':
+                                    result = player['Pass Completions'] != undefined ? player['Pass Completions'] : 0;
+                                    break;
+                                case 'Pass TDs':
+                                    result = player['Pass TDs'] != undefined ? player['Pass TDs'] : 0;
+                                    break;
+                                case 'Rush Yards':
+                                    result = player['Rush Yards'] != undefined ? player['Rush Yards'] : 0;
+                                    break;
+                                case 'Receiving Yards':
+                                    result = player['Receiving Yards'] != undefined ? player['Receiving Yards'] : 0;
+                                    break;
+                                case 'Receptions':
+                                    result = player['Receptions'] != undefined ? player['Receptions'] : 0;
+                                    break;
+                                case 'INT':
+                                    result = player['INT'] != undefined ? player['INT'] : 0;
+                                    break;
+                                case 'Pass Attempts':
+                                    result = player['Pass Attempts'] != undefined ? player['Pass Attempts'] : 0;
+                                    break;
+                                case 'FG Made':
+                                    result = player['FG Made'] != undefined ? player['FG Made'] : 0;
+                                    break;
+                                case 'Tackles+Ast':
+                                    result = player['Tackles+Ast'] != undefined ? player['Tackles+Ast'] : 0;
+                                    break;
+                                case 'Rush+Rec Yards':
+                                    result = player['Rush+Rec Yards'] != undefined ? player['Rush+Rec Yards'] : 0;
+                                    break;
+                                case 'Pass+Rush Yards':
+                                    result = player['Pass+Rush Yards'] != undefined ? player['Pass+Rush Yards'] : 0;
+                                    break;
+                            }
+                        }
+                    }
+                    console.log("player " + player);
+                    console.log("result " + result);
+                    if (!player || result == undefined) {
+                        pick.result = -1;
+                    } else {
+                        pick.result = result;
+                    }
+                    bet.picks[bet.picks.indexOf(pick)] = pick;
+                }
+                if (pick.result != undefined) {
+                    finished += 1;
+                    if (pick.result == -1) {
+                        refund += 1;
+                    } else {
+                        if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
+                            pick.overUnder == "under" && pick.result < pick.prop.odds) {
+                            win += 1;
+                        } else {
+                            lost += 1;
+                        }
+                    }
+                }
+            }
+            if (bet.betType == "high" && lost > 0) {
+                console.log("lost");
+                bet.prize = 0;
+                bet.status = "lost";
+                bet.willFinishAt = new Date();
+                await bet.save();
+                await updateBetResult(false);
+                await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                continue;
+            }
+            if (finished == bet.picks.length) {
+                if (refund) {
+                    if (bet.betType == "high" && lost > 0) {
+                        console.log("lost");
+                        bet.prize = 0;
+                        bet.status = "lost";
+ } else {
+                        if (bet.betType == "low") {
+                            switch (bet.picks.length) {
+                                case 3:
+                                case 4:
+                                    if (lost > 0) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";
+                                    } else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }
+                                    break;
+                                case 5:
+                                case 6:
+                                    if (lost > 1) {
+                                        console.log("lost");
+                                        bet.prize = 0;
+                                        bet.status = "lost";
+                                    }
+                                    else {
+                                        console.log("refund");
+                                        bet.status = "refund";
+                                    }
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
 
+                            }
+                        } else {
+                            console.log('refund');
+                            bet.status = "refund";
+                        }
+                    }
+                    console.log("bet result ", bet);
+                    await bet.save();
+                    if (bet.status == "refund") {
+                        const user = await User.findById(bet.userId);
+                        if (bet.credit > 0)
+                            user.credits += bet.credit;
+                        await addPrizeTransaction(bet.userId, bet.entryFee - bet.credit, 'refund');
+                        await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                } else {
+                    switch (finished) {
+                        case 2:
+                            if (win == 2) {
+                                bet.prize = bet.entryFee * BET_2_2_HIGH;
+                                bet.status = "win"
+                            } else {
+                                bet.prize = 0;
+                                bet.status = "lost"
+                            }
+                            break;
+                        case 3:
+                            switch (win) {
+                                case 2:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_2_3_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 3:
+                                    if (bet.betType == "high")
+                                        bet.prize = bet.entryFee * BET_3_3_HIGH;
+                                    else
+                                        bet.prize = bet.entryFee * BET_3_3_LOW;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 4:
+                            switch (win) {
+                                case 3:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_3_4_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 4:
+                                    if (bet.betType == "high")
+                                        bet.prize = bet.entryFee * BET_4_4_HIGH;
+                                    else
+                                        bet.prize = bet.entryFee * BET_4_4_LOW;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                    break;
+                            };
+                            break;
+                        case 5:
+                            switch (win) {
+                                case 3:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_3_5_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 4:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_4_5_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 5:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_5_5_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                            }
+                            break;
+                        case 6:
+                            switch (win) {
+                                case 4:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_4_6_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 5:
+                                    if (bet.betType == "high") {
+                                        bet.prize = 0;
+                                        bet.status = "lost"
+                                    } else {
+                                        bet.prize = bet.entryFee * BET_5_6_LOW;
+                                        bet.status = "win"
+                                    }
+                                    break;
+                                case 6:
+                                    bet.prize = bet.entryFee * BET_6_6_LOW;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost"
+                                    break;
+                            }
+                            break;
+                        case 8:
+                            switch (win) {
+                                case 8:
+                                    bet.prize = bet.entryFee * BET_8_8_HIGH;
+                                    bet.status = "win"
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                            }
+                        default:
+                            break;
+                    }
+                    console.log("status + " + bet.status);
+                    console.log("bet result " + bet);
+                    await bet.save();
+
+                    if (bet.status == 'win') {
+                        await addPrizeTransaction(bet.userId, bet.prize, 'prize');
+                        const user = await User.findById(bet.userId);
+                        if (user) {
+                            user.wins += 1;
+                        }
+                        await updateBetResult(true);
+                        await updateCapital(3, await USD2Ether(bet.prize - bet.entryFee));
+                        await user.save();
+                    } else {
+                        await updateBetResult(false);
+                        await updateCapital(2, await USD2Ether(bet.entryFee - bet.credit));
+                    }
+                }
+            }
+            else {
+                await bet.save();
+
+                console.log("Bet udpated : " + JSON.stringify(bet));
+            }
+        }
+        event.state = 3;
+        await event.save();
+    } catch (error) {
+        console.log(error);
+    }
+};
 const getNHLMatchData = async () => {
     try {
         let matchList = fetchNHLMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
-                    let event = await Event.findOne({ gid: match.id })
+                    let event = await Event.findOne({ gId: match.id })
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
@@ -744,7 +1097,7 @@ const getNHLMatchData = async () => {
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
                             for (let j = 0; j < bets[i].picks; j++) {
-                                if (bets[i].picks[j].gid == player.id) {
+                                if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Total Shots':
                                             bets[i].picks[j].liveData = parseInt(player.shots_on_goal);
@@ -769,7 +1122,7 @@ const getNHLMatchData = async () => {
             }
             if (match.status === 'Final' || match.status == 'After Over Time') {
                 await Event.updateOne({
-                    gid: match.id
+                    gId: match.id
                 }, {
                     $set: {
                         state: 2
@@ -789,7 +1142,7 @@ const getCFBMatchData = async () => {
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
-                    let event = await Event.findOne({ gid: match.id })
+                    let event = await Event.findOne({ gId: match.id })
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
@@ -805,7 +1158,7 @@ const getCFBMatchData = async () => {
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
                             for (let j = 0; j < bets[i].picks; j++) {
-                                if (bets[i].picks[j].gid == player.id) {
+                                if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Pass Yards':
                                             bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
@@ -853,20 +1206,13 @@ const getCFBMatchData = async () => {
                 }
             }
             if (match.status == 'Final' || match.status == 'After Over Time') {
-                await Event.updateOne({
-                    gid: match.id
-                }, {
-                    $set: {
-                        state: 2
-                    }
-                })
+                updateNFLBet(match)
             }
         }
     } catch (err) {
         console.log(err)
     }
 }
-
 const getNBAEventsfromGoal = async () => {
     try {
         console.log("------");
@@ -880,6 +1226,7 @@ const getNBAEventsfromGoal = async () => {
                 if (game.odds == null || game.odds == undefined)
                     continue;
                 const incomingDate = game.datetime_utc;
+                console.log(incomingDate);
                 const dateMoment = moment(incomingDate, "DD.MM.YYYY HH:mm:ss");
                 const dateGMT = moment.utc(dateMoment.format("YYYY-MM-DDTHH:mm:ss"));
                 console.log(dateGMT);
@@ -899,7 +1246,7 @@ const getNBAEventsfromGoal = async () => {
                 myEvent.name = homeTeam.alias + " vs " + awayTeam.alias;
                 myEvent.competitors.push(homeTeam);
                 myEvent.competitors.push(awayTeam);
-                let existingEvent = await Event.findOne({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'), id: game.id });
+                let existingEvent = await Event.findOne({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'), gId: game.id });
                 if (existingEvent) {
                     //myEvent = existingEvent;
                     existingEvent.startTime = myEvent.startTime;
@@ -993,11 +1340,14 @@ const getNFLEventsfromGoal = async () => {
                 const dateMoment = moment(incomingDate, "DD.MM.YYYY HH:mm:ss");
                 const dateGMT = moment.utc(dateMoment.format("YYYY-MM-DDTHH:mm:ss"));
                 console.log(dateGMT);
+                console.log(dateGMT.toDate());
+                console.log(JSON.stringify(game));
                 let myEvent = new Event({
-                    gId: game.id,
+                    gId: game.contestID,
                     startTime: dateGMT.toDate(),
                     sportId: new ObjectId('650e0b6fb80ab879d1c142c8')
                 });
+                console.log(JSON.stringify(myEvent));
                 const homeTeam = await Team.findOne({
                     sportId: new ObjectId('650e0b6fb80ab879d1c142c8'),
                     gId: game.hometeam.id
@@ -1009,7 +1359,7 @@ const getNFLEventsfromGoal = async () => {
                 myEvent.name = homeTeam.alias + " vs " + awayTeam.alias;
                 myEvent.competitors.push(homeTeam);
                 myEvent.competitors.push(awayTeam);
-                let existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), id: game.id });
+                let existingEvent = await Event.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), gId: game.contestID });
                 if (existingEvent) {
                     //myEvent = existingEvent;
                     existingEvent.startTime = myEvent.startTime;
@@ -1018,7 +1368,7 @@ const getNFLEventsfromGoal = async () => {
                 } else {
                     // Event doesn't exist, insert new event
                     await myEvent.save();
-                    console.log('NBA New event inserted! _id=' + myEvent._id);
+                    console.log('NFL New event inserted! _id=' + myEvent._id);
                 }
 
                 let types = game.odds.type.filter((obj) => obj.bookmaker != undefined);
@@ -1074,6 +1424,7 @@ const getNFLEventsfromGoal = async () => {
             }
         }
         console.log('success');
+        res.json('success');
     } catch (error) {
         console.log(error);
         //res.status(500).send('Server Error');
@@ -1092,6 +1443,7 @@ module.exports = {
     getNHLMatchData,
     getCFBMatchData,
     getNBAEventsfromGoal,
-    getSportEventAll,
-    getMatchData
+    getNFLEventsfromGoal,
+    getMatchData,
+    getSportEventAll
 }

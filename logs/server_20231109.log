@@ -1,6 +1,0 @@
-11/8/2023, 4:12:13 PM : Server started on port 5000 - Function: Server.<anonymous>, Line: at Server.<anonymous> (E:\project\SportBetting\sportsBetting\server.js:129:11)
-11/8/2023, 4:12:17 PM : MongoDB Connected... - Function: connectDB, Line: at connectDB (E:\project\SportBetting\sportsBetting\config\db.js:9:13)
-11/8/2023, 4:12:25 PM : ::ffff:127.0.0.1:funniest.dev730@gmail.com:12341234 - Function: loginUser, Line: at loginUser (E:\project\SportBetting\sportsBetting\controllers\userController.js:108:13)
-11/9/2023, 1:45:54 AM : Server started on port 5000 - Function: Server.<anonymous>, Line: at Server.<anonymous> (E:\project\SportBetting\sportsBetting\server.js:129:11)
-11/9/2023, 1:45:58 AM : MongoDB Connected... - Function: connectDB, Line: at connectDB (E:\project\SportBetting\sportsBetting\config\db.js:9:13)
-11/9/2023, 1:46:00 AM : ETH Price has been updated at : Thu Nov 09 2023 01:46:00 GMT-0800 (Pacific Standard Time) - Function: Task.cronEtherPriceJob [as _execution], Line: at Task.cronEtherPriceJob [as _execution] (E:\project\SportBetting\sportsBetting\services\betService.js:38:11)
