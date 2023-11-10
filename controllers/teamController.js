@@ -5,7 +5,9 @@ const {
     fetchNHLTeams,
     fetchMLBTeams,
     fetchNBATeamsFromGoal,
-    fetchNFLTeamsFromGoal
+    fetchNFLTeamsFromGoal,
+    fetchNHLTeamsFromGoal,
+    fetchFBSTeamsFromGoal
 } = require('../services/teamService');
 require('../utils/log');
 const {
@@ -250,6 +252,76 @@ const updateNFLTeamsFromGoal = async (req, res) => {
         res.status(500).send(Error);
     }
 }
+
+const updateNHLTeamsFromGoal = async (req, res) => {
+    try {
+        let teams = [];        
+        const leagues = await fetchNHLTeamsFromGoal();
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            for(let division of league.division)
+                for(let team of division.team) {
+                    teams.push(team);
+                }
+        }
+
+        let nhlTeams = await Team.find({sportId: new ObjectId('65108faf4fa2698548371fbd')});
+        for(let nhlTeam of nhlTeams) {
+            let team = teams.find((t) => t.name.includes(nhlTeam.name));
+            console.log(nhlTeam.name + ":" + team.name);
+            nhlTeam.name = team.name;
+            nhlTeam.gId = team.id;
+            await nhlTeam.save();
+        }
+        res.json(nhlTeams);
+        console.log(nhlTeams);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(Error);
+    }
+}
+
+const updateFBSTeamsFromGoal = async (req, res) => {
+    try {
+        let teams = [];        
+        const leagues = await fetchFBSTeamsFromGoal();
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            for(let division of league.division)
+                for(let team of division.team) {
+                    let fbsTeam = await Team.findOne({sportId: new ObjectId('652f31fdfb0c776ae3db47e1'), market: team.name});
+                    if(fbsTeam) {
+                        fbsTeam.name = team.name;
+                        fbsTeam.gId = team.id;
+                        await fbsTeam.save();
+                    } else {
+                        fbsTeam = new Team({
+                            name: team.name,
+                            gId: team.id,
+                            sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),                            
+                        });
+                        await fbsTeam.save();
+                    }
+                }
+        }
+
+        // let FBSTeams = await Team.find({sportId: new ObjectId('652f31fdfb0c776ae3db47e1')});
+        // for(let fbsTeam of FBSTeams) {
+        //     let team = teams.find((t) => t.name.includes(fbsTeam.name));
+        //     console.log(fbsTeam.name + ":" + team.name);
+        //     fbsTeam.name = team.name;
+        //     fbsTeam.gId = team.id;
+        //     await fbsTeam.save();
+        // }
+        // res.json(FBSTeams);
+        // console.log(FBSTeams);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(Error);
+    }
+}
+
+
 module.exports = {
     addNBATeamsToDatabase,
     getIdfromRemoteId,
@@ -262,5 +334,7 @@ module.exports = {
     addCFBTeamToDatabase,
     getTeamListBySport,
     updateNBATeamsFromGoal,
-    updateNFLTeamsFromGoal
+    updateNFLTeamsFromGoal,
+    updateNHLTeamsFromGoal,
+    updateFBSTeamsFromGoal
 }
