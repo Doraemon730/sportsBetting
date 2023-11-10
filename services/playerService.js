@@ -189,7 +189,7 @@ const fetchNFLPlayersFromGoal = async (teamId) => {
 }
 
 const fetchNHLPlayersFromGoal = async (teamId) => {
-
+  console.log(`${GOAL_API_BASEURL}/hockey/${teamId}_rosters?json=1`);
   return axios.get(`${GOAL_API_BASEURL}/hockey/${teamId}_rosters?json=1`)
     .then(response => { 
       const players = response.data.team.position;
