@@ -924,5 +924,6 @@ module.exports = {
     getNBAMatchData,
     getNFLMatchData,
     getNBAEventsfromGoal,
+    getNFLEventsfromGoal,
     getSportEventAll
 }

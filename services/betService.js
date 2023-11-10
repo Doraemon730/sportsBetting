@@ -58,7 +58,7 @@ const cronMatchJob = () => {
 }
 
 const cronWeekEventJob = () => {
-  getWeekEventAll();
+  //getWeekEventAll();
   getSportEventAll();
   const time = new Date().toString();
   console.log('Cron Job for Week Event' + time);
