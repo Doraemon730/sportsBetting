@@ -68,7 +68,7 @@ const getNBAPlayerStats = player => {
 const getNBAMatchData = async () => {
 
     try {
-        let matchList = fetchNBAMatchData();
+        let matchList = await fetchNBAMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
@@ -91,7 +91,7 @@ const getNBAMatchData = async () => {
                         broadcastingData.player = getNBAPlayerStats(player);
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
                                 if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Points':
@@ -152,7 +152,6 @@ const getNBAMatchData = async () => {
 }
 
 const summarizeNFLPlayerStats = match => {
-
     let players = [];
     let tempPlayers = [];
     if (match.defensive) {
@@ -198,11 +197,6 @@ const summarizeNFLPlayerStats = match => {
                     players[index]['Pass+Rush Yards'] = players[index]['Pass Yards']
             } else {
                 let newPlayer = {
-                    // 'Pass Yards': parseInt(player.yards),
-                    // 'Pass Completions': completions,
-                    // 'Pass TDs': parseInt(player.passing_touch_downs),
-                    // 'Pass Attempts': attempts,
-                    // 'Pass+Rush Yards': 
                 };
                 newPlayer['id'] = player.id;
                 newPlayer['name'] = player.name;
@@ -216,6 +210,7 @@ const summarizeNFLPlayerStats = match => {
             }
         }
     }
+
     tempPlayers = [];
     if (match.rushing) {
         if (match.rushing.awayteam)
@@ -315,8 +310,6 @@ const summarizeNFLPlayerStats = match => {
             }
         }
     }
-    console.log(JSON.stringify(players[0]))
-    console.log(players.length)
 
     return players;
 }
@@ -652,29 +645,19 @@ const updateNBABet = async (match) => {
 const getNFLMatchData = async () => {
     try {
         let matchList = await fetchNFLMatchData();
-        console.log("NFL___________________________")
         for (const match of matchList) {
-            console.log(match.contestID)
-            console.log(match.status)
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (true) {
-                    console.log(match.contestID)
                     let event = await Event.findOne({ gId: match.contestID })
-                    
-                    console.log(JSON.stringify(event))
                     if (!event)
                         continue;
-                        console.log("2111")
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
-                    console.log("111")
                     if (bets.length == 0)
                         continue;
-                        console.log("1311")
                     let broadcastingData = {
                         contestId: event._id
                     }
                     let players = summarizeNFLPlayerStats(match);
-
                     for (const player of players) {
                         broadcastingData.player = player;
                         global.io.sockets.emit('broadcast', { broadcastingData });
@@ -682,8 +665,6 @@ const getNFLMatchData = async () => {
                             for (let j = 0; j < bets[i].picks.length; j++) {
                                 console.log(bets[i].picks[j].gId)
                                 if (bets[i].picks[j].gId == player.id) {
-                                    console.log("!@#!@#!@#$!@#$!@#$")
-                                    console.log(bets[i].picks[j].gId)
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Pass Yards':
                                             bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
@@ -753,7 +734,7 @@ const getNHLPlayerStats = player => {
 const updateNFLBet = async (match) => {
     try {
         console.log(match);
-        let event = await Event.findOne({gId: match.contestID})
+        let event = await Event.findOne({ gId: match.contestID })
         if (!event || event.state == 3)
             return;
         console.log(JSON.stringify(event));
@@ -855,7 +836,7 @@ const updateNFLBet = async (match) => {
                         console.log("lost");
                         bet.prize = 0;
                         bet.status = "lost";
- } else {
+                    } else {
                         if (bet.betType == "low") {
                             switch (bet.picks.length) {
                                 case 3:
@@ -1075,7 +1056,7 @@ const updateNFLBet = async (match) => {
 };
 const getNHLMatchData = async () => {
     try {
-        let matchList = fetchNHLMatchData();
+        let matchList = await fetchNHLMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
@@ -1096,7 +1077,7 @@ const getNHLMatchData = async () => {
                         broadcastingData.player = getNHLPlayerStats(player);
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
                                 if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Total Shots':
@@ -1138,7 +1119,7 @@ const getNHLMatchData = async () => {
 
 const getCFBMatchData = async () => {
     try {
-        let matchList = fetchCFBMatchData();
+        let matchList = await fetchCFBMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
@@ -1157,7 +1138,7 @@ const getCFBMatchData = async () => {
                         broadcastingData.player = player;
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
                                 if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Pass Yards':
