@@ -19,7 +19,8 @@ const {
   fetchMLBPlayerNumber,
   fetchImageFromPrize,
   fetchNBAPlayersFromGoal,
-  fetchNFLPlayersFromGoal
+  fetchNFLPlayersFromGoal,
+  fetchNHLPlayersFromGoal
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
@@ -31,6 +32,7 @@ const {
 const {
   getAllTeamsFromDatabase,
 } = require("./teamController");
+const { confirmArray } = require("../utils/util");
 
 const getTopPlayerBy = async (req, res) => {
   try {
@@ -871,6 +873,96 @@ const updateNFLPlayerFromGoal = async (req, res) => {
   }
 }
 
+const updateFBSPlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: new ObjectId('652f31fdfb0c776ae3db47e1')});
+    for (let team of teams){
+      const positions = await fetchNFLPlayersFromGoal(team.gId);
+      let gplayers = [];
+      for(let position of positions){
+        gplayers.push(...position.player);
+      }
+      const splayers = await Player.find({sportId:new ObjectId('652f31fdfb0c776ae3db47e1'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.position = gplayer.position;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          if(gplayer.number == "" || gplayer.age == "" || isNaN(gplayer.age) || isNaN(gplayer.number) ||parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
+            continue;
+            console.log(gplayer.name);
+          const nbaPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: parseInt(gplayer.age),
+            jerseyNumber: parseInt(gplayer.number),
+            gId: gplayer.id
+          });
+          await nbaPlayer.save();
+          console.log(JSON.stringify(nbaPlayer));
+        }
+      }      
+      console.log(splayers);
+    }
+    res.json('success');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const updateNHLPlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: new ObjectId('65108faf4fa2698548371fbd')});
+    for (let team of teams){
+      const positions = await fetchNHLPlayersFromGoal(team.gId);
+      let gplayers = [];
+      for(let position of positions){
+        let players = confirmArray(position.player);
+        gplayers.push(...players);
+      }
+      const splayers = await Player.find({sportId:new ObjectId('65108faf4fa2698548371fbd'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.position = gplayer.position;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          if(gplayer.number == "" || gplayer.age == "" || parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
+            continue;
+            console.log(gplayer.name);
+          const nhlPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('65108faf4fa2698548371fbd'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: !isNaN(gplayer.age) ? parseInt(gplayer.age) : 0,
+            jerseyNumber: !isNaN(gplayer.number) ? parseInt(gplayer.number) : 0,
+            gId: gplayer.id
+          });
+          await nhlPlayer.save();
+          console.log(JSON.stringify(nhlPlayer));
+        }
+      }      
+      console.log(splayers);
+    }
+    res.json('success');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
+
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -893,5 +985,7 @@ module.exports = {
   updateNFLPlayers,
   setNHLImage,
   updatePlayerFromGoal,
-  updateNFLPlayerFromGoal
+  updateNFLPlayerFromGoal,
+  updateNHLPlayerFromGoal,
+  updateFBSPlayerFromGoal
 };

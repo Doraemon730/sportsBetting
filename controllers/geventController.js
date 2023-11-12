@@ -1140,7 +1140,7 @@ const updateNHLBet = async (match) => {
                     const play = await Player.findById(pick.playerId);
                     console.log("player " + player);
                     player = players.find(item => item.id == play.gId);
-                    if (player) {
+                    if (player) {                        
                         switch (pick.prop.propName) {
                             case 'Total Shots':
                                 result = parseInt(player.shots_on_goal);
@@ -1195,6 +1195,7 @@ const updateNHLBet = async (match) => {
                         console.log("lost");
                         bet.prize = 0;
                         bet.status = "lost";
+
                     } else {
                         if (bet.betType == "low") {
                             switch (bet.picks.length) {
@@ -1225,7 +1226,6 @@ const updateNHLBet = async (match) => {
                                     bet.prize = 0;
                                     bet.status = "lost";
                                     break;
-
                             }
                         } else {
                             console.log('refund');
@@ -1403,7 +1403,6 @@ const updateNHLBet = async (match) => {
             }
             else {
                 await bet.save();
-
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
@@ -1742,8 +1741,10 @@ const getFBSEventsfromGoal = async () => {
                     sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
                     gId: game.awayteam.id
                 });
+
                 if (!homeTeam || !awayTeam)
                     continue;
+
                 myEvent.name = homeTeam.alias + " vs " + awayTeam.alias;
                 myEvent.competitors.push(homeTeam);
                 myEvent.competitors.push(awayTeam);
@@ -1812,7 +1813,7 @@ const getFBSEventsfromGoal = async () => {
             }
         }
         console.log('success');
-
+        res.json('success');
     } catch (error) {
         console.log(error);
         //res.status(500).send('Server Error');

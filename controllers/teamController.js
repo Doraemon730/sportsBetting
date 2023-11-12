@@ -13,6 +13,7 @@ require('../utils/log');
 const {
     ObjectId
 } = require('mongodb');
+const { confirmArray } = require('../utils/util');
 
 const getIdfromRemoteId = async (remoteId) => {
     try {
@@ -282,42 +283,25 @@ const updateNHLTeamsFromGoal = async (req, res) => {
 }
 
 const updateFBSTeamsFromGoal = async (req, res) => {
-    try {
-        let teams = [];        
+    try {        
         const leagues = await fetchFBSTeamsFromGoal();
         for(let league of leagues) {
             //console.log(JSON.stringify(division));
-            for(let division of league.division)
+            let divisions = confirmArray(league.division);
+            for(let division of divisions)
                 for(let team of division.team) {
                     let fbsTeam = await Team.findOne({sportId: new ObjectId('652f31fdfb0c776ae3db47e1'), market: team.name});
                     if(fbsTeam) {
                         fbsTeam.name = team.name;
                         fbsTeam.gId = team.id;
                         await fbsTeam.save();
-                    } else {
-                        fbsTeam = new Team({
-                            name: team.name,
-                            gId: team.id,
-                            sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),                            
-                        });
-                        await fbsTeam.save();
-                    }
+                    } 
                 }
         }
 
-        // let FBSTeams = await Team.find({sportId: new ObjectId('652f31fdfb0c776ae3db47e1')});
-        // for(let fbsTeam of FBSTeams) {
-        //     let team = teams.find((t) => t.name.includes(fbsTeam.name));
-        //     console.log(fbsTeam.name + ":" + team.name);
-        //     fbsTeam.name = team.name;
-        //     fbsTeam.gId = team.id;
-        //     await fbsTeam.save();
-        // }
-        // res.json(FBSTeams);
-        // console.log(FBSTeams);
+        
     } catch(error) {
-        console.log(error);
-        res.status(500).send(Error);
+        console.log(error);        
     }
 }
 
