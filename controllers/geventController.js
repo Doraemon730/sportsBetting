@@ -150,7 +150,6 @@ const getNBAMatchData = async () => {
 
     } catch (err) {
         console.log(err)
-        res.status(500).
     }
 
 }
