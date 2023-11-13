@@ -70,10 +70,11 @@ const getNBAPlayerStats = player => {
 const getNBAMatchData = async () => {
 
     try {
-        let matchList = fetchNBAMatchData();
+        let matchList = await fetchNBAMatchData();
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time' || match.status == "Final/OT") {
                 if (match.player_stats) {
+                    console.log(match.id);
                     let event = await Event.findOne({ gId: match.id })
                     if (!event)
                         continue;
@@ -83,17 +84,18 @@ const getNBAMatchData = async () => {
                     let broadcastingData = {
                         contestId: event._id
                     }
+                    console.log(event._id);
                     let players = [];
                     players.push(...match.player_stats.hometeam.starters.player);
-                    players.push(...match.player_stats.hometeam.bench.player);
+                    // players.push(...match.player_stats.hometeam.bench.player);
                     players.push(...match.player_stats.awayteam.starters.player);
-                    players.push(...match.player_stats.awayteam.bench.player);
+                    // players.push(...match.player_stats.awayteam.bench.player);
 
                     for (const player of players) {
                         broadcastingData.player = getNBAPlayerStats(player);
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
                                 if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Points':
@@ -133,7 +135,6 @@ const getNBAMatchData = async () => {
                                             bets[i].picks[j].liveData = parseInt(player.blocks) + parseInt(player.steals);
                                             break;
                                     }
-
                                 }
                             }
                         }
@@ -154,7 +155,6 @@ const getNBAMatchData = async () => {
 }
 
 const summarizeNFLPlayerStats = match => {
-
     let players = [];
     let tempPlayers = [];
     if (match.defensive) {
@@ -199,13 +199,7 @@ const summarizeNFLPlayerStats = match => {
                 else
                     players[index]['Pass+Rush Yards'] = players[index]['Pass Yards']
             } else {
-                let newPlayer = {
-                    // 'Pass Yards': parseInt(player.yards),
-                    // 'Pass Completions': completions,
-                    // 'Pass TDs': parseInt(player.passing_touch_downs),
-                    // 'Pass Attempts': attempts,
-                    // 'Pass+Rush Yards': 
-                };
+                let newPlayer = {};
                 newPlayer['id'] = player.id;
                 newPlayer['name'] = player.name;
                 console.log(newPlayer)
@@ -218,6 +212,7 @@ const summarizeNFLPlayerStats = match => {
             }
         }
     }
+
     tempPlayers = [];
     if (match.rushing) {
         if (match.rushing.awayteam)
@@ -317,8 +312,6 @@ const summarizeNFLPlayerStats = match => {
             }
         }
     }
-    console.log(JSON.stringify(players[0]))
-    console.log(players.length)
 
     return players;
 }
@@ -654,7 +647,6 @@ const updateNBABet = async (match) => {
 const getNFLMatchData = async () => {
     try {
         let matchList = await fetchNFLMatchData();
-        console.log("NFL___________________________")
         for (const match of matchList) {
             console.log(match.contestID)
             console.log(match.status)
@@ -662,16 +654,11 @@ const getNFLMatchData = async () => {
                 if (true) {
                     console.log(match.contestID)
                     let event = await Event.findOne({ gId: match.contestID })
-                    
-                    console.log(JSON.stringify(event))
                     if (!event)
                         continue;
-                        console.log("2111")
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
-                    console.log("111")
                     if (bets.length == 0)
                         continue;
-                        console.log("1311")
                     let broadcastingData = {
                         contestId: event._id
                     }
@@ -684,8 +671,6 @@ const getNFLMatchData = async () => {
                             for (let j = 0; j < bets[i].picks.length; j++) {
                                 console.log(bets[i].picks[j].gId)
                                 if (bets[i].picks[j].gId == player.id) {
-                                    console.log("!@#!@#!@#$!@#$!@#$")
-                                    console.log(bets[i].picks[j].gId)
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Pass Yards':
                                             bets[i].picks[j].liveData = player['Pass Yards'] != undefined ? player['Pass Yards'] : 0;
@@ -754,8 +739,8 @@ const getNHLPlayerStats = player => {
 }
 const updateNFLBet = async (match) => {
     try {
-        console.log(match);
-        let event = await Event.findOne({gId: match.contestID})
+        console.log(match.contestID);
+        let event = await Event.findOne({ gId: match.contestID })
         if (!event || event.state == 3)
             return;
         console.log(JSON.stringify(event));
@@ -857,7 +842,7 @@ const updateNFLBet = async (match) => {
                         console.log("lost");
                         bet.prize = 0;
                         bet.status = "lost";
- } else {
+                    } else {
                         if (bet.betType == "low") {
                             switch (bet.picks.length) {
                                 case 3:
@@ -1077,7 +1062,7 @@ const updateNFLBet = async (match) => {
 };
 const getNHLMatchData = async () => {
     try {
-        let matchList = fetchNHLMatchData();
+        let matchList = await fetchNHLMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
@@ -1098,7 +1083,7 @@ const getNHLMatchData = async () => {
                         broadcastingData.player = getNHLPlayerStats(player);
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
                                 if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Total Shots':
@@ -1123,7 +1108,7 @@ const getNHLMatchData = async () => {
                 }
             }
             if (match.status === 'Final' || match.status == 'After Over Time') {
-                updateNHLBet(match);
+                updateNHLBet(match)
             }
         }
     } catch (err) {
@@ -1134,7 +1119,7 @@ const getNHLMatchData = async () => {
 const updateNHLBet = async (match) => {
     try {
         console.log(match);
-        let event = await Event.findOne({gId: match.contestID})
+        let event = await Event.findOne({ gId: match.id })
         if (!event || event.state == 3)
             return;
         console.log(JSON.stringify(event));
@@ -1169,7 +1154,7 @@ const updateNHLBet = async (match) => {
                             case 'Total Power Play Points':
                                 result = parseInt(player.pp_goals) + parseInt(player.pp_assists);
                                 break;
-                        }                        
+                        }
                     }
                     console.log("player " + player);
                     console.log("result " + result);
@@ -1210,7 +1195,8 @@ const updateNHLBet = async (match) => {
                         console.log("lost");
                         bet.prize = 0;
                         bet.status = "lost";
- } else {
+
+                    } else {
                         if (bet.betType == "low") {
                             switch (bet.picks.length) {
                                 case 3:
@@ -1240,7 +1226,6 @@ const updateNHLBet = async (match) => {
                                     bet.prize = 0;
                                     bet.status = "lost";
                                     break;
-
                             }
                         } else {
                             console.log('refund');
@@ -1418,7 +1403,6 @@ const updateNHLBet = async (match) => {
             }
             else {
                 await bet.save();
-
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
@@ -1430,7 +1414,7 @@ const updateNHLBet = async (match) => {
 };
 const getCFBMatchData = async () => {
     try {
-        let matchList = fetchCFBMatchData();
+        let matchList = await fetchCFBMatchData();
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
@@ -1449,7 +1433,7 @@ const getCFBMatchData = async () => {
                         broadcastingData.player = player;
                         global.io.sockets.emit('broadcast', { broadcastingData });
                         for (let i = 0; i < bets.length; i++) {
-                            for (let j = 0; j < bets[i].picks; j++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
                                 if (bets[i].picks[j].gId == player.id) {
                                     switch (bets[i].picks[j].prop.propName) {
                                         case 'Pass Yards':
@@ -1584,7 +1568,7 @@ const getNBAEventsfromGoal = async () => {
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if (diff > 30)
                                 continue;
-                            let player = await Player.findOne({ name: name });
+                            let player = await Player.findOne({ name: new RegExp(name, 'i') });
                             if (!player)
                                 continue;
                             const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
@@ -1611,11 +1595,11 @@ const getNBAEventsfromGoal = async () => {
     }
 }
 
-const getMatchData = () => {
-    getNBAMatchData();
-    getNFLMatchData();
-    getNHLMatchData();
-    getCFBMatchData();
+const getMatchData = async () => {
+    await getNBAMatchData();
+    await getNFLMatchData();
+    await getNHLMatchData();
+    await getCFBMatchData();
 }
 
 const getNFLEventsfromGoal = async () => {
@@ -1757,6 +1741,10 @@ const getFBSEventsfromGoal = async () => {
                     sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
                     gId: game.awayteam.id
                 });
+
+                if (!homeTeam || !awayTeam)
+                    continue;
+
                 myEvent.name = homeTeam.alias + " vs " + awayTeam.alias;
                 myEvent.competitors.push(homeTeam);
                 myEvent.competitors.push(awayTeam);
@@ -1939,6 +1927,9 @@ const getNHLEventsfromGoal = async () => {
 const getSportEventAll = async () => {
     try {
         await getNBAEventsfromGoal();
+        await getNFLEventsfromGoal();
+        await getNHLEventsfromGoal();
+        await getFBSEventsfromGoal();
     } catch (error) {
         console.log(error);
     }
