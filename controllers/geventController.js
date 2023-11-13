@@ -71,6 +71,8 @@ const getNBAMatchData = async () => {
 
     try {
         let matchList = await fetchNBAMatchData();
+        if(matchList == null)
+            return;
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time' || match.status == "Final/OT") {
                 if (match.player_stats) {
@@ -610,6 +612,8 @@ const updateNBABet = async (match) => {
 const getNFLMatchData = async () => {
     try {
         let matchList = await fetchNFLMatchData();
+        if (matchList == null)
+            return;
         for (const match of matchList) {
             console.log(match.contestID)
             console.log(match.status)
@@ -990,6 +994,8 @@ const updateNFLBet = async (match) => {
 const getNHLMatchData = async () => {
     try {
         let matchList = await fetchNHLMatchData();
+        if(matchList == null)
+            return;
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
@@ -1306,6 +1312,8 @@ const updateNHLBet = async (match) => {
 const getCFBMatchData = async () => {
     try {
         let matchList = await fetchCFBMatchData();
+        if(matchList == null)
+            return;
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {

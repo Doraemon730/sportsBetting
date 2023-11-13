@@ -315,6 +315,7 @@ const fetchNBAMatchData = async () => {
         })
         .catch(error => {
             console.log('Error retrieving NBA data from Goal:' + error);
+            return null;
         });
 
 }
@@ -375,6 +376,7 @@ const fetchNFLMatchData = async () => {
         })
         .catch(error => {
             console.log('Error retrieving NFL data from Goal:' + error);
+            return null;
         });
 
 }
@@ -396,6 +398,7 @@ const fetchCFBMatchData = async () => {
         })
         .catch(error => {
             console.log('Error retrieving CFB data from Goal:' + error);
+            return null;
         });
 
 }
@@ -410,12 +413,15 @@ const fetchNHLMatchData = async () => {
     return axios.get(`${GOAL_NHL_MATCH_DATA_URL}&date=${date}`)
         .then(response => {
             //console.log(JSON.stringify(response.data));
-            const matchData = confirmArray(response.data.scores.category.match)
-
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
             return matchData;
         })
         .catch(error => {
             console.log('Error retrieving NHL data from Goal:' + error);
+            return null;
         });
 
 }
