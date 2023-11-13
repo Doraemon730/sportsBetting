@@ -16,7 +16,7 @@ const {
     fetchYesNFLMatchData
 } = require('../services/eventService');
 const PlayerStat = require('../models/PlayerStat');
-
+const {confirmArray} = require('../utils/util')
 const summarizeStatsByPlayer = (data, category) => {
     const homeStats = data.statistics.home[category].players.map((player) => ({
         player: player.name,
