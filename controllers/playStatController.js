@@ -11,7 +11,9 @@ const {
     fetchSoccerEventSummary,
     fetchNHLGameSummary,    
     fetchCFBGameSummary,    
-    fetchNBAGameSummary
+    fetchNBAGameSummary,
+    fetchYesNBAMatchData,
+    fetchYesNFLMatchData
 } = require('../services/eventService');
 const PlayerStat = require('../models/PlayerStat');
 
@@ -474,33 +476,487 @@ const NFLstats = async(req, res) => {
     console.log("NFL stats updated");
     res.json("Stats updated");
 }
-const recordStats = async () => {
-    const events = await Event.find({state: 3, saveStats: 0});
-    for(const event of events){
-        if (String(event.sportId) == '650e0b6fb80ab879d1c142c8') {
-            console.log("NFL " + event._id);
-            await recordNFLStat(event);
-        }
-        else if (String(event.sportId) == String('65108fcf4fa2698548371fc0')) {
-            console.log("MLB " + event._id);
-            await recordMLBStat(event);
-        }
-        else if (String(event.sportId) == '65131974db50d0c2c8bf7aa7') {
-            console.log("Soccer " + event._id);
-            await recordSoccerStat(event);
-        }
-        else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
-            console.log("NHL " + event._id);
-            await recordNHLStat(event);
-        } else if ((String(event.sportId) == '652f31fdfb0c776ae3db47e1')) {
-            console.log("CFB " + event._id);
-            await recordCFBStat(event);
-        }
-        else if ((String(event.sportId) == '64f78bc5d0686ac7cf1a6855')) {
-            console.log("NBA " + event._id);
-            await recordNBAStat(event);
+
+const updateNBAPlyaerStats = async () => {
+    try {
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+const summarizeNFLPlayerStats = match => {
+    let players = [];
+    let tempPlayers = [];
+    if (match.defensive) {
+        if (match.defensive.awayteam)
+            tempPlayers.push(...confirmArray(match.defensive.awayteam.player))
+        if (match.defensive.hometeam)
+            tempPlayers.push(...confirmArray(match.defensive.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item.id == player.id)
+            if (index >= 0) {
+                players[index]['Tackles+Ast'] = parseInt(player.tackles);
+            } else {
+                let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                newPlayer['Tackles+Ast'] = parseInt(player.tackles);
+                players.push(newPlayer)
+            }
         }
     }
+
+    tempPlayers = [];
+    if (match.passing) {
+        console.log("PASSING")
+        if (match.passing.awayteam)
+            tempPlayers.push(...confirmArray(match.passing.awayteam.player))
+        if (match.passing.hometeam)
+            tempPlayers.push(...confirmArray(match.passing.hometeam.player))
+        for (const player of tempPlayers) {
+            const parts = player.comp_att.split("/");
+            const completions = parseInt(parts[0], 10);
+            const attempts = parseInt(parts[1], 10);
+            const index = players.findIndex(item => item.id == player.id)
+            console.log(index)
+            if (index >= 0) {
+                players[index]['Pass Yards'] = parseInt(player.yards);
+                players[index]['Pass Completions'] = completions;
+                players[index]['Pass TDs'] = parseInt(player.passing_touch_downs);
+                players[index]['Pass Attempts'] = attempts;
+                if (players[index]['Rush Yards'] != undefined)
+                    players[index]['Pass+Rush Yards'] = players[index]['Pass Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Pass+Rush Yards'] = players[index]['Pass Yards']
+            } else {
+                let newPlayer = {};
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                console.log(newPlayer)
+                newPlayer['Pass Yards'] = parseInt(player.yards);
+                newPlayer['Pass Completions'] = completions;
+                newPlayer['Pass TDs'] = parseInt(player.passing_touch_downs);
+                newPlayer['Pass Attempts'] = attempts;
+                newPlayer['Pass+Rush Yards'] = parseInt(player.yards);
+                players.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.rushing) {
+        if (match.rushing.awayteam)
+            tempPlayers.push(...confirmArray(match.rushing.awayteam.player))
+        if (match.rushing.hometeam)
+            tempPlayers.push(...confirmArray(match.rushing.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item.id == player.id)
+            if (index >= 0) {
+                players[index]['Rush Yards'] = parseInt(player.yards);
+                if (players[index]['Pass Yards'] != undefined)
+                    players[index]['Pass+Rush Yards'] = players[index]['Pass Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Pass+Rush Yards'] = players[index]['Rush Yards']
+
+                if (players[index]['Receiving Yards'] != undefined)
+                    players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Rush+Rec Yards'] = players[index]['Rush Yards']
+            } else {
+                let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                newPlayer['Rush Yards'] = parseInt(player.yards);
+                newPlayer['Pass+Rush Yards'] = parseInt(player.yards);
+                newPlayer['Rush+Rec Yards'] = parseInt(player.yards);
+                players.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.receiving) {
+        if (match.receiving.awayteam)
+            tempPlayers.push(...confirmArray(match.receiving.awayteam.player))
+        if (match.receiving.hometeam)
+            tempPlayers.push(...confirmArray(match.receiving.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item.id == player.id)
+            if (index >= 0) {
+                players[index]['Receiving Yards'] = parseInt(player.yards);
+                players[index]['Receptions'] = parseInt(player.total_receptions);
+                if (players[index]['Rushing Yards'] != undefined)
+                    players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards'] + players[index]['Rush Yards']
+                else
+                    players[index]['Rush+Rec Yards'] = players[index]['Receiving Yards']
+            } else {
+                let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                newPlayer['Receiving Yards'] = parseInt(player.yards);
+                newPlayer['Receptions'] = parseInt(player.total_receptions);
+                newPlayer['Rush+Rec Yards'] = parseInt(player.yards);
+                players.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.interceptions) {
+        if (match.interceptions.awayteam)
+            tempPlayers.push(...confirmArray(match.interceptions.awayteam.player))
+        if (match.interceptions.hometeam)
+            tempPlayers.push(...confirmArray(match.interceptions.hometeam.player))
+        for (const player of tempPlayers) {
+            const index = players.findIndex(item => item.id == player.id)
+            if (index >= 0) {
+                players[index]['INT'] = parseInt(player.total_interceptions);
+            } else {
+                let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                newPlayer['INT'] = parseInt(player.total_interceptions);
+                players.push(newPlayer)
+            }
+        }
+    }
+
+    tempPlayers = [];
+    if (match.kicking) {
+        if (match.kicking.awayteam)
+            tempPlayers.push(...confirmArray(match.kicking.awayteam.player))
+        if (match.kicking.hometeam)
+            tempPlayers.push(...confirmArray(match.kicking.hometeam.player))
+        for (const player of tempPlayers) {
+            const parts = player.field_goals.split("/");
+            const fg = parseInt(parts[0], 10);
+            const index = players.findIndex(item => item.id == player.id)
+            if (index >= 0) {
+                players[index]['FG Made'] = fg;
+            } else {
+                let newPlayer = {}
+                newPlayer['id'] = player.id;
+                newPlayer['name'] = player.name;
+                newPlayer['FG Made'] = fg;
+                players.push(newPlayer)
+            }
+        }
+    }
+
+    return players;
+}
+const updateNFLPlayerStats = async () => {
+    try {
+        let matchList = await fetchYesNFLMatchData();
+        if(matchList == null)
+            return;
+        const props = await Prop.find({sportId: new ObjectId("650e0b6fb80ab879d1c142c8"), available: true})
+        for (const match of matchList) {
+            console.log(match.contestID);
+            console.log(match.status);
+            if (match.status === 'Final' || match.status == 'After Over Time') {
+                let event = await Event.findOne({gId:match.contestID, state: 3, saveStats: 0})
+                if(!event)
+                continue;
+                //console.log(event);
+                let players = summarizeNFLPlayerStats(match);
+                
+                for(let player of players) {
+                    let plyr = await Player.findOne({gId: player.id});
+                    if (!plyr)
+                        continue;
+                    let playerStat = await PlayerStat.findOne({playerId: new ObjectId(plyr._id)});
+                    if (!playerStat) {
+                        playerStat = new PlayerStat({
+                            playerId: new ObjectId(play._id),
+                            stats: []
+                        });
+                    }
+                    let result = {
+                        gameName: event.name,
+                        date: event.startTime,
+                        props: []
+                    };
+                    for(let prop of props) {
+                        console.log(prop.displayName);
+                        switch(prop.displayName) {
+                            case 'Pass Yards':
+                                if(player['Pass Yards'] != undefined)
+                                    result.props.push({
+                                        propName: 'Pass Yards',
+                                        value: player['Pass Yards']
+                                    });
+                                break;
+                            case 'Pass Completions':
+                                if(player['Pass Completions'] != undefined)
+                                    result.props.push({
+                                        propName: 'Pass Completions',
+                                        value: player['Pass Completions']
+                                    });                                
+                                break;
+                            case 'Pass TDs':
+                                if(player['Pass TDs'] != undefined)
+                                    result.props.push({
+                                        propName: 'Pass TDs',
+                                        value: player['Pass TDs']
+                                    });                                
+                                break;                                
+                            case 'Rush Yards':
+                                if(player['Rush Yards'] != undefined)
+                                    result.props.push({
+                                        propName: 'Rush Yards',
+                                        value: player['Rush Yards']
+                                    });                                
+                                break;                                
+                            case 'Receiving Yards':
+                                if(player['Receiving Yards'] != undefined)
+                                    result.props.push({
+                                        propName: 'Receiving Yards',
+                                        value: player['Receiving Yards']
+                                    });                                
+                                break;                                
+                            case 'Receptions':
+                                if(player['Receptions'] != undefined)
+                                    result.props.push({
+                                        propName: 'Receptions',
+                                        value: player['Receptions']
+                                    });                                
+                                break;                                
+                            case 'INT':
+                                if(player['INT'] != undefined)
+                                    result.props.push({
+                                        propName: 'INT',
+                                        value: player['INT']
+                                    });                                
+                                break;                                
+                            case 'Pass Attempts':
+                                if(player['Pass Attempts'] != undefined)
+                                    result.props.push({
+                                        propName: 'Pass Attempts',
+                                        value: player['Pass Attempts']
+                                    });                                
+                                break;
+                            case 'FG Made':
+                                if(player['FG Made'] != undefined)
+                                    result.props.push({
+                                        propName: 'FG Made',
+                                        value: player['FG Made']
+                                    });                                
+                                break;
+                                
+                            case 'Tackles+Ast':
+                                if(player['Tackles+Ast'] != undefined)
+                                    result.props.push({
+                                        propName: 'Tackles+Ast',
+                                        value: player['Tackles+Ast']
+                                    });                                
+                                break;
+                                
+                            case 'Rush+Rec Yards':
+                                if(player['Rush+Rec Yards'] != undefined)
+                                    result.props.push({
+                                        propName: 'Rush+Rec Yards',
+                                        value: player['Rush+Rec Yards']
+                                    });                                
+                                break;
+                                
+                            case 'Pass+Rush Yards':
+                                if(player['Pass+Rush Yards'] != undefined)
+                                    result.props.push({
+                                        propName: 'Pass+Rush Yards',
+                                        value: player['Pass+Rush Yards']
+                                    });                                
+                                break;                                
+                        }
+                    }
+                    if(playerStat.stats.length == 5)
+                    playerStat.stats.splice(0);
+                    console.log(result);
+                    playerStat.stats.push(result);
+                    await playerStat.save();
+                }
+
+                event.saveStats = 1;
+                await event.save();
+            }
+        }       
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const updateNBAPlayerStats = async () => {
+    try {
+        let matchList = await fetchYesNBAMatchData();
+        if (matchList == null)
+            return;
+        const props = await Prop.find({sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"), available: true})
+        for (const match of matchList) {
+            console.log(match.id);
+            if (match.status == 'Final' || match.status == "Final/OT" || match.status == 'After Over Time') {
+                let event = await Event.findOne({gId:match.id, state: 3, saveStats: 0});
+                if(!event)
+                    continue;
+                let players = [];
+                players.push(...match.player_stats.hometeam.starters.player);
+                players.push(...match.player_stats.hometeam.bench.player);
+                players.push(...match.player_stats.awayteam.starters.player);
+                players.push(...match.player_stats.awayteam.bench.player);
+
+                for(let player of players) {
+                    let play = await Player.findOne({gId: player.id});
+                    if (!play)
+                        continue;
+                    let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+                    if (!playerStat) {
+                        playerStat = new PlayerStat({
+                            playerId: new ObjectId(play._id),
+                            stats: []
+                        });
+                    }
+                    console.log(playerStat);
+                    let result = {
+                        gameName: event.name,
+                        date: event.startTime,
+                        props: []
+                    };
+                    for(let prop of props) {
+                        console.log(prop.displayName);
+                        switch(prop.displayName) {
+                            case 'Points':
+                                if(play.points != undefined)
+                                    result.props.push({
+                                        propName: 'Points',
+                                        value: parseInt(play.points)
+                                    });
+                                break;
+                            case 'Assists':
+                                if(play.points != undefined)
+                                    result.props.push({
+                                        propName: 'Assists',
+                                        value: parseInt(play.assists)
+                                    });
+                                break;
+                            case 'Rebounds':
+                                if(play.total_rebounds != undefined)
+                                    result.props.push({
+                                        propName: 'Rebounds',
+                                        value: parseInt(play.total_rebounds)
+                                    });
+                                break;
+                            case '3-PT Made':
+                                if(play.threepoint_goals_made != undefined)
+                                    result.props.push({
+                                        propName: '3-PT Made',
+                                        value: parseInt(play.threepoint_goals_made)
+                                    });
+                                break;                                
+                            case 'Steals':
+                                if(play.steals != undefined)
+                                    result.props.push({
+                                        propName: 'Steals',
+                                        value: parseInt(play.steals)
+                                    });
+                                break;                                
+                            case 'Blocks':
+                                if(play.blocks != undefined)
+                                    result.props.push({
+                                        propName: 'Blocks',
+                                        value: parseInt(play.blocks)
+                                    });
+                                break;                                
+                            case 'Turnovers':
+                                if(play.turnovers != undefined)
+                                    result.props.push({
+                                        propName: 'Turnovers',
+                                        value: parseInt(play.turnovers)
+                                    });
+                                break;                                
+                            case 'Points+Rebounds':
+                                
+                                    result.props.push({
+                                        propName: 'Points+Rebounds',
+                                        value: parseInt(play.points) + parseInt(play.total_rebounds)
+                                    });
+                                break;
+                                
+                            case 'Points+Assists':
+                                if(play.points != undefined)
+                                    result.props.push({
+                                        propName: 'Points+Assists',
+                                        value: parseInt(play.points) + parseInt(play.assists)
+                                    });
+                                break;                                
+                            case 'Rebounds+Assists':
+                                if(play.assists != undefined)
+                                    result.props.push({
+                                        propName: 'Rebounds+Assists',
+                                        value: parseInt(play.total_rebounds) + parseInt(play.assists)
+                                    });
+                                break;                                
+                            case 'Pts+Rebs+Asts':
+                                if(play.points != undefined)
+                                    result.props.push({
+                                        propName: 'Points',
+                                        value: parseInt(play.points) + parseInt(play.total_rebounds) + parseInt(play.assists)
+                                    });
+                                break;                                
+                            case 'Blocks+Steals':
+                                if(play.blocks != undefined)
+                                    result.props.push({
+                                        propName: 'Blocks+Steals',
+                                        value: parseInt(play.blocks) + parseInt(play.steals)
+                                    });
+                                break;                                
+                        }
+                    }
+                    if(playerStat.stats.length == 5)
+                        playerStat.stats.splice(0);
+                    console.log(result);
+                    playerStat.stats.push(result);
+                    await playerStat.save();
+                }
+                event.saveStats = 1;
+                await event.save();
+            }
+        }
+    } catch(error) {
+        console.log('Error in updating NBA Player Stats');
+        console.log(error);
+    }
+};
+  
+const recordStats = async () => {
+
+    await updateNBAPlayerStats();
+    await updateNFLPlayerStats();
+    // const events = await Event.find({state: 3, saveStats: 0});
+    // for(const event of events){
+    //     if (String(event.sportId) == '650e0b6fb80ab879d1c142c8') {
+    //         console.log("NFL " + event._id);
+    //         await recordNFLStat(event);
+    //     }
+    //     else if (String(event.sportId) == String('65108fcf4fa2698548371fc0')) {
+    //         console.log("MLB " + event._id);
+    //         await recordMLBStat(event);
+    //     }
+    //     else if (String(event.sportId) == '65131974db50d0c2c8bf7aa7') {
+    //         console.log("Soccer " + event._id);
+    //         await recordSoccerStat(event);
+    //     }
+    //     else if (String(event.sportId) == '65108faf4fa2698548371fbd') {
+    //         console.log("NHL " + event._id);
+    //         await recordNHLStat(event);
+    //     } else if ((String(event.sportId) == '652f31fdfb0c776ae3db47e1')) {
+    //         console.log("CFB " + event._id);
+    //         await recordCFBStat(event);
+    //     }
+    //     else if ((String(event.sportId) == '64f78bc5d0686ac7cf1a6855')) {
+    //         console.log("NBA " + event._id);
+    //         await recordNBAStat(event);
+    //     }
+    // }
+
 }
 
 const getPlayerStats = async (req, res) => {

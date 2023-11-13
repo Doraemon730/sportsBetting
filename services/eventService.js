@@ -319,6 +319,45 @@ const fetchNBAMatchData = async () => {
 
 }
 
+const fetchYesNBAMatchData = async () => {
+    
+    const yesterday = moment().subtract(1, 'days');        
+    const date = yesterday.format('DD.MM.YYYY');
+
+    return axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NBA data from Goal:' + error);
+            return null;
+        });
+}
+
+const fetchYesNFLMatchData = async () => {
+
+    const yesterday = moment().subtract(1, 'days');        
+    const date = yesterday.format('DD.MM.YYYY');
+
+    return axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL data from Goal:' + error);
+            return null;
+        });
+
+}
+
 const fetchNFLMatchData = async () => {
     const currentDate = new Date();
     const day = String(currentDate.getDate()).padStart(2, '0');
@@ -490,6 +529,8 @@ module.exports = {
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,
-    fetchFBSEventsFromGoal
+    fetchFBSEventsFromGoal,
+    fetchYesNBAMatchData,
+    fetchYesNFLMatchData
 };
 
