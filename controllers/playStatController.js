@@ -477,13 +477,7 @@ const NFLstats = async(req, res) => {
     res.json("Stats updated");
 }
 
-const updateNBAPlyaerStats = async () => {
-    try {
-        
-    } catch (error) {
-        console.log(error);
-    }
-}
+
 const summarizeNFLPlayerStats = match => {
     let players = [];
     let tempPlayers = [];
@@ -668,7 +662,7 @@ const updateNFLPlayerStats = async () => {
                     let playerStat = await PlayerStat.findOne({playerId: new ObjectId(plyr._id)});
                     if (!playerStat) {
                         playerStat = new PlayerStat({
-                            playerId: new ObjectId(play._id),
+                            playerId: new ObjectId(plyr._id),
                             stats: []
                         });
                     }
@@ -824,88 +818,88 @@ const updateNBAPlayerStats = async () => {
                         console.log(prop.displayName);
                         switch(prop.displayName) {
                             case 'Points':
-                                if(play.points != undefined)
+                                if(player.points != undefined)
                                     result.props.push({
                                         propName: 'Points',
-                                        value: parseInt(play.points)
+                                        value: parseInt(player.points)
                                     });
                                 break;
                             case 'Assists':
-                                if(play.points != undefined)
+                                if(player.points != undefined)
                                     result.props.push({
                                         propName: 'Assists',
-                                        value: parseInt(play.assists)
+                                        value: parseInt(player.assists)
                                     });
                                 break;
                             case 'Rebounds':
-                                if(play.total_rebounds != undefined)
+                                if(player.total_rebounds != undefined)
                                     result.props.push({
                                         propName: 'Rebounds',
-                                        value: parseInt(play.total_rebounds)
+                                        value: parseInt(player.total_rebounds)
                                     });
                                 break;
                             case '3-PT Made':
-                                if(play.threepoint_goals_made != undefined)
+                                if(player.threepoint_goals_made != undefined)
                                     result.props.push({
                                         propName: '3-PT Made',
-                                        value: parseInt(play.threepoint_goals_made)
+                                        value: parseInt(player.threepoint_goals_made)
                                     });
                                 break;                                
                             case 'Steals':
-                                if(play.steals != undefined)
+                                if(player.steals != undefined)
                                     result.props.push({
                                         propName: 'Steals',
-                                        value: parseInt(play.steals)
+                                        value: parseInt(player.steals)
                                     });
                                 break;                                
                             case 'Blocks':
-                                if(play.blocks != undefined)
+                                if(player.blocks != undefined)
                                     result.props.push({
                                         propName: 'Blocks',
-                                        value: parseInt(play.blocks)
+                                        value: parseInt(player.blocks)
                                     });
                                 break;                                
                             case 'Turnovers':
-                                if(play.turnovers != undefined)
+                                if(player.turnovers != undefined)
                                     result.props.push({
                                         propName: 'Turnovers',
-                                        value: parseInt(play.turnovers)
+                                        value: parseInt(player.turnovers)
                                     });
                                 break;                                
                             case 'Points+Rebounds':
                                 
                                     result.props.push({
                                         propName: 'Points+Rebounds',
-                                        value: parseInt(play.points) + parseInt(play.total_rebounds)
+                                        value: parseInt(player.points) + parseInt(player.total_rebounds)
                                     });
                                 break;
                                 
                             case 'Points+Assists':
-                                if(play.points != undefined)
+                                if(player.points != undefined)
                                     result.props.push({
                                         propName: 'Points+Assists',
-                                        value: parseInt(play.points) + parseInt(play.assists)
+                                        value: parseInt(player.points) + parseInt(player.assists)
                                     });
                                 break;                                
                             case 'Rebounds+Assists':
-                                if(play.assists != undefined)
+                                if(player.assists != undefined)
                                     result.props.push({
                                         propName: 'Rebounds+Assists',
-                                        value: parseInt(play.total_rebounds) + parseInt(play.assists)
+                                        value: parseInt(player.total_rebounds) + parseInt(player.assists)
                                     });
                                 break;                                
                             case 'Pts+Rebs+Asts':
-                                if(play.points != undefined)
+                                if(player.points != undefined)
                                     result.props.push({
-                                        propName: 'Points',
-                                        value: parseInt(play.points) + parseInt(play.total_rebounds) + parseInt(play.assists)
+                                        propName: 'Pts+Rebs+Asts',
+                                        value: parseInt(player.points) + parseInt(player.total_rebounds) + parseInt(player.assists)
                                     });
                                 break;                                
                             case 'Blocks+Steals':
-                                if(play.blocks != undefined)
+                                if(player.blocks != undefined)
                                     result.props.push({
                                         propName: 'Blocks+Steals',
-                                        value: parseInt(play.blocks) + parseInt(play.steals)
+                                        value: parseInt(player.blocks) + parseInt(player.steals)
                                     });
                                 break;                                
                         }
