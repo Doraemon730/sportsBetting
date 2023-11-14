@@ -457,8 +457,21 @@ const fetchNFLEventsFromGoal = async () => {
             const matches = [];
             let tour = response.data.shedules.tournament[1];
             
-            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);            
-            return week.matches;
+            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);                        
+            if (Array.isArray(week)) {
+                console.log(week.length);
+                for(let w of week) {
+                    matches.push(...w.matches);
+                }
+                return matches;
+            }
+            else {
+                if (Array.isArray(week.matches))
+                    matches.push(...week.matches);
+                else
+                    matches.push(week.matches);
+                return matches;
+            }
         })
         .catch(error => {
             console.log('Error retrieving NFL Events From Goal Serve' + error);
