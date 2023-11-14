@@ -71,7 +71,7 @@ const getNBAMatchData = async () => {
 
     try {
         let matchList = await fetchNBAMatchData();
-        if(matchList == null)
+        if (matchList == null)
             return;
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time' || match.status == "Final/OT") {
@@ -401,7 +401,7 @@ const updateNBABet = async (match) => {
                         if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                             pick.overUnder == "under" && pick.result < pick.prop.odds) {
                             win += 1;
-                        } else if(pick.result == pick.prop.odds) {
+                        } else if (pick.result == pick.prop.odds) {
                             tie += 1;
                         } else {
                             lost += 1;
@@ -422,13 +422,13 @@ const updateNBABet = async (match) => {
             }
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
-                if(bet.betType == "high") {
-                    if(lost > 0) {
+                if (bet.betType == "high") {
+                    if (lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
-                        if(finished == 8) {
-                            if(win == 8) {
+                        if (finished == 8) {
+                            if (win == 8) {
                                 bet.prize = bet.entryFee * BET_8_8_HIGH;
                                 bet.status = "win";
                             } else {
@@ -446,7 +446,7 @@ const updateNBABet = async (match) => {
                                     }
                                     if (refund) {
                                         bet.status = "refund";
-                                    }    
+                                    }
                                     break;
                                 case 2:
                                     bet.prize = bet.entryFee * BET_2_2_HIGH;
@@ -472,103 +472,103 @@ const updateNBABet = async (match) => {
                     }
                 }
                 else {
-                    switch(pTotal) {
-                    case 0:
-                        bet.status = "refund";
-                        break;
-                    case 1:
-                        switch(win){
-                            case 0:
+                    switch (pTotal) {
+                        case 0:
+                            bet.status = "refund";
+                            break;
+                        case 1:
+                            switch (win) {
+                                case 0:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                                case 1:
+                                    if (tie) {
+                                        bet.prize = bet.entryFee * 1.5;
+                                        bet.status = "win";
+                                    }
+                                    if (refund) {
+                                        bet.status = "refund";
+                                    }
+                                    break;
+                            }
+                            break;
+                        case 2:
+                            if (win == 2) {
+                                bet.prize = bet.entryFee * BET_2_2_HIGH;
+                            } else {
                                 bet.prize = 0;
                                 bet.status = "lost";
-                                break;
-                            case 1:
-                                if(tie) {
-                                    bet.prize = bet.entryFee * 1.5;
+                            }
+                            break;
+                        case 3:
+                            switch (win) {
+                                case 3:
+                                    bet.prize = bet.entryFee * BET_3_3_LOW;
                                     bet.status = "win";
-                                }
-                                if(refund) {
-                                    bet.status = "refund";
-                                }
-                                break;
-                        }                                
-                        break;
-                    case 2:
-                        if(win == 2) {
-                            bet.prize = bet.entryFee * BET_2_2_HIGH;
-                        } else {
-                            bet.prize = 0;
-                            bet.status = "lost";
-                        }
-                        break;
-                    case 3:
-                        switch (win) {
-                            case 3:
-                                bet.prize = bet.entryFee * BET_3_3_LOW;
-                                bet.status = "win";
-                                break;
-                            case 2:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_2_3_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 4:
-                        switch (win) {
-                            case 4:
-                                bet.prize = bet.entryFee * BET_4_4_LOW;
-                                bet.status = "win";
-                                break;
-                            case 3:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_3_4_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 5:
-                        switch (win) {
-                            case 5:
-                                bet.prize = bet.entryFee * BET_5_5_LOW;
-                                bet.status = "win";
-                                break;
-                            case 4:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_4_5_LOW;
-                                break;
-                            case 3:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_3_5_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 6:
-                        switch (win) {
-                            case 6:
-                                bet.prize = bet.entryFee * BET_6_6_LOW;
-                                bet.status = "win";
-                                break;
-                            case 5:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_5_6_LOW;
-                                break;
-                            case 4:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_4_6_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
+                                    break;
+                                case 2:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_2_3_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 4:
+                            switch (win) {
+                                case 4:
+                                    bet.prize = bet.entryFee * BET_4_4_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 3:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_3_4_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 5:
+                            switch (win) {
+                                case 5:
+                                    bet.prize = bet.entryFee * BET_5_5_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 4:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_4_5_LOW;
+                                    break;
+                                case 3:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_3_5_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 6:
+                            switch (win) {
+                                case 6:
+                                    bet.prize = bet.entryFee * BET_6_6_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 5:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_5_6_LOW;
+                                    break;
+                                case 4:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_4_6_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
                     }
                 }
                 console.log("status + " + bet.status);
@@ -805,13 +805,13 @@ const updateNFLBet = async (match) => {
             }
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
-                if(bet.betType == "high") {
-                    if(lost > 0) {
+                if (bet.betType == "high") {
+                    if (lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
-                        if(finished == 8) {
-                            if(win == 8) {
+                        if (finished == 8) {
+                            if (win == 8) {
                                 bet.prize = bet.entryFee * BET_8_8_HIGH;
                                 bet.status = "win";
                             } else {
@@ -829,7 +829,7 @@ const updateNFLBet = async (match) => {
                                     }
                                     if (refund) {
                                         bet.status = "refund";
-                                    }    
+                                    }
                                     break;
                                 case 2:
                                     bet.prize = bet.entryFee * BET_2_2_HIGH;
@@ -855,103 +855,103 @@ const updateNFLBet = async (match) => {
                     }
                 }
                 else {
-                    switch(pTotal) {
-                    case 0:
-                        bet.status = "refund";
-                        break;
-                    case 1:
-                        switch(win){
-                            case 0:
+                    switch (pTotal) {
+                        case 0:
+                            bet.status = "refund";
+                            break;
+                        case 1:
+                            switch (win) {
+                                case 0:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                                case 1:
+                                    if (tie) {
+                                        bet.prize = bet.entryFee * 1.5;
+                                        bet.status = "win";
+                                    }
+                                    if (refund) {
+                                        bet.status = "refund";
+                                    }
+                                    break;
+                            }
+                            break;
+                        case 2:
+                            if (win == 2) {
+                                bet.prize = bet.entryFee * BET_2_2_HIGH;
+                            } else {
                                 bet.prize = 0;
                                 bet.status = "lost";
-                                break;
-                            case 1:
-                                if(tie) {
-                                    bet.prize = bet.entryFee * 1.5;
+                            }
+                            break;
+                        case 3:
+                            switch (win) {
+                                case 3:
+                                    bet.prize = bet.entryFee * BET_3_3_LOW;
                                     bet.status = "win";
-                                }
-                                if(refund) {
-                                    bet.status = "refund";
-                                }
-                                break;
-                        }                                
-                        break;
-                    case 2:
-                        if(win == 2) {
-                            bet.prize = bet.entryFee * BET_2_2_HIGH;
-                        } else {
-                            bet.prize = 0;
-                            bet.status = "lost";
-                        }
-                        break;
-                    case 3:
-                        switch (win) {
-                            case 3:
-                                bet.prize = bet.entryFee * BET_3_3_LOW;
-                                bet.status = "win";
-                                break;
-                            case 2:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_2_3_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 4:
-                        switch (win) {
-                            case 4:
-                                bet.prize = bet.entryFee * BET_4_4_LOW;
-                                bet.status = "win";
-                                break;
-                            case 3:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_3_4_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 5:
-                        switch (win) {
-                            case 5:
-                                bet.prize = bet.entryFee * BET_5_5_LOW;
-                                bet.status = "win";
-                                break;
-                            case 4:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_4_5_LOW;
-                                break;
-                            case 3:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_3_5_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 6:
-                        switch (win) {
-                            case 6:
-                                bet.prize = bet.entryFee * BET_6_6_LOW;
-                                bet.status = "win";
-                                break;
-                            case 5:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_5_6_LOW;
-                                break;
-                            case 4:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_4_6_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
+                                    break;
+                                case 2:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_2_3_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 4:
+                            switch (win) {
+                                case 4:
+                                    bet.prize = bet.entryFee * BET_4_4_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 3:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_3_4_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 5:
+                            switch (win) {
+                                case 5:
+                                    bet.prize = bet.entryFee * BET_5_5_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 4:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_4_5_LOW;
+                                    break;
+                                case 3:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_3_5_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 6:
+                            switch (win) {
+                                case 6:
+                                    bet.prize = bet.entryFee * BET_6_6_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 5:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_5_6_LOW;
+                                    break;
+                                case 4:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_4_6_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
                     }
                 }
                 console.log("status + " + bet.status);
@@ -994,7 +994,7 @@ const updateNFLBet = async (match) => {
 const getNHLMatchData = async () => {
     try {
         let matchList = await fetchNHLMatchData();
-        if(matchList == null)
+        if (matchList == null)
             return;
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
@@ -1073,7 +1073,7 @@ const updateNHLBet = async (match) => {
                     const play = await Player.findById(pick.playerId);
                     console.log("player " + player);
                     player = players.find(item => item.id == play.gId);
-                    if (player) {                        
+                    if (player) {
                         switch (pick.prop.propName) {
                             case 'Total Shots':
                                 result = parseInt(player.shots_on_goal);
@@ -1124,13 +1124,13 @@ const updateNHLBet = async (match) => {
             }
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
-                if(bet.betType == "high") {
-                    if(lost > 0) {
+                if (bet.betType == "high") {
+                    if (lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
-                        if(finished == 8) {
-                            if(win == 8) {
+                        if (finished == 8) {
+                            if (win == 8) {
                                 bet.prize = bet.entryFee * BET_8_8_HIGH;
                                 bet.status = "win";
                             } else {
@@ -1148,7 +1148,7 @@ const updateNHLBet = async (match) => {
                                     }
                                     if (refund) {
                                         bet.status = "refund";
-                                    }    
+                                    }
                                     break;
                                 case 2:
                                     bet.prize = bet.entryFee * BET_2_2_HIGH;
@@ -1174,103 +1174,103 @@ const updateNHLBet = async (match) => {
                     }
                 }
                 else {
-                    switch(pTotal) {
-                    case 0:
-                        bet.status = "refund";
-                        break;
-                    case 1:
-                        switch(win){
-                            case 0:
+                    switch (pTotal) {
+                        case 0:
+                            bet.status = "refund";
+                            break;
+                        case 1:
+                            switch (win) {
+                                case 0:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                                    break;
+                                case 1:
+                                    if (tie) {
+                                        bet.prize = bet.entryFee * 1.5;
+                                        bet.status = "win";
+                                    }
+                                    if (refund) {
+                                        bet.status = "refund";
+                                    }
+                                    break;
+                            }
+                            break;
+                        case 2:
+                            if (win == 2) {
+                                bet.prize = bet.entryFee * BET_2_2_HIGH;
+                            } else {
                                 bet.prize = 0;
                                 bet.status = "lost";
-                                break;
-                            case 1:
-                                if(tie) {
-                                    bet.prize = bet.entryFee * 1.5;
+                            }
+                            break;
+                        case 3:
+                            switch (win) {
+                                case 3:
+                                    bet.prize = bet.entryFee * BET_3_3_LOW;
                                     bet.status = "win";
-                                }
-                                if(refund) {
-                                    bet.status = "refund";
-                                }
-                                break;
-                        }                                
-                        break;
-                    case 2:
-                        if(win == 2) {
-                            bet.prize = bet.entryFee * BET_2_2_HIGH;
-                        } else {
-                            bet.prize = 0;
-                            bet.status = "lost";
-                        }
-                        break;
-                    case 3:
-                        switch (win) {
-                            case 3:
-                                bet.prize = bet.entryFee * BET_3_3_LOW;
-                                bet.status = "win";
-                                break;
-                            case 2:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_2_3_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 4:
-                        switch (win) {
-                            case 4:
-                                bet.prize = bet.entryFee * BET_4_4_LOW;
-                                bet.status = "win";
-                                break;
-                            case 3:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_3_4_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 5:
-                        switch (win) {
-                            case 5:
-                                bet.prize = bet.entryFee * BET_5_5_LOW;
-                                bet.status = "win";
-                                break;
-                            case 4:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_4_5_LOW;
-                                break;
-                            case 3:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_3_5_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
-                    case 6:
-                        switch (win) {
-                            case 6:
-                                bet.prize = bet.entryFee * BET_6_6_LOW;
-                                bet.status = "win";
-                                break;
-                            case 5:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_5_6_LOW;
-                                break;
-                            case 4:
-                                bet.status = "win";
-                                bet.prize = bet.entryFee * BET_4_6_LOW;
-                                break;
-                            default:
-                                bet.prize = 0;
-                                bet.status = "lost";
-                        }
-                        break;
+                                    break;
+                                case 2:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_2_3_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 4:
+                            switch (win) {
+                                case 4:
+                                    bet.prize = bet.entryFee * BET_4_4_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 3:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_3_4_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 5:
+                            switch (win) {
+                                case 5:
+                                    bet.prize = bet.entryFee * BET_5_5_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 4:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_4_5_LOW;
+                                    break;
+                                case 3:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_3_5_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
+                        case 6:
+                            switch (win) {
+                                case 6:
+                                    bet.prize = bet.entryFee * BET_6_6_LOW;
+                                    bet.status = "win";
+                                    break;
+                                case 5:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_5_6_LOW;
+                                    break;
+                                case 4:
+                                    bet.status = "win";
+                                    bet.prize = bet.entryFee * BET_4_6_LOW;
+                                    break;
+                                default:
+                                    bet.prize = 0;
+                                    bet.status = "lost";
+                            }
+                            break;
                     }
                 }
                 console.log("status + " + bet.status);
@@ -1312,12 +1312,12 @@ const updateNHLBet = async (match) => {
 const getCFBMatchData = async () => {
     try {
         let matchList = await fetchCFBMatchData();
-        if(matchList == null)
+        if (matchList == null)
             return;
         for (const match of matchList) {
             if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
                 if (match.player_stats) {
-                    let event = await Event.findOne({ gId: match.id })
+                    let event = await Event.findOne({ gId: match.contestID })
                     if (!event)
                         continue;
                     let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })

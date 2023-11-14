@@ -14,12 +14,12 @@ const fs = require('fs');
 const app = express();
 const httpServer = createServer(app);
 const {
-  WednesdayJob,
-  ThursdayJob,
+  // WednesdayJob,
+  // ThursdayJob,
   EtherJob,
-  MatchJob,
-  WeeklyRewardJob,
-  MonthlyRewardJob,
+  // MatchJob,
+  // WeeklyRewardJob,
+  // MonthlyRewardJob,
   WeekEventJob,
   CheckResultJob,
   RecordStatJob,
@@ -129,10 +129,10 @@ global.io.on("connection", onNewWebsocketConnection);
 httpServer.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 
-  WednesdayJob.start();
-  ThursdayJob.start();
+  // WednesdayJob.start();
+  // ThursdayJob.start();
   EtherJob.start();
-  MatchJob.start();
+  // MatchJob.start();
   // WeeklyRewardJob.start();
   // MonthlyRewardJob.start();
   WeekEventJob.start();
