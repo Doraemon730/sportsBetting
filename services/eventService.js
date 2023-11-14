@@ -315,6 +315,46 @@ const fetchNBAMatchData = async () => {
         })
         .catch(error => {
             console.log('Error retrieving NBA data from Goal:' + error);
+            return null;
+        });
+
+}
+
+const fetchYesNBAMatchData = async () => {
+    
+    const yesterday = moment().subtract(1, 'days');        
+    const date = yesterday.format('DD.MM.YYYY');
+
+    return axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NBA data from Goal:' + error);
+            return null;
+        });
+}
+
+const fetchYesNFLMatchData = async () => {
+
+    const yesterday = moment().subtract(1, 'days');        
+    const date = yesterday.format('DD.MM.YYYY');
+
+    return axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL data from Goal:' + error);
+            return null;
         });
 
 }
@@ -336,6 +376,7 @@ const fetchNFLMatchData = async () => {
         })
         .catch(error => {
             console.log('Error retrieving NFL data from Goal:' + error);
+            return null;
         });
 
 }
@@ -357,6 +398,7 @@ const fetchCFBMatchData = async () => {
         })
         .catch(error => {
             console.log('Error retrieving CFB data from Goal:' + error);
+            return null;
         });
 
 }
@@ -371,12 +413,15 @@ const fetchNHLMatchData = async () => {
     return axios.get(`${GOAL_NHL_MATCH_DATA_URL}&date=${date}`)
         .then(response => {
             //console.log(JSON.stringify(response.data));
-            const matchData = confirmArray(response.data.scores.category.match)
-
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
             return matchData;
         })
         .catch(error => {
             console.log('Error retrieving NHL data from Goal:' + error);
+            return null;
         });
 
 }
@@ -412,8 +457,21 @@ const fetchNFLEventsFromGoal = async () => {
             const matches = [];
             let tour = response.data.shedules.tournament[1];
             
-            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);            
-            return week.matches;
+            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);                        
+            if (Array.isArray(week)) {
+                console.log(week.length);
+                for(let w of week) {
+                    matches.push(...w.matches);
+                }
+                return matches;
+            }
+            else {
+                if (Array.isArray(week.matches))
+                    matches.push(...week.matches);
+                else
+                    matches.push(week.matches);
+                return matches;
+            }
         })
         .catch(error => {
             console.log('Error retrieving NFL Events From Goal Serve' + error);
@@ -490,6 +548,8 @@ module.exports = {
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,
-    fetchFBSEventsFromGoal
+    fetchFBSEventsFromGoal,
+    fetchYesNBAMatchData,
+    fetchYesNFLMatchData
 };
 
