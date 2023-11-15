@@ -57,6 +57,7 @@ const GOAL_NBA_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c
 const GOAL_NFL_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb/football/nfl-scores?json=1";
 const GOAL_CFB_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb/football/fbs-scores?json=1";
 const GOAL_NHL_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb/hockey/nhl-scores?json=1"
+const GOAL_MMS_MATCH_DATA_URL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb/mma/live?json=1"
 const GOAL_API_BASEURL = "http://www.goalserve.com/getfeed/476f777873d14c8e0ada08dbdb2fbeeb";
 
 
@@ -114,6 +115,7 @@ module.exports = {
     GOAL_NFL_MATCH_DATA_URL,
     GOAL_NHL_MATCH_DATA_URL,
     GOAL_CFB_MATCH_DATA_URL,
+    GOAL_MMS_MATCH_DATA_URL,
     GOAL_API_BASEURL
 
 }

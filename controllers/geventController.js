@@ -16,6 +16,7 @@ const {
     fetchNFLMatchData,
     fetchNHLMatchData,
     fetchCFBMatchData,
+    fetchMMSMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,
@@ -425,8 +426,8 @@ const updateNBABet = async (match) => {
                 let pTotal = bet.picks.length - refund - tie;
                 console.log(pTotal + " : " + refund + " : " + tie);
                 console.log(win + " : " + lost);
-                if(bet.betType == "high") {
-                    if(lost > 0) {
+                if (bet.betType == "high") {
+                    if (lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
@@ -790,7 +791,7 @@ const updateNFLBet = async (match) => {
                         if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                             pick.overUnder == "under" && pick.result < pick.prop.odds) {
                             win += 1;
-                        } else if(pick.result == pick.prop.odds) {
+                        } else if (pick.result == pick.prop.odds) {
                             tie += 1;
                         } else {
                             lost += 1;
@@ -811,8 +812,8 @@ const updateNFLBet = async (match) => {
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
                 console.log(pTotal + " : " + refund + " : " + tie);
-                if(bet.betType == "high") {
-                    if(lost > 0) {
+                if (bet.betType == "high") {
+                    if (lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
@@ -1112,8 +1113,8 @@ const updateNHLBet = async (match) => {
                         if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                             pick.overUnder == "under" && pick.result < pick.prop.odds) {
                             win += 1;
-                        } else if(pick.result == pick.prop.odds) {
-                            tie +=1 ;
+                        } else if (pick.result == pick.prop.odds) {
+                            tie += 1;
                         } else {
                             lost += 1;
                         }
@@ -1133,8 +1134,8 @@ const updateNHLBet = async (match) => {
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
                 console.log(pTotal + " : " + refund + " : " + tie);
-                if(bet.betType == "high") {
-                    if(lost > 0) {
+                if (bet.betType == "high") {
+                    if (lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
@@ -1956,6 +1957,87 @@ const getSportEventAll = async () => {
         console.log(error);
     }
 }
+
+const summarizeMMAPlayerStats = async (match) => {
+    let players = [];
+
+    let localPlayer = {}
+    localPlayer['id'] = match['localteam']['@id'];
+    localPlayer['name'] = match['localteam']['@name'];
+    let strikes_total = match['stats']['localteam']['strikes_total']
+    localPlayer['Significant Strikes'] = strikes_total['@head'] + strikes_total['@body'] + strikes_total['@legs'];
+    localPlayer['Takedowns'] = match['stats']['localteam']['takedowns']['@att'];
+    let knockdowns = match['stats']['localteam']['knockdowns']['@total'];
+    localPlayer['Fantasy Score'] = localPlayer['Significant Strikes'] * 0.6 + localPlayer['Takedowns'] * 6 + knockdowns * 12;
+    players.push(localPlayer)
+
+    let awayPlayer = {}
+    awayPlayer['id'] = match['awayteam']['@id'];
+    awayPlayer['name'] = match['awayteam']['@name'];
+    strikes_total = match['stats']['awayteam']['strikes_total']
+    awayPlayer['Significant Strikes'] = strikes_total['@head'] + strikes_total['@body'] + strikes_total['@legs'];
+    awayPlayer['Takedowns'] = match['stats']['awayteam']['takedowns']['@att'];
+    knockdowns = match['stats']['awayteam']['knockdowns']['@total'];
+    localPlayer['Fantasy Score'] = awayPlayer['Significant Strikes'] * 0.6 + awayPlayer['Takedowns'] * 6 + knockdowns * 12;
+    players.push(awayPlayer)
+
+    return players;
+}
+
+
+const getMMSMatchData = async () => {
+    try {
+        let matchList = await fetchMMSMatchData();
+        if (matchList == null)
+            return;
+        for (const match of matchList) {
+            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
+                if (match.stats) {
+                    let event = await Event.findOne({ gId: match['@id'] })
+                    if (!event)
+                        continue;
+                    let bets = await Bet.find({ 'picks.contestId': new ObjectId(event._id) })
+                    if (bets.length == 0)
+                        continue;
+                    let broadcastingData = {
+                        contestId: event._id
+                    }
+                    let players = summarizeMMAPlayerStats(match);
+
+                    for (const player of players) {
+                        broadcastingData.player = player;
+                        global.io.sockets.emit('broadcast', { broadcastingData });
+                        for (let i = 0; i < bets.length; i++) {
+                            for (let j = 0; j < bets[i].picks.length; j++) {
+                                if (bets[i].picks[j].gId == player.id) {
+                                    switch (bets[i].picks[j].prop.propName) {
+                                        case 'Significant Strikes':
+                                            bets[i].picks[j].liveData = player['Significant Strikes'] != undefined ? player['Significant Strikes'] : 0;
+                                            break;
+                                        case 'Takedowns':
+                                            bets[i].picks[j].liveData = player['Takedowns'] != undefined ? player['Takedowns'] : 0;
+                                            break;
+                                        case 'Fantasy Score':
+                                            bets[i].picks[j].liveData = player['Fantasy Score'] != undefined ? player['Fantasy Score'] : 0;
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (const bet of bets)
+                        await bet.save();
+                }
+            }
+            if (match.status == 'Final' || match.status == 'After Over Time') {
+                updateNFLBet(match)
+            }
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
+
 module.exports = {
     getNBAMatchData,
     getNFLMatchData,

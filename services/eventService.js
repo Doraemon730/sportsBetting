@@ -36,6 +36,7 @@ const {
     GOAL_NFL_MATCH_DATA_URL,
     GOAL_NHL_MATCH_DATA_URL,
     GOAL_CFB_MATCH_DATA_URL,
+    GOAL_MMS_MATCH_DATA_URL,
     GOAL_API_BASEURL
 } = require('../config/constant');
 const { confirmArray } = require('../utils/util')
@@ -427,7 +428,26 @@ const fetchNHLMatchData = async () => {
             console.log('Error retrieving NHL data from Goal:' + error);
             return null;
         });
+}
 
+const fetchMMSMatchData = async () => {
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+    console.log(date);
+    return axios.get(`${GOAL_MMS_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            let matchData = confirmArray(match);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving MMS data from Goal:' + error);
+            return null;
+        });
 }
 
 const fetchNBAEventsFromGoal = async () => {
@@ -569,6 +589,7 @@ module.exports = {
     fetchNFLMatchData,
     fetchNHLMatchData,
     fetchCFBMatchData,
+    fetchMMSMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,
