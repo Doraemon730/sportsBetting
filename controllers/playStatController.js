@@ -5,18 +5,18 @@ const {
     ObjectId
 } = require("mongodb");
 const {
-    fetchEventPlayerProps,    
+    fetchEventPlayerProps,
     fetchNFLGameSummary,
     fetchMLBGameSummary,
     fetchSoccerEventSummary,
-    fetchNHLGameSummary,    
-    fetchCFBGameSummary,    
+    fetchNHLGameSummary,
+    fetchCFBGameSummary,
     fetchNBAGameSummary,
     fetchYesNBAMatchData,
     fetchYesNFLMatchData
 } = require('../services/eventService');
 const PlayerStat = require('../models/PlayerStat');
-const {confirmArray} = require('../utils/util')
+const { confirmArray } = require('../utils/util')
 const summarizeStatsByPlayer = (data, category) => {
     const homeStats = data.statistics.home[category].players.map((player) => ({
         player: player.name,
@@ -34,92 +34,92 @@ const recordNFLStat = async (event) => {
     try {
         console.log(event);
         const statistics = await fetchNFLGameSummary(event.matchId);
-        if(!statistics)
+        if (!statistics)
             return;
         console.log("summaryNFL" + event._id, true);
-        const props = await Prop.find({sportId: new ObjectId("650e0b6fb80ab879d1c142c8")})
+        const props = await Prop.find({ sportId: new ObjectId("650e0b6fb80ab879d1c142c8") })
         const rushingStats = summarizeStatsByPlayer(statistics, 'rushing');
         const receivingStats = summarizeStatsByPlayer(statistics, 'receiving');
         const passingStats = summarizeStatsByPlayer(statistics, 'passing');
         const fieldGoalStats = summarizeStatsByPlayer(statistics, 'field_goals');
         const defenseStats = summarizeStatsByPlayer(statistics, 'defense');
         let index = -1;
-        for(let player of rushingStats) {
-            let play = await Player.findOne({remoteId: player.id});
-            if(!play)
+        for (let player of rushingStats) {
+            let play = await Player.findOne({ remoteId: player.id });
+            if (!play)
                 continue;
-            let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+            let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
             console.log(playerStat);
-            if(!playerStat) {
+            if (!playerStat) {
                 playerStat = new PlayerStat({
                     playerId: new ObjectId(play._id),
-                    stats:[]
+                    stats: []
                 });
             }
-            console.log(playerStat);            
-            if(playerStat.stats.length > 4)
+            console.log(playerStat);
+            if (playerStat.stats.length > 4)
                 continue;
             index = playerStat.stats.length;
             let result = {
                 gameName: event.name,
                 date: event.startTime,
-                props:[]
+                props: []
             };
             result.props.push({
                 propName: 'Rush Yard',
                 value: player.yards
             });
             let play1 = receivingStats.find(item => item.id == play.remoteId);
-            if(play1) {
+            if (play1) {
                 result.props.push({
                     propName: 'Rush+Rec Yards',
                     value: player.yards + play1.yards
-                }); 
+                });
             } else {
                 result.props.push({
                     propName: 'Rush+Rec Yards',
                     value: player.yards
-                }); 
+                });
             }
 
             let play2 = passingStats.find(item => item.id == play.remoteId);
-            if(play2) {
+            if (play2) {
                 result.props.push({
                     propName: 'Pass+Rush Yards',
                     value: player.yards + play2.yards
-                }); 
+                });
             } else {
                 result.props.push({
                     propName: 'Pass+Rush Yards',
                     value: player.yards
-                }); 
+                });
             }
             playerStat.stats.push(result);
             await playerStat.save();
         }
-        for(let player of passingStats) {
-            let play = await Player.findOne({remoteId: player.id});
-            if(!play)
+        for (let player of passingStats) {
+            let play = await Player.findOne({ remoteId: player.id });
+            if (!play)
                 continue;
-            let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+            let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
             console.log(playerStat);
-            if(!playerStat) {
+            if (!playerStat) {
                 playerStat = new PlayerStat({
                     playerId: new ObjectId(play._id),
-                    stats:[]
+                    stats: []
                 });
             }
-            console.log(playerStat);                               
+            console.log(playerStat);
             index = playerStat.stats.length;
             let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
             console.log(i);
-            if(i == -1 && index >= 5)
+            if (i == -1 && index >= 5)
                 contitnue;
-            if(i == -1) {
+            if (i == -1) {
                 let result = {
                     gameName: event.name,
                     date: event.startTime,
-                    props:[]
+                    props: []
                 };
                 result.props.push({
                     propName: 'Pass Yards',
@@ -168,29 +168,29 @@ const recordNFLStat = async (event) => {
             }
         }
 
-        for(let player of receivingStats) {
-            let play = await Player.findOne({remoteId: player.id});
-            if(!play)
+        for (let player of receivingStats) {
+            let play = await Player.findOne({ remoteId: player.id });
+            if (!play)
                 continue;
-            let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+            let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
             console.log(playerStat);
-            if(!playerStat) {
+            if (!playerStat) {
                 playerStat = new PlayerStat({
                     playerId: new ObjectId(play._id),
-                    stats:[]
+                    stats: []
                 });
             }
-            console.log(playerStat);                               
+            console.log(playerStat);
             index = playerStat.stats.length;
             let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
             console.log(i);
-            if(i == -1 && index >= 5)
+            if (i == -1 && index >= 5)
                 contitnue;
-            if(i == -1) {
+            if (i == -1) {
                 let result = {
                     gameName: event.name,
                     date: event.startTime,
-                    props:[]
+                    props: []
                 };
                 result.props.push({
                     propName: 'Receiving Yards',
@@ -200,7 +200,7 @@ const recordNFLStat = async (event) => {
                     propName: 'Receptions',
                     value: player.receptions
                 });
-                
+
                 playerStat.stats.push(result);
                 await playerStat.save();
             } else {
@@ -215,83 +215,83 @@ const recordNFLStat = async (event) => {
                 await playerStat.save();
             }
         }
-        for(let player of fieldGoalStats) {
-            let play = await Player.findOne({remoteId: player.id});
-            if(!play)
+        for (let player of fieldGoalStats) {
+            let play = await Player.findOne({ remoteId: player.id });
+            if (!play)
                 continue;
-            let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+            let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
             console.log(playerStat);
-            if(!playerStat) {
+            if (!playerStat) {
                 playerStat = new PlayerStat({
                     playerId: new ObjectId(play._id),
-                    stats:[]
+                    stats: []
                 });
             }
-            console.log(playerStat);                               
+            console.log(playerStat);
             index = playerStat.stats.length;
             let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
             console.log(i);
-            if(i == -1 && index >= 5)
+            if (i == -1 && index >= 5)
                 contitnue;
-            if(i == -1) {
+            if (i == -1) {
                 let result = {
                     gameName: event.name,
                     date: event.startTime,
-                    props:[]
+                    props: []
                 };
                 result.props.push({
                     propName: 'FG Made',
                     value: player.made
-                });                
+                });
                 playerStat.stats.push(result);
                 await playerStat.save();
             } else {
                 playerStat.stats[i].props.push({
                     propName: 'FG Made',
                     value: player.made
-                });               
+                });
                 await playerStat.save();
             }
         }
-        for(let player of defenseStats) {
-            let play = await Player.findOne({remoteId: player.id});
-            if(!play)
+        for (let player of defenseStats) {
+            let play = await Player.findOne({ remoteId: player.id });
+            if (!play)
                 continue;
-            let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+            let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
             console.log(playerStat);
-            if(!playerStat) {
+            if (!playerStat) {
                 playerStat = new PlayerStat({
                     playerId: new ObjectId(play._id),
-                    stats:[]
+                    stats: []
                 });
             }
-            console.log(playerStat);                               
+            console.log(playerStat);
             index = playerStat.stats.length;
             let i = playerStat.stats.findIndex(item => item.gameName == event.name && item.date.valueOf() == event.startTime.valueOf())
             console.log(i);
-            if(i == -1 && index >= 5)
+            if (i == -1 && index >= 5)
                 contitnue;
-            if(i == -1) {
+            if (i == -1) {
                 let result = {
                     gameName: event.name,
                     date: event.startTime,
-                    props:[]
+                    props: []
                 };
                 result.props.push({
                     propName: 'Tackles+Ast',
                     value: player.tackles + player.assists
-                });                
+                });
                 playerStat.stats.push(result);
                 await playerStat.save();
             } else {
                 playerStat.stats[i].props.push({
                     propName: 'Tackles+Ast',
                     value: player.tackles + player.assists
-                });               
+                });
                 await playerStat.save();
             }
         }
-        event.saveStats = 1;    
+        event.saveStats = 1;
         await event.save();
     } catch (error) {
         console.log(error);
@@ -327,131 +327,131 @@ const recordNBAStat = async (event) => {
         console.log(event);
         const summary = await fetchNBAGameSummary(event.matchId);
         let players = summarizeNBAStatsByPlayer(summary);
-        const props = await Prop.find({sportId: new ObjectId("64f78bc5d0686ac7cf1a6855")})
+        const props = await Prop.find({ sportId: new ObjectId("64f78bc5d0686ac7cf1a6855") })
         players = players.filter(item => item.played);
 
-        for(let player of players) {
+        for (let player of players) {
 
-            let play = await Player.findOne({remoteId: player.id});
-            if(!play)
+            let play = await Player.findOne({ remoteId: player.id });
+            if (!play)
                 continue;
-            let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+            let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
             console.log(playerStat);
-            if(!playerStat) {
+            if (!playerStat) {
                 playerStat = new PlayerStat({
                     playerId: new ObjectId(play._id),
-                    stats:[]
+                    stats: []
                 });
-            }            
+            }
             console.log(playerStat);
-            if(playerStat.stats.length > 4)
+            if (playerStat.stats.length > 4)
                 continue;
             let result = {
                 gameName: event.name,
                 date: event.startTime,
-                props:[]
+                props: []
             };
             console.log(JSON.stringify(player.statistics));
-            for(let prop of props) {
+            for (let prop of props) {
                 console.log(prop.displayName)
-                switch(prop.displayName){
+                switch (prop.displayName) {
                     case 'Points':
                         console.log(JSON.stringify(player.statistics.points));
-                        if(player.statistics.points != undefined){
+                        if (player.statistics.points != undefined) {
                             result.props.push({
                                 propName: 'Points',
                                 value: player.statistics.points
-                            });                            
+                            });
                             console.log("OK1");
-                        }                            
+                        }
                         break;
                     case 'Assists':
-                        if(player.statistics.assists != undefined)                            
+                        if (player.statistics.assists != undefined)
                             result.props.push({
                                 propName: 'Assists',
                                 value: player.statistics.assists
-                            });                          
-                        break;                        
+                            });
+                        break;
                     case 'Rebounds':
-                        if(player.statistics.rebounds != undefined)                            
+                        if (player.statistics.rebounds != undefined)
                             result.props.push({
                                 propName: 'Rebounds',
                                 value: player.statistics.rebounds
-                            });                            
-                        break;                        
+                            });
+                        break;
                     case '3-PT Made':
-                        if(player.statistics.three_points_made != undefined)                            
+                        if (player.statistics.three_points_made != undefined)
                             result.props.push({
                                 propName: '3-PT Made',
                                 value: player.statistics.three_points_made
-                            });                            
-                        break;                                                
+                            });
+                        break;
                     case 'Steals':
-                        if(player.statistics.steals != undefined)                            
+                        if (player.statistics.steals != undefined)
                             result.props.push({
                                 propName: 'Steals',
                                 value: player.statistics.steals
-                            });                            
-                        break;                                                
+                            });
+                        break;
                     case 'Blocks':
-                        if(player.statistics.blocks != undefined)                            
+                        if (player.statistics.blocks != undefined)
                             result.props.push({
                                 propName: 'Blocks',
                                 value: player.statistics.blocks
-                            });                            
-                        break;                                                
+                            });
+                        break;
                     case 'Turnovers':
-                        if(player.statistics.turnovers != undefined)                            
+                        if (player.statistics.turnovers != undefined)
                             result.props.push({
                                 propName: 'Turnovers',
                                 value: player.statistics.turnovers
-                            });                            
-                        break;                        
+                            });
+                        break;
                     case 'Points+Rebounds':
                         if (player.statistics.points != undefined && player.statistics.rebounds != undefined)
                             result.props.push({
                                 propName: 'Points+Rebounds',
                                 value: player.statistics.points + player.statistics.rebounds
-                            });                            
-                            console.log("OK2");                              
+                            });
+                        console.log("OK2");
                         break;
                     case 'Points+Assists':
                         if (player.statistics.points != undefined && player.statistics.assists != undefined)
                             result.props.push({
                                 propName: 'Points+Assists',
                                 value: player.statistics.points + player.statistics.assists
-                            });                            
+                            });
                         break;
                     case 'Rebounds+Assists':
                         if (player.statistics.rebounds != undefined && player.statistics.assists != undefined)
                             result.props.push({
                                 propName: 'Rebounds+Assists',
                                 value: player.statistics.rebounds + player.statistics.assists
-                            });  
+                            });
                         break;
                     case 'Pts+Rebs+Asts':
                         if (player.statistics.points != undefined && player.statistics.rebounds != undefined && player.statistics.assists != undefined)
                             result.props.push({
                                 propName: 'Pts+Rebs+Asts',
                                 value: player.statistics.points + player.statistics.rebounds + player.statistics.assists
-                            });  
+                            });
                         break;
                     case 'Blocks+Steals':
                         if (player.statistics.blocks != undefined && player.statistics.steals != undefined)
                             result.props.push({
                                 propName: 'Blocks+Steals',
                                 value: player.statistics.blocks + player.statistics.steals
-                            });                          
+                            });
                         break;
                 }
             }
-            if(playerStat.stats.length == 5)
-                playerStat.stats.splice(0);
+            if (playerStat.stats.length == 5)
+                playerStat.stats.splice(0, 1);
             console.log(result);
             playerStat.stats.push(result);
             await playerStat.save();
         }
-        event.saveStats = 1;    
+        event.saveStats = 1;
         await event.save();
 
     } catch (error) {
@@ -459,19 +459,19 @@ const recordNBAStat = async (event) => {
     }
 }
 
-const NBAstats = async(req, res) => {
-    const events = await Event.find({state: 3, sportId: new ObjectId("64f78bc5d0686ac7cf1a6855")}).sort({startTime: -1});
-    for(const event of events){
-         await   recordNBAStat(event);
+const NBAstats = async (req, res) => {
+    const events = await Event.find({ state: 3, sportId: new ObjectId("64f78bc5d0686ac7cf1a6855") }).sort({ startTime: -1 });
+    for (const event of events) {
+        await recordNBAStat(event);
     }
     console.log("NBA stats updated");
     res.json("Stats updated");
 }
 
-const NFLstats = async(req, res) => {
-    const events = await Event.find({state: 3, sportId: new ObjectId("650e0b6fb80ab879d1c142c8")}).sort({startTime: -1});
-    for(const event of events){
-         await   recordNFLStat(event);
+const NFLstats = async (req, res) => {
+    const events = await Event.find({ state: 3, sportId: new ObjectId("650e0b6fb80ab879d1c142c8") }).sort({ startTime: -1 });
+    for (const event of events) {
+        await recordNFLStat(event);
     }
     console.log("NFL stats updated");
     res.json("Stats updated");
@@ -642,24 +642,24 @@ const summarizeNFLPlayerStats = match => {
 const updateNFLPlayerStats = async () => {
     try {
         let matchList = await fetchYesNFLMatchData();
-        if(matchList == null)
+        if (matchList == null)
             return;
-        const props = await Prop.find({sportId: new ObjectId("650e0b6fb80ab879d1c142c8"), available: true})
+        const props = await Prop.find({ sportId: new ObjectId("650e0b6fb80ab879d1c142c8"), available: true })
         for (const match of matchList) {
             console.log(match.contestID);
             console.log(match.status);
             if (match.status === 'Final' || match.status == 'After Over Time') {
-                let event = await Event.findOne({gId:match.contestID, state: 3, saveStats: 0})
-                if(!event)
-                continue;
+                let event = await Event.findOne({ gId: match.contestID, state: 3, saveStats: 0 })
+                if (!event)
+                    continue;
                 //console.log(event);
                 let players = summarizeNFLPlayerStats(match);
-                
-                for(let player of players) {
-                    let plyr = await Player.findOne({gId: player.id});
+
+                for (let player of players) {
+                    let plyr = await Player.findOne({ gId: player.id });
                     if (!plyr)
                         continue;
-                    let playerStat = await PlayerStat.findOne({playerId: new ObjectId(plyr._id)});
+                    let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(plyr._id) });
                     if (!playerStat) {
                         playerStat = new PlayerStat({
                             playerId: new ObjectId(plyr._id),
@@ -671,100 +671,100 @@ const updateNFLPlayerStats = async () => {
                         date: event.startTime,
                         props: []
                     };
-                    for(let prop of props) {
+                    for (let prop of props) {
                         console.log(prop.displayName);
-                        switch(prop.displayName) {
+                        switch (prop.displayName) {
                             case 'Pass Yards':
-                                if(player['Pass Yards'] != undefined)
+                                if (player['Pass Yards'] != undefined)
                                     result.props.push({
                                         propName: 'Pass Yards',
                                         value: player['Pass Yards']
                                     });
                                 break;
                             case 'Pass Completions':
-                                if(player['Pass Completions'] != undefined)
+                                if (player['Pass Completions'] != undefined)
                                     result.props.push({
                                         propName: 'Pass Completions',
                                         value: player['Pass Completions']
-                                    });                                
+                                    });
                                 break;
                             case 'Pass TDs':
-                                if(player['Pass TDs'] != undefined)
+                                if (player['Pass TDs'] != undefined)
                                     result.props.push({
                                         propName: 'Pass TDs',
                                         value: player['Pass TDs']
-                                    });                                
-                                break;                                
+                                    });
+                                break;
                             case 'Rush Yards':
-                                if(player['Rush Yards'] != undefined)
+                                if (player['Rush Yards'] != undefined)
                                     result.props.push({
                                         propName: 'Rush Yards',
                                         value: player['Rush Yards']
-                                    });                                
-                                break;                                
+                                    });
+                                break;
                             case 'Receiving Yards':
-                                if(player['Receiving Yards'] != undefined)
+                                if (player['Receiving Yards'] != undefined)
                                     result.props.push({
                                         propName: 'Receiving Yards',
                                         value: player['Receiving Yards']
-                                    });                                
-                                break;                                
+                                    });
+                                break;
                             case 'Receptions':
-                                if(player['Receptions'] != undefined)
+                                if (player['Receptions'] != undefined)
                                     result.props.push({
                                         propName: 'Receptions',
                                         value: player['Receptions']
-                                    });                                
-                                break;                                
+                                    });
+                                break;
                             case 'INT':
-                                if(player['INT'] != undefined)
+                                if (player['INT'] != undefined)
                                     result.props.push({
                                         propName: 'INT',
                                         value: player['INT']
-                                    });                                
-                                break;                                
+                                    });
+                                break;
                             case 'Pass Attempts':
-                                if(player['Pass Attempts'] != undefined)
+                                if (player['Pass Attempts'] != undefined)
                                     result.props.push({
                                         propName: 'Pass Attempts',
                                         value: player['Pass Attempts']
-                                    });                                
+                                    });
                                 break;
                             case 'FG Made':
-                                if(player['FG Made'] != undefined)
+                                if (player['FG Made'] != undefined)
                                     result.props.push({
                                         propName: 'FG Made',
                                         value: player['FG Made']
-                                    });                                
+                                    });
                                 break;
-                                
+
                             case 'Tackles+Ast':
-                                if(player['Tackles+Ast'] != undefined)
+                                if (player['Tackles+Ast'] != undefined)
                                     result.props.push({
                                         propName: 'Tackles+Ast',
                                         value: player['Tackles+Ast']
-                                    });                                
+                                    });
                                 break;
-                                
+
                             case 'Rush+Rec Yards':
-                                if(player['Rush+Rec Yards'] != undefined)
+                                if (player['Rush+Rec Yards'] != undefined)
                                     result.props.push({
                                         propName: 'Rush+Rec Yards',
                                         value: player['Rush+Rec Yards']
-                                    });                                
+                                    });
                                 break;
-                                
+
                             case 'Pass+Rush Yards':
-                                if(player['Pass+Rush Yards'] != undefined)
+                                if (player['Pass+Rush Yards'] != undefined)
                                     result.props.push({
                                         propName: 'Pass+Rush Yards',
                                         value: player['Pass+Rush Yards']
-                                    });                                
-                                break;                                
+                                    });
+                                break;
                         }
                     }
-                    if(playerStat.stats.length == 5)
-                    playerStat.stats.splice(0);
+                    if (playerStat.stats.length == 5)
+                        playerStat.stats.splice(0, 1);
                     console.log(result);
                     playerStat.stats.push(result);
                     await playerStat.save();
@@ -773,7 +773,7 @@ const updateNFLPlayerStats = async () => {
                 event.saveStats = 1;
                 await event.save();
             }
-        }       
+        }
     } catch (error) {
         console.log(error);
     }
@@ -784,12 +784,12 @@ const updateNBAPlayerStats = async () => {
         let matchList = await fetchYesNBAMatchData();
         if (matchList == null)
             return;
-        const props = await Prop.find({sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"), available: true})
+        const props = await Prop.find({ sportId: new ObjectId("64f78bc5d0686ac7cf1a6855"), available: true })
         for (const match of matchList) {
             console.log(match.id);
             if (match.status == 'Final' || match.status == "Final/OT" || match.status == 'After Over Time') {
-                let event = await Event.findOne({gId:match.id, state: 3, saveStats: 0});
-                if(!event)
+                let event = await Event.findOne({ gId: match.id, state: 3, saveStats: 0 });
+                if (!event)
                     continue;
                 let players = [];
                 players.push(...match.player_stats.hometeam.starters.player);
@@ -797,11 +797,11 @@ const updateNBAPlayerStats = async () => {
                 players.push(...match.player_stats.awayteam.starters.player);
                 players.push(...match.player_stats.awayteam.bench.player);
 
-                for(let player of players) {
-                    let play = await Player.findOne({gId: player.id});
+                for (let player of players) {
+                    let play = await Player.findOne({ gId: player.id });
                     if (!play)
                         continue;
-                    let playerStat = await PlayerStat.findOne({playerId: new ObjectId(play._id)});
+                    let playerStat = await PlayerStat.findOne({ playerId: new ObjectId(play._id) });
                     if (!playerStat) {
                         playerStat = new PlayerStat({
                             playerId: new ObjectId(play._id),
@@ -814,98 +814,98 @@ const updateNBAPlayerStats = async () => {
                         date: event.startTime,
                         props: []
                     };
-                    for(let prop of props) {
+                    for (let prop of props) {
                         console.log(prop.displayName);
-                        switch(prop.displayName) {
+                        switch (prop.displayName) {
                             case 'Points':
-                                if(player.points != undefined)
+                                if (player.points != undefined)
                                     result.props.push({
                                         propName: 'Points',
                                         value: parseInt(player.points)
                                     });
                                 break;
                             case 'Assists':
-                                if(player.points != undefined)
+                                if (player.points != undefined)
                                     result.props.push({
                                         propName: 'Assists',
                                         value: parseInt(player.assists)
                                     });
                                 break;
                             case 'Rebounds':
-                                if(player.total_rebounds != undefined)
+                                if (player.total_rebounds != undefined)
                                     result.props.push({
                                         propName: 'Rebounds',
                                         value: parseInt(player.total_rebounds)
                                     });
                                 break;
                             case '3-PT Made':
-                                if(player.threepoint_goals_made != undefined)
+                                if (player.threepoint_goals_made != undefined)
                                     result.props.push({
                                         propName: '3-PT Made',
                                         value: parseInt(player.threepoint_goals_made)
                                     });
-                                break;                                
+                                break;
                             case 'Steals':
-                                if(player.steals != undefined)
+                                if (player.steals != undefined)
                                     result.props.push({
                                         propName: 'Steals',
                                         value: parseInt(player.steals)
                                     });
-                                break;                                
+                                break;
                             case 'Blocks':
-                                if(player.blocks != undefined)
+                                if (player.blocks != undefined)
                                     result.props.push({
                                         propName: 'Blocks',
                                         value: parseInt(player.blocks)
                                     });
-                                break;                                
+                                break;
                             case 'Turnovers':
-                                if(player.turnovers != undefined)
+                                if (player.turnovers != undefined)
                                     result.props.push({
                                         propName: 'Turnovers',
                                         value: parseInt(player.turnovers)
                                     });
-                                break;                                
-                            case 'Points+Rebounds':
-                                
-                                    result.props.push({
-                                        propName: 'Points+Rebounds',
-                                        value: parseInt(player.points) + parseInt(player.total_rebounds)
-                                    });
                                 break;
-                                
+                            case 'Points+Rebounds':
+
+                                result.props.push({
+                                    propName: 'Points+Rebounds',
+                                    value: parseInt(player.points) + parseInt(player.total_rebounds)
+                                });
+                                break;
+
                             case 'Points+Assists':
-                                if(player.points != undefined)
+                                if (player.points != undefined)
                                     result.props.push({
                                         propName: 'Points+Assists',
                                         value: parseInt(player.points) + parseInt(player.assists)
                                     });
-                                break;                                
+                                break;
                             case 'Rebounds+Assists':
-                                if(player.assists != undefined)
+                                if (player.assists != undefined)
                                     result.props.push({
                                         propName: 'Rebounds+Assists',
                                         value: parseInt(player.total_rebounds) + parseInt(player.assists)
                                     });
-                                break;                                
+                                break;
                             case 'Pts+Rebs+Asts':
-                                if(player.points != undefined)
+                                if (player.points != undefined)
                                     result.props.push({
                                         propName: 'Pts+Rebs+Asts',
                                         value: parseInt(player.points) + parseInt(player.total_rebounds) + parseInt(player.assists)
                                     });
-                                break;                                
+                                break;
                             case 'Blocks+Steals':
-                                if(player.blocks != undefined)
+                                if (player.blocks != undefined)
                                     result.props.push({
                                         propName: 'Blocks+Steals',
                                         value: parseInt(player.blocks) + parseInt(player.steals)
                                     });
-                                break;                                
+                                break;
                         }
                     }
-                    if(playerStat.stats.length == 5)
-                        playerStat.stats.splice(0);
+                    if (playerStat.stats.length == 5)
+                        playerStat.stats.splice(0, 1);
                     console.log(result);
                     playerStat.stats.push(result);
                     await playerStat.save();
@@ -914,12 +914,12 @@ const updateNBAPlayerStats = async () => {
                 await event.save();
             }
         }
-    } catch(error) {
+    } catch (error) {
         console.log('Error in updating NBA Player Stats');
         console.log(error);
     }
 };
-  
+
 const recordStats = async () => {
 
     await updateNBAPlayerStats();
@@ -955,9 +955,9 @@ const recordStats = async () => {
 
 const getPlayerStats = async (req, res) => {
     try {
-        let {playerId} = req.body;
-        let stats = await PlayerStat.findOne({playerId: new ObjectId(playerId)});
-        if(stats)
+        let { playerId } = req.body;
+        let stats = await PlayerStat.findOne({ playerId: new ObjectId(playerId) });
+        if (stats)
             res.json(stats);
         else
             res.status(404).send("Player not found");
