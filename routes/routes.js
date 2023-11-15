@@ -273,57 +273,70 @@ router.post('/admin/giveRewards', admin, betController.giveRewards);
 
 router.post('/admin/getTotalBalance', userController.getTotalBalance);
 
-router.post('/admin/getNFLTeams',  admin, teamController.addNFLTeamsToDatabase);
-router.post('/admin/getNFLContest',  admin, contestController.addNFLContestsToDatabase);
-router.post('/admin/getNFLPlayers',  admin, playerController.addNFLPlayersToDatabase);
-router.post('/admin/getWeeklyEvents',  admin, eventController.getWeekEventAll);
-router.post('/admin/getWeeklyScheduleNFL',  admin, eventController.getWeeklyEventsNFL);
-router.post('/admin/getWeeklyScheduleMLB',  admin, eventController.getWeeklyEventsMLB);
-router.post('/admin/getWeeklyScheduleNHL',  admin, eventController.getWeeklyEventsNHL);
-router.post('/admin/player',  admin, playerController.getPlayerManifest);
-router.post('/admin/addSport',  admin, sportsController.addSport);
-router.post('/admin/getNHLTeams',  admin, teamController.addNHLTeamsToDatabase);
-router.post('/admin/getNHLPlayers',  admin, playerController.addNHLPlayersToDatabase);
-router.post('/admin/getMLBTeams',  admin, teamController.addMLBTeamsToDatabase);
-router.post('/admin/removeNHLTeams',  admin, teamController.remove);
-router.post('/admin/getMLBPlayers',  admin, playerController.addMLBPlayersToDatabase);
-router.post('/admin/remoevNHLPlayers',  admin, playerController.remove);
-router.post('/admin/removeWeekSchedueMLB',  admin, eventController.remove);
-router.post('/admin/getWeeklyScheduleSoccer',  admin, eventController.getWeeklyEventsSoccer);
-router.post('/admin/resetOdds',  admin, playerController.resetOdds);
-router.post('/admin/updateMLB',  admin, playerController.updateMLBPlayers);
-router.post('/admin/testBet',  admin, eventController.testBet);
-router.post('/admin/addSoccerTeam',  admin, teamController.addSoccerTeam);
-router.post('/admin/addSoccerPlayer',  admin, playerController.addSoccerPlayer);
-router.post('/admin/bet/updateEvents',  admin, betController.udpateEventsByBet);
-router.post('/admin/test',  admin, eventController.test);
+router.post('/admin/getNFLTeams', admin, teamController.addNFLTeamsToDatabase);
+router.post('/admin/getNFLContest', admin, contestController.addNFLContestsToDatabase);
+router.post('/admin/getNFLPlayers', admin, playerController.addNFLPlayersToDatabase);
+router.post('/admin/getWeeklyEvents', admin, eventController.getWeekEventAll);
+router.post('/admin/getWeeklyScheduleNFL', admin, eventController.getWeeklyEventsNFL);
+router.post('/admin/getWeeklyScheduleMLB', admin, eventController.getWeeklyEventsMLB);
+router.post('/admin/getWeeklyScheduleNHL', admin, eventController.getWeeklyEventsNHL);
+router.post('/admin/player', admin, playerController.getPlayerManifest);
+router.post('/admin/addSport', admin, sportsController.addSport);
+router.post('/admin/getNHLTeams', admin, teamController.addNHLTeamsToDatabase);
+router.post('/admin/getNHLPlayers', admin, playerController.addNHLPlayersToDatabase);
+router.post('/admin/getMLBTeams', admin, teamController.addMLBTeamsToDatabase);
+router.post('/admin/removeNHLTeams', admin, teamController.remove);
+router.post('/admin/getMLBPlayers', admin, playerController.addMLBPlayersToDatabase);
+router.post('/admin/remoevNHLPlayers', admin, playerController.remove);
+router.post('/admin/removeWeekSchedueMLB', admin, eventController.remove);
+router.post('/admin/getWeeklyScheduleSoccer', admin, eventController.getWeeklyEventsSoccer);
+router.post('/admin/resetOdds', admin, playerController.resetOdds);
+router.post('/admin/updateMLB', admin, playerController.updateMLBPlayers);
+router.post('/admin/testBet', admin, eventController.testBet);
+router.post('/admin/addSoccerTeam', admin, teamController.addSoccerTeam);
+router.post('/admin/addSoccerPlayer', admin, playerController.addSoccerPlayer);
+router.post('/admin/bet/updateEvents', admin, betController.udpateEventsByBet);
+router.post('/admin/test', admin, eventController.test);
 
-router.post('/admin/addCFBTeam',  admin, teamController.addCFBTeamToDatabase);
-router.post('/admin/getCFBPlayers',  admin, playerController.addCFBPlayersToDatabase);
-router.post('/admin/getWeeklyScheduleCFB',  admin, eventController.getWeeklyEventsCFB);
-router.post('/admin/testlive',  admin, eventController.testlive);
-router.post('/admin/updateSoccerPlayers',  admin, playerController.updateSoccerPlayers);
+router.post('/admin/addCFBTeam', admin, teamController.addCFBTeamToDatabase);
+router.post('/admin/getCFBPlayers', admin, playerController.addCFBPlayersToDatabase);
+router.post('/admin/getWeeklyScheduleCFB', admin, eventController.getWeeklyEventsCFB);
+router.post('/admin/testlive', admin, eventController.testlive);
+router.post('/admin/updateSoccerPlayers', admin, playerController.updateSoccerPlayers);
 
-router.post('/admin/getWeeklyScheduleNBA',  admin, eventController.getWeeklyEventsNBA);
-router.post('/admin/fetchImage',  admin, playerController.getImage);
-router.post('/admin/changeBet',  admin, betController.changeBet);
-router.post('/admin/setNBAImage',  admin, playerController.setNBAImage);
-router.post('/admin/updateNFLPlayers',  admin, playerController.updateNFLPlayers);
+router.post('/admin/getWeeklyScheduleNBA', admin, eventController.getWeeklyEventsNBA);
+router.post('/admin/fetchImage', admin, playerController.getImage);
+router.post('/admin/changeBet', admin, betController.changeBet);
+router.post('/admin/setNBAImage', admin, playerController.setNBAImage);
+router.post('/admin/updateNFLPlayers', admin, playerController.updateNFLPlayers);
 router.post('/admin/cancelBetById', admin, betController.cancelBetByBetId);
-router.post('/admin/checkResult',  admin, eventController.checkResult);
-router.post('/admin/setNHLImage',  admin, playerController.setNHLImage);
-router.post('/test/testReferral',  admin, userController.testReferral);
-router.post('/admin/nbastats',  admin, playStatController.NBAstats);
-router.post('/admin/nflstats',  admin, playStatController.NFLstats);
+router.post('/admin/checkResult', admin, eventController.checkResult);
+router.post('/admin/setNHLImage', admin, playerController.setNHLImage);
+router.post('/test/testReferral', admin, userController.testReferral);
+router.post('/admin/nbastats', admin, playStatController.NBAstats);
+router.post('/admin/nflstats', admin, playStatController.NFLstats);
 router.post('/users/requestCode', auth, userController.requestVerify);
 router.post('/users/verifyCode', auth, userController.verifyUser);
 
 router.post('/admin/goalnbateam', teamController.updateNBATeamsFromGoal);
 router.post('/admin/goalnbaplayer', playerController.updatePlayerFromGoal);
-router.post('/props/update', propController.updateProps);
-
 router.post('/admin/getNBAEventsG', geventController.getNBAEventsfromGoal);
 router.get('/admin/getNBAEventsG', geventController.getNBAEventsfromGoal);
+
+router.post('/admin/goalnflteam', teamController.updateNFLTeamsFromGoal);
+router.post('/admin/goalnflplayer', playerController.updateNFLPlayerFromGoal);
+router.post('/admin/getNFLEventsG', geventController.getNFLEventsfromGoal);
+
+
+router.post('/admin/goalnhlteam', teamController.updateNHLTeamsFromGoal);
+router.post('/admin/goalnhlplayer', playerController.updateNHLPlayerFromGoal);
+router.post('/admin/getNHLEventsG', geventController.getNHLEventsfromGoal);
+
+router.post('/admin/goalfbsteam', teamController.updateFBSTeamsFromGoal);
+router.post('/admin/goalfbsplayer', playerController.updateFBSPlayerFromGoal);
+router.post('/admin/getfbsEventsG', geventController.getFBSEventsfromGoal);
+
+router.post('/props/update', propController.updateProps);
 
 router.post('/pool/getmatchlist', auth, poolController.getMatchList);
 router.post('/pool/betPool', auth, poolController.betPool);

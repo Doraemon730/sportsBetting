@@ -6,6 +6,7 @@ const { getETHPriceFromMarket } = require('../controllers/transactionController'
 const { getLiveDataByEvent, getWeekEventAll, checkEvents } = require('../controllers/eventController');
 const { getRewards } = require('../controllers/betController');
 const { recordStats } = require('../controllers/playStatController');
+const { getSportEventAll, getMatchData } = require('../controllers/geventController');
 
 require('../utils/log');
 //betJob = cron.schedule
@@ -18,6 +19,7 @@ const cronMonthlySchedule = '0 0 1 * *'; //Runs every month
 const cronWeekEventSchedule = '10 * * * *';
 const cronCheckResultSchedule = '*/9 * * * *'; // Runs every hour
 const cronRecordStatSchedule = '22 2 * * *';
+const cronMatchDataJobSchedule = '*/1 * * * *';
 
 // Define the function to be executed by the cron job
 const cronWednesdayJob = () => {
@@ -50,20 +52,21 @@ const cronMonthlyRewardJob = () => {
   console.log('Rewards for the last month updated' + time);
 }
 
-const cronMatchJob = () => {
-  getLiveDataByEvent();
-  const time = new Date().toString();
-  console.log('Cron Job for Tracking Live Game Data' + time);
-}
+// const cronMatchJob = () => {
+//   getLiveDataByEvent();
+//   const time = new Date().toString();
+//   console.log('Cron Job for Tracking Live Game Data' + time);
+// }
 
 const cronWeekEventJob = () => {
-  getWeekEventAll();
+  //getWeekEventAll();
+  getSportEventAll();
   const time = new Date().toString();
   console.log('Cron Job for Week Event' + time);
 }
 
 const cronCheckResultJob = () => {
-  checkEvents();
+  //checkEvents();
   const time = new Date().toString();
   console.log('Cron Job for Check Results ' + time, true);
 }
@@ -73,15 +76,22 @@ const cronRecordStatsJobs = () => {
   const time = new Date().toString();
   console.log('Cron Job for Record Stats ' + time, true);
 }
+
+const cronMatchDataJobs = () => {
+  getMatchData();
+  const time = new Date().toString();
+  console.log('Cron Job for Record Stats ' + time, true);
+}
 // Set up the cron job
 module.exports = {
-  WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
-  ThursdayJob: cron.schedule(cronThursdaySchedule, cronThursdayJob),
+  // WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
+  // ThursdayJob: cron.schedule(cronThursdaySchedule, cronThursdayJob),
   EtherJob: cron.schedule(cronEtherPriceSchedule, cronEtherPriceJob),
-  MatchJob: cron.schedule(cronMatchSchedule, cronMatchJob),
+  // MatchJob: cron.schedule(cronMatchSchedule, cronMatchJob),
   WeeklyRewardJob: cron.schedule(cronWeeklySchedule, cronWeeklyRewardJob),
   MonthlyRewardJob: cron.schedule(cronMonthlySchedule, cronMonthlyRewardJob),
   WeekEventJob: cron.schedule(cronWeekEventSchedule, cronWeekEventJob),
   CheckResultJob: cron.schedule(cronCheckResultSchedule, cronCheckResultJob),
-  RecordStatJob: cron.schedule(cronRecordStatSchedule, cronRecordStatsJobs)
+  RecordStatJob: cron.schedule(cronRecordStatSchedule, cronRecordStatsJobs),
+  MatchDataJob: cron.schedule(cronMatchDataJobSchedule, cronMatchDataJobs)
 };

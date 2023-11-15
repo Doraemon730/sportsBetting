@@ -34,7 +34,10 @@ const {
     NBA_COMPETITION_ID,
     GOAL_NBA_MATCH_DATA_URL,
     GOAL_NFL_MATCH_DATA_URL,
-	GOAL_API_BASEURL
+    GOAL_NHL_MATCH_DATA_URL,
+    GOAL_CFB_MATCH_DATA_URL,
+    GOAL_MMS_MATCH_DATA_URL,
+    GOAL_API_BASEURL
 } = require('../config/constant');
 const { confirmArray } = require('../utils/util')
 
@@ -182,7 +185,7 @@ const fetchNHLGameSummary = async (matchId) => {
 const fetchMLBGameSummary = async (matchId) => {
     return axios.get(`${MLB_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiMLBKey}`)
         .then(response => {
-            const summary = response.data;
+            const summary = response.data; ``
             return summary;
         })
         .catch(error => {
@@ -298,38 +301,153 @@ const fetchSoccerEventSummary = async (eventId) => {
 
 const fetchNBAMatchData = async () => {
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
     const year = currentDate.getFullYear();
     const date = `${day}.${month}.${year}`;
 
-    axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
+    return axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
         .then(response => {
-            const matchData = confirmArray(response.data.scores.category.match)
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
             return matchData;
         })
         .catch(error => {
             console.log('Error retrieving NBA data from Goal:' + error);
+            return null;
+        });
+
+}
+
+const fetchYesNBAMatchData = async () => {
+
+    const yesterday = moment().subtract(1, 'days');
+    const date = yesterday.format('DD.MM.YYYY');
+
+    return axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NBA data from Goal:' + error);
+            return null;
+        });
+}
+
+const fetchYesNFLMatchData = async () => {
+
+    const yesterday = moment().subtract(1, 'days');
+    const date = yesterday.format('DD.MM.YYYY');
+
+    return axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL data from Goal:' + error);
+            return null;
         });
 
 }
 
 const fetchNFLMatchData = async () => {
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
     const year = currentDate.getFullYear();
     const date = `${day}.${month}.${year}`;
 
-    axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
+    return axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
         .then(response => {
-            const matchData = confirmArray(response.data.scores.category.match)
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
             return matchData;
         })
         .catch(error => {
             console.log('Error retrieving NFL data from Goal:' + error);
+            return null;
         });
 
+}
+
+const fetchCFBMatchData = async () => {
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+
+    return axios.get(`${GOAL_CFB_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving CFB data from Goal:' + error);
+            return null;
+        });
+
+}
+
+const fetchNHLMatchData = async () => {
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+    console.log(date);
+    return axios.get(`${GOAL_NHL_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            //console.log(JSON.stringify(response.data));
+            let match = response.data.scores.category.match;
+            console.log(match);
+            let matchData = confirmArray(match);
+            console.log(matchData.length);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving NHL data from Goal:' + error);
+            return null;
+        });
+}
+
+const fetchMMSMatchData = async () => {
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
+    const year = currentDate.getFullYear();
+    const date = `${day}.${month}.${year}`;
+    console.log(date);
+    return axios.get(`${GOAL_MMS_MATCH_DATA_URL}&date=${date}`)
+        .then(response => {
+            let match = response.data.scores.category.match;
+            let matchData = confirmArray(match);
+            return matchData;
+        })
+        .catch(error => {
+            console.log('Error retrieving MMS data from Goal:' + error);
+            return null;
+        });
 }
 
 const fetchNBAEventsFromGoal = async () => {
@@ -341,17 +459,86 @@ const fetchNBAEventsFromGoal = async () => {
     return axios.get(`${GOAL_API_BASEURL}/bsktbl/nba-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
         .then(response => {
             const matches = [];
-            if(Array.isArray(response.data.shedules.matches))
+            if (Array.isArray(response.data.shedules.matches))
                 matches.push(...response.data.shedules.matches);
-            else 
-                matches.push(response.data.shedules.matches);            
+            else
+                matches.push(response.data.shedules.matches);
             return matches;
         })
         .catch(error => {
             console.log('Error retrieving NBA Events From Goal Serve' + error);
         })
-    
-    
+}
+
+const fetchNFLEventsFromGoal = async () => {
+    const today = moment();
+    const tomorrow = moment().add(6, 'days');
+    const date1 = today.format('DD.MM.YYYY');
+    const date2 = tomorrow.format('DD.MM.YYYY');
+    console.log(date1 + " to " + date2);
+    return axios.get(`${GOAL_API_BASEURL}/football/nfl-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
+        .then(response => {
+            const matches = [];
+            let tour = response.data.shedules.tournament[1];
+
+            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);
+            if (Array.isArray(week)) {
+                console.log(week.length);
+                for (let w of week) {
+                    matches.push(...w.matches);
+                }
+                return matches;
+            }
+            else {
+                if (Array.isArray(week.matches))
+                    matches.push(...week.matches);
+                else
+                    matches.push(week.matches);
+                return matches;
+            }
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL Events From Goal Serve' + error);
+        })
+}
+
+const fetchFBSEventsFromGoal = async () => {
+    const today = moment();
+    const tomorrow = moment().add(6, 'days');
+    const date1 = today.format('DD.MM.YYYY');
+    const date2 = tomorrow.format('DD.MM.YYYY');
+    console.log(date1 + " to " + date2);
+    return axios.get(`${GOAL_API_BASEURL}/football/fbs-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
+        .then(response => {
+            const matches = [];
+            //let tour = response.data.shedules.tournament[1];
+
+            let week = response.data.shedules.tournament.week.find(w => w.matches != undefined);
+            return week.matches;
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL Events From Goal Serve' + error);
+        })
+}
+
+const fetchNHLEventsFromGoal = async () => {
+    const today = moment();
+    const tomorrow = moment().add(5, 'days');
+    const date1 = today.format('DD.MM.YYYY');
+    const date2 = tomorrow.format('DD.MM.YYYY');
+    console.log(date1 + " to " + date2);
+    return axios.get(`${GOAL_API_BASEURL}/hockey/nhl-shedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
+        .then(response => {
+            const matches = [];
+            if (Array.isArray(response.data.shedules.matches))
+                matches.push(...response.data.shedules.matches);
+            else
+                matches.push(response.data.shedules.matches);
+            return matches;
+        })
+        .catch(error => {
+            console.log('Error retrieving NFL Events From Goal Serve' + error);
+        })
 }
 
 module.exports = {
@@ -380,6 +567,14 @@ module.exports = {
     fetchNBAGameSummary,
     fetchNBAMatchData,
     fetchNFLMatchData,
-	fetchNBAEventsFromGoal
+    fetchNHLMatchData,
+    fetchCFBMatchData,
+    fetchMMSMatchData,
+    fetchNBAEventsFromGoal,
+    fetchNFLEventsFromGoal,
+    fetchNHLEventsFromGoal,
+    fetchFBSEventsFromGoal,
+    fetchYesNBAMatchData,
+    fetchYesNFLMatchData
 };
 

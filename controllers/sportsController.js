@@ -9,18 +9,28 @@ const getAllSports = async (req, res) => {
                     from: 'props',
                     localField: '_id',
                     foreignField: 'sportId',
-                    as: 'props',
-                },
+                    as: 'result'
+                }
             },
-            { 
-                $unwind: "$props"  
+            {
+                $unwind: '$result'
             },
-            { 
-                $match: { 
-                    "props.available": true 
-                } 
-            }]);
-        // sports = sports.filter(item => item.name !== "CFB");    
+            {
+                $match: {
+                    'result.available': true
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    name: { $first: '$name' }, // replace 'name' with your other field names
+                    props: {
+                        $push: '$result'
+                    }
+                }
+            },
+        ]);
+        sports = sports.filter(item => item.name !== "Soccer");
 
         res.status(200).json(sports);
     } catch (error) {
