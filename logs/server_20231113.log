@@ -1,0 +1,6 @@
+11/13/2023, 5:29:14 AM : Server started on port 5000 - Function: Server.<anonymous>, Line: at Server.<anonymous> (G:\Projects\sportsBetting\server.js:130:11)
+11/13/2023, 5:29:19 AM : MongoDB Connected... - Function: connectDB, Line: at connectDB (G:\Projects\sportsBetting\config\db.js:9:13)
+11/13/2023, 5:30:00 AM : ETH Price has been updated at : Mon Nov 13 2023 05:30:00 GMT-0600 (Central Standard Time) - Function: Task.cronEtherPriceJob [as _execution], Line: at Task.cronEtherPriceJob [as _execution] (G:\Projects\sportsBetting\services\betService.js:40:11)
+11/13/2023, 5:30:00 AM : Cron Job for Tracking Live Game DataMon Nov 13 2023 05:30:00 GMT-0600 (Central Standard Time) - Function: Task.cronMatchJob [as _execution], Line: at Task.cronMatchJob [as _execution] (G:\Projects\sportsBetting\services\betService.js:58:11)
+11/13/2023, 5:30:00 AM : Cron Job for Record Stats Mon Nov 13 2023 05:30:00 GMT-0600 (Central Standard Time) - Function: Task.cronMatchDataJobs [as _execution], Line: at Task.cronMatchDataJobs [as _execution] (G:\Projects\sportsBetting\services\betService.js:83:11)
+11/13/2023, 5:30:01 AM : Etherium price:2047.92233960207 - Function: getETHPriceFromMarket, Line: at getETHPriceFromMarket (G:\Projects\sportsBetting\controllers\transactionController.js:218:17)
