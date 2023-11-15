@@ -1524,9 +1524,9 @@ const getMMAEventsfromGoal = async() => {
                         startTime: dateGMT.toDate(),
                         sportId: new ObjectId('6554d8f5fe0f72406f460f6a')
                     });
-                    let homePlayer = await SPlayer.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.localteam['@id']});
+                    let homePlayer = await Player.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.localteam['@id']});
                     if (!homePlayer) {
-                        homePlayer = new SPlayer({
+                        homePlayer = new Player({
                             sportId: new ObjectId('6554d8f5fe0f72406f460f6a'),
                             name: game.localteam['@name'],
                             gId: game.localteam['@id'],
@@ -1534,9 +1534,9 @@ const getMMAEventsfromGoal = async() => {
                         });
                         await homePlayer.save();
                     }
-                    let awayPlayer = await SPlayer.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.awayteam['@id']});
+                    let awayPlayer = await Player.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.awayteam['@id']});
                     if (!awayPlayer) {
-                        awayPlayer = new SPlayer({
+                        awayPlayer = new Player({
                             sportId: new ObjectId('6554d8f5fe0f72406f460f6a'),
                             name: game.awayteam['@name'],
                             gId: game.awayteam['@id'],
@@ -1589,7 +1589,7 @@ const getMMAEventsfromGoal = async() => {
                                 console.log(nextIndex);
                                 arr[nextIndex] = 0;
                                 console.log(name + ": " + result[i].value);
-                                let player = await SPlayer.findOne({ name: new RegExp(name, 'i') });
+                                let player = await Player.findOne({ name: new RegExp(name, 'i') });
                                 if (!player)
                                     continue;
                                 const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
