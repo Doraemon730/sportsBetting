@@ -184,7 +184,7 @@ const fetchNHLGameSummary = async (matchId) => {
 const fetchMLBGameSummary = async (matchId) => {
     return axios.get(`${MLB_API_BASEURL}/${LOCALE}/games/${matchId}/summary.json?api_key=${apiMLBKey}`)
         .then(response => {
-            const summary = response.data;``
+            const summary = response.data; ``
             return summary;
         })
         .catch(error => {
@@ -300,6 +300,7 @@ const fetchSoccerEventSummary = async (eventId) => {
 
 const fetchNBAMatchData = async () => {
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
     const year = currentDate.getFullYear();
@@ -321,8 +322,8 @@ const fetchNBAMatchData = async () => {
 }
 
 const fetchYesNBAMatchData = async () => {
-    
-    const yesterday = moment().subtract(1, 'days');        
+
+    const yesterday = moment().subtract(1, 'days');
     const date = yesterday.format('DD.MM.YYYY');
 
     return axios.get(`${GOAL_NBA_MATCH_DATA_URL}&date=${date}`)
@@ -341,7 +342,7 @@ const fetchYesNBAMatchData = async () => {
 
 const fetchYesNFLMatchData = async () => {
 
-    const yesterday = moment().subtract(1, 'days');        
+    const yesterday = moment().subtract(1, 'days');
     const date = yesterday.format('DD.MM.YYYY');
 
     return axios.get(`${GOAL_NFL_MATCH_DATA_URL}&date=${date}`)
@@ -361,6 +362,7 @@ const fetchYesNFLMatchData = async () => {
 
 const fetchNFLMatchData = async () => {
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
     const year = currentDate.getFullYear();
@@ -383,6 +385,7 @@ const fetchNFLMatchData = async () => {
 
 const fetchCFBMatchData = async () => {
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
     const year = currentDate.getFullYear();
@@ -405,6 +408,7 @@ const fetchCFBMatchData = async () => {
 
 const fetchNHLMatchData = async () => {
     const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Note: Months are zero-based (0 = January)
     const year = currentDate.getFullYear();
@@ -456,11 +460,11 @@ const fetchNFLEventsFromGoal = async () => {
         .then(response => {
             const matches = [];
             let tour = response.data.shedules.tournament[1];
-            
-            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);                        
+
+            let week = response.data.shedules.tournament[1].week.find(w => w.matches != undefined);
             if (Array.isArray(week)) {
                 console.log(week.length);
-                for(let w of week) {
+                for (let w of week) {
                     matches.push(...w.matches);
                 }
                 return matches;
@@ -488,8 +492,8 @@ const fetchFBSEventsFromGoal = async () => {
         .then(response => {
             const matches = [];
             //let tour = response.data.shedules.tournament[1];
-            
-            let week = response.data.shedules.tournament.week.find(w => w.matches != undefined);            
+
+            let week = response.data.shedules.tournament.week.find(w => w.matches != undefined);
             return week.matches;
         })
         .catch(error => {
