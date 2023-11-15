@@ -1,6 +1,6 @@
 const Event = require('../models/Event');
 const Player = require('../models/Player');
-const CFPlayer = require('../models/CFPlayer');
+const SPlayer = require('../models/SPlayer');
 const Prop = require('../models/Prop');
 const User = require('../models/User');
 const Team = require('../models/Team');
@@ -20,7 +20,8 @@ const {
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,
-    fetchFBSEventsFromGoal
+    fetchFBSEventsFromGoal,
+    fetchMMAEventsFromGoal
 } = require('../services/eventService');
 const { USD2Ether, Ether2USD } = require('../utils/util');
 const {
@@ -1503,6 +1504,119 @@ const getNBAEventsfromGoal = async () => {
     }
 }
 
+const getMMAEventsfromGoal = async() => {
+    try {
+        let matches = await fetchMMAEventsFromGoal();
+        if (matches.length < 1)
+            return;
+        for (let day of matches) {
+            let match = confirmArray(day.match);
+            for (let game of match) {
+                console.log(game);
+                if (game.odds == null || game.odds == undefined)
+                    continue;
+                    const incomingDate = game['@date'] + ' ' + game['@time'];
+                    console.log(incomingDate);
+                    const dateMoment = moment(incomingDate, "DD.MM.YYYY HH:mm:ss");
+                    const dateGMT = moment.utc(dateMoment.format("YYYY-MM-DDTHH:mm:ss"));
+                    console.log(dateGMT);
+                    let myEvent = new Event({
+                        gId: game['@id'],
+                        startTime: dateGMT.toDate(),
+                        sportId: new ObjectId('6554d8f5fe0f72406f460f6a')
+                    });
+                    let homePlayer = await Player.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.localteam['@id']});
+                    if (!homePlayer) {
+                        homePlayer = new Player({
+                            sportId: new ObjectId('6554d8f5fe0f72406f460f6a'),
+                            name: game.localteam['@name'],
+                            gId: game.localteam['@id'],
+                            position: "F"
+                        });
+                        await homePlayer.save();
+                    }
+                    let awayPlayer = await Player.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.awayteam['@id']});
+                    if (!awayPlayer) {
+                        awayPlayer = new Player({
+                            sportId: new ObjectId('6554d8f5fe0f72406f460f6a'),
+                            name: game.awayteam['@name'],
+                            gId: game.awayteam['@id'],
+                            position: "F"
+                        });
+                        await awayPlayer.save();
+                    }                                        
+                    myEvent.name = homePlayer.name + " vs " + awayPlayer.name;
+                    myEvent.competitors.push(homePlayer);
+                    myEvent.competitors.push(awayPlayer);
+                    let existingEvent = await Event.findOne({ sportId: new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game['@id'] });
+                    if (existingEvent) {
+                        //myEvent = existingEvent;
+                        existingEvent.startTime = myEvent.startTime;
+                        await existingEvent.save();
+                        myEvent = existingEvent;
+                    } else {
+                        // Event doesn't exist, insert new event
+                        await myEvent.save();
+                        console.log('MMA New event inserted! _id=' + myEvent._id);
+                    }
+                    let types = game.odds.type.filter((obj) => obj.bookmaker != undefined);
+                    for (let type of types) {
+                        console.log(JSON.stringify(type));
+                        let odds = type.bookmaker.odd;
+                        if(!odds)
+                            continue;
+                        let result = odds.map(item => {
+                            let name = item['@name'].split(/ (\w+:)/)[0];
+                            let condition = item['@name'].split(/ (\w+:)/)[1].replace(':', '');
+                            let value = item['@name'].split(/ (\w+:)/)[2].replace(':', '');;
+
+                            return {
+                                name,
+                                condition,
+                                value: parseFloat(value)
+                            };
+                        });
+                        let arr = new Array(result.length).fill(1);
+                        let prop = await Prop.findOne({ srId: type['@id'], sportId: new ObjectId('6554d8f5fe0f72406f460f6a') });
+                        console.log(type['@id'] + type['@value']);
+                        if (!prop)
+                            continue;
+                        console.log(prop.name);
+                        for (let i = 0; i < result.length; i++) {
+                            if (arr[i] == 1) {
+                                arr[i] = 0;
+                                let name = result[i].name;
+                                let nextIndex = result.findIndex(odd => odd.name == name && odd.condition != result[i].condition);
+                                console.log(nextIndex);
+                                arr[nextIndex] = 0;
+                                console.log(name + ": " + result[i].value);
+                                let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                                if (!player)
+                                    continue;
+                                const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
+                                if (index !== -1) {
+                                    player.odds[index].value = result[i].value;
+                                    player.odds[index].event = myEvent._id;
+                                } else {
+                                    player.odds.push({
+                                        id: prop._id,
+                                        value: result[i].value,
+                                        event: myEvent._id
+                                    });
+                                }
+                                await player.save();
+                            }
+                        }
+                    }
+            }
+            
+        }
+        console.log('success');
+    } catch(error) {
+        console.log(error);
+    }
+}
+
 const getMatchData = async () => {
     await getNBAMatchData();
     await getNFLMatchData();
@@ -1838,6 +1952,7 @@ const getSportEventAll = async () => {
         await getNFLEventsfromGoal();
         await getNHLEventsfromGoal();
         await getFBSEventsfromGoal();
+        await getMMAEventsfromGoal();
     } catch (error) {
         console.log(error);
     }
@@ -1932,6 +2047,7 @@ module.exports = {
     getNFLEventsfromGoal,
     getNHLEventsfromGoal,
     getFBSEventsfromGoal,
+    getMMAEventsfromGoal,
     getMatchData,
     getSportEventAll
 }

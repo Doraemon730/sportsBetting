@@ -338,8 +338,13 @@ router.post('/admin/getfbsEventsG', geventController.getFBSEventsfromGoal);
 
 router.post('/props/update', propController.updateProps);
 
+
 router.post('/pool/getmatchlist', auth, poolController.getMatchList);
 router.post('/pool/betPool', auth, poolController.betPool);
 router.post('/pool/checkPoolBet', auth, poolController.checkPoolBet);
 router.post('/pool/getBetRes', auth, poolController.getBetRes);
+
+router.post('/admin/getmmaEventsG', geventController.getMMAEventsfromGoal);
+
+
 module.exports = router;
