@@ -450,6 +450,26 @@ const fetchNBAEventsFromGoal = async () => {
         })
 }
 
+const fetchMMAEventsFromGoal = async() => {
+    const today = moment();
+    const tomorrow = moment().add(6, 'days');
+    const date1 = today.format('DD.MM.YYYY');
+    const date2 = tomorrow.format('DD.MM.YYYY');
+    console.log(date1 + " to " + date2);
+    return axios.get(`${GOAL_API_BASEURL}/mma/schedule?date1=${date1}&date2=${date2}&showodds=1&json=1&bm=522,`)
+        .then(response => {
+            const matches = [];
+            if (Array.isArray(response.data.fixtures.category))
+                matches.push(...response.data.fixtures.category);
+            else
+                matches.push(response.data.fixtures.category);
+            return matches;
+        })
+        .catch(error => {
+            console.log('Error retrieving MMA Events From Goal Serve' + error);
+        })
+}
+
 const fetchNFLEventsFromGoal = async () => {
     const today = moment();
     const tomorrow = moment().add(6, 'days');
@@ -554,6 +574,7 @@ module.exports = {
     fetchNHLEventsFromGoal,
     fetchFBSEventsFromGoal,
     fetchYesNBAMatchData,
-    fetchYesNFLMatchData
+    fetchYesNFLMatchData,
+    fetchMMAEventsFromGoal
 };
 

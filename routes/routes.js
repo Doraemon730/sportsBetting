@@ -336,6 +336,6 @@ router.post('/admin/goalfbsplayer', playerController.updateFBSPlayerFromGoal);
 router.post('/admin/getfbsEventsG', geventController.getFBSEventsfromGoal);
 
 router.post('/props/update', propController.updateProps);
-
+router.post('/admin/getmmaEventsG', geventController.getMMAEventsfromGoal);
 
 module.exports = router;
