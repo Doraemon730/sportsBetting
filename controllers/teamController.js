@@ -4,12 +4,16 @@ const {
     fetchNFLTeams,
     fetchNHLTeams,
     fetchMLBTeams,
-    fetchNBATeamsFromGoal
+    fetchNBATeamsFromGoal,
+    fetchNFLTeamsFromGoal,
+    fetchNHLTeamsFromGoal,
+    fetchFBSTeamsFromGoal
 } = require('../services/teamService');
 require('../utils/log');
 const {
     ObjectId
 } = require('mongodb');
+const { confirmArray } = require('../utils/util');
 
 const getIdfromRemoteId = async (remoteId) => {
     try {
@@ -222,6 +226,86 @@ const updateNBATeamsFromGoal = async (req, res) => {
         res.status(500).send(Error);
     }
 }
+const updateNFLTeamsFromGoal = async (req, res) => {
+    try {
+        let teams = [];        
+        const leagues = await fetchNFLTeamsFromGoal();
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            for(let division of league.division)
+                for(let team of division.team) {
+                    teams.push(team);
+                }
+        }
+
+        let NFLTeams = await Team.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
+        for(let nflTeam of NFLTeams) {
+            let team = teams.find((t) => t.name.includes(nflTeam.name));
+            console.log(nflTeam.name + ":" + team.name);
+            nflTeam.name = team.name;
+            nflTeam.gId = team.id;
+            await nflTeam.save();
+        }
+        res.json(NFLTeams);
+        console.log(NFLTeams);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(Error);
+    }
+}
+
+const updateNHLTeamsFromGoal = async (req, res) => {
+    try {
+        let teams = [];        
+        const leagues = await fetchNHLTeamsFromGoal();
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            for(let division of league.division)
+                for(let team of division.team) {
+                    teams.push(team);
+                }
+        }
+
+        let nhlTeams = await Team.find({sportId: new ObjectId('65108faf4fa2698548371fbd')});
+        for(let nhlTeam of nhlTeams) {
+            let team = teams.find((t) => t.name.includes(nhlTeam.name));
+            console.log(nhlTeam.name + ":" + team.name);
+            nhlTeam.name = team.name;
+            nhlTeam.gId = team.id;
+            await nhlTeam.save();
+        }
+        res.json(nhlTeams);
+        console.log(nhlTeams);
+    } catch(error) {
+        console.log(error);
+        res.status(500).send(Error);
+    }
+}
+
+const updateFBSTeamsFromGoal = async (req, res) => {
+    try {        
+        const leagues = await fetchFBSTeamsFromGoal();
+        for(let league of leagues) {
+            //console.log(JSON.stringify(division));
+            let divisions = confirmArray(league.division);
+            for(let division of divisions)
+                for(let team of division.team) {
+                    let fbsTeam = await Team.findOne({sportId: new ObjectId('652f31fdfb0c776ae3db47e1'), market: team.name});
+                    if(fbsTeam) {
+                        fbsTeam.name = team.name;
+                        fbsTeam.gId = team.id;
+                        await fbsTeam.save();
+                    } 
+                }
+        }
+
+        
+    } catch(error) {
+        console.log(error);        
+    }
+}
+
+
 module.exports = {
     addNBATeamsToDatabase,
     getIdfromRemoteId,
@@ -233,5 +317,8 @@ module.exports = {
     addSoccerTeam,
     addCFBTeamToDatabase,
     getTeamListBySport,
-    updateNBATeamsFromGoal
+    updateNBATeamsFromGoal,
+    updateNFLTeamsFromGoal,
+    updateNHLTeamsFromGoal,
+    updateFBSTeamsFromGoal
 }

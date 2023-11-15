@@ -18,7 +18,9 @@ const {
   fetchPlayerImage,
   fetchMLBPlayerNumber,
   fetchImageFromPrize,
-  fetchNBAPlayersFromGoal
+  fetchNBAPlayersFromGoal,
+  fetchNFLPlayersFromGoal,
+  fetchNHLPlayersFromGoal
 } = require("../services/playerService");
 const {
   fetchNBATeamsFromRemoteId,
@@ -30,6 +32,7 @@ const {
 const {
   getAllTeamsFromDatabase,
 } = require("./teamController");
+const { confirmArray } = require("../utils/util");
 
 const getTopPlayerBy = async (req, res) => {
   try {
@@ -163,66 +166,66 @@ const getTopPlayerBy = async (req, res) => {
     let tackles = ["DE", "DL", "LE", "RE", "DT", "NT", "LB", "MLB", "ILB", "OLB", "LOLB", "ROLB", "SLB", "WLB", "DB", "CB", "S", "SS", "FS"];
     result.props = props.map((prop) => prop.displayName);
     for (const prop of props) {
-      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
+      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];      
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
-      switch (prop.displayName) {
-        // case "Points":
-        //   let LebronIndex = result[prop.displayName].findIndex(item => item.playerName == "LeBron James");
-        //   result[prop.displayName][LebronIndex].odds = 0.5;
-        //   let StephenIndex = result[prop.displayName].findIndex(item => item.playerName == "Stephen Curry");
-        //   result[prop.displayName][StephenIndex].odds = 0.5;
-        //   break;
-        case "Rush+Rec Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
-          break;
-        case "Pass+Rush Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");
-          break;
-        case "Rush Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
-          break;
-        case "Pass Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
-          break;
-        case "Pass Completions":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
-          break;
-        case "Pass TDs":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
-          break;
-        case "Pass Attempts":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
-          break;
-        case "Push Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB" || item.playerPosition == "RB");
-          break;
-        case "Receiving Yards":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
-          break;
-        case "Receptions":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB" || item.playerPosition == "TE");
-          break;
-        case "INT":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
-          break;
-        case "Tackles+Ast":
-          result[prop.displayName] = result[prop.displayName].filter(item => tackles.includes(item.playerPosition));//DE, DL, DT, LB, CB, LB, OLB, S
-          break;
-        case "FG Made":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "K");
-          break;
-        case "Pitcher Strikeouts":
-        case "Hits Allowed":
-        case "Pitching Outs":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "P");
-          break;
-        case "Total Bases":
-        case "Total Runs":
-        case "Total Hits":
-          result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition != "P" && item.playerPosition != "C");
-          break;
-      }
+      // switch (prop.displayName) {
+      //   // case "Points":
+      //   //   let LebronIndex = result[prop.displayName].findIndex(item => item.playerName == "LeBron James");
+      //   //   result[prop.displayName][LebronIndex].odds = 0.5;
+      //   //   let StephenIndex = result[prop.displayName].findIndex(item => item.playerName == "Stephen Curry");
+      //   //   result[prop.displayName][StephenIndex].odds = 0.5;
+      //   //   break;
+      //   case "Rush+Rec Yards":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
+      //     break;
+      //   case "Pass+Rush Yards":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "QB");
+      //     break;
+      //   case "Rush Yards":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition === "RB");
+      //     break;
+      //   case "Pass Yards":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+      //     break;
+      //   case "Pass Completions":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+      //     break;
+      //   case "Pass TDs":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+      //     break;
+      //   case "Pass Attempts":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+      //     break;
+      //   case "Push Yards":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB" || item.playerPosition == "RB");
+      //     break;
+      //   case "Receiving Yards":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB");
+      //     break;
+      //   case "Receptions":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "WR" || item.playerPosition == "RB" || item.playerPosition == "TE");
+      //     break;
+      //   case "INT":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "QB");
+      //     break;
+      //   case "Tackles+Ast":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => tackles.includes(item.playerPosition));//DE, DL, DT, LB, CB, LB, OLB, S
+      //     break;
+      //   case "FG Made":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "K");
+      //     break;
+      //   case "Pitcher Strikeouts":
+      //   case "Hits Allowed":
+      //   case "Pitching Outs":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition == "P");
+      //     break;
+      //   case "Total Bases":
+      //   case "Total Runs":
+      //   case "Total Hits":
+      //     result[prop.displayName] = result[prop.displayName].filter(item => item.playerPosition != "P" && item.playerPosition != "C");
+      //     break;
+      // }
 
       now.setHours(0, 0, 0, 0);
       result[prop.displayName] = await Promise.all(result[prop.displayName].map(async (player) => {
@@ -829,6 +832,137 @@ const updatePlayerFromGoal = async (req, res) => {
   }
 }
 
+const updateNFLPlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
+    for (let team of teams){
+      const positions = await fetchNFLPlayersFromGoal(team.gId);
+      let gplayers = [];
+      for(let position of positions){
+        gplayers.push(...position.player);
+      }
+      const splayers = await Player.find({sportId:new ObjectId('650e0b6fb80ab879d1c142c8'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.position = gplayer.position;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          const nbaPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('650e0b6fb80ab879d1c142c8'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: gplayer.age,
+            jerseyNumber: gplayer.number,
+            gId: gplayer.id
+          });
+          await nbaPlayer.save();
+          console.log(JSON.stringify(nbaPlayer));
+        }
+      }      
+      console.log(splayers);
+    }
+    res.json('success');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const updateFBSPlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: new ObjectId('652f31fdfb0c776ae3db47e1')});
+    for (let team of teams){
+      const positions = await fetchNFLPlayersFromGoal(team.gId);
+      let gplayers = [];
+      for(let position of positions){
+        gplayers.push(...position.player);
+      }
+      const splayers = await Player.find({sportId:new ObjectId('652f31fdfb0c776ae3db47e1'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.position = gplayer.position;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          if(gplayer.number == "" || gplayer.age == "" || isNaN(gplayer.age) || isNaN(gplayer.number) ||parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
+            continue;
+            console.log(gplayer.name);
+          const nbaPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: parseInt(gplayer.age),
+            jerseyNumber: parseInt(gplayer.number),
+            gId: gplayer.id
+          });
+          await nbaPlayer.save();
+          console.log(JSON.stringify(nbaPlayer));
+        }
+      }      
+      console.log(splayers);
+    }
+    res.json('success');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
+const updateNHLPlayerFromGoal = async (req, res) => {
+  try {
+    const teams = await Team.find({sportId: new ObjectId('65108faf4fa2698548371fbd')});
+    for (let team of teams){
+      const positions = await fetchNHLPlayersFromGoal(team.gId);
+      let gplayers = [];
+      for(let position of positions){
+        let players = confirmArray(position.player);
+        gplayers.push(...players);
+      }
+      const splayers = await Player.find({sportId:new ObjectId('65108faf4fa2698548371fbd'), teamId: team._id});
+      console.log(team.name + ": " + splayers.length);
+      for(let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
+        if(splayer){
+          splayer.gId = gplayer.id;
+          splayer.position = gplayer.position;
+          splayer.name = gplayer.name;
+          await splayer.save();
+        } else {
+          if(gplayer.number == "" || gplayer.age == "" || parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
+            continue;
+            console.log(gplayer.name);
+          const nhlPlayer = new Player({
+            name: gplayer.name,
+            sportId: new ObjectId('65108faf4fa2698548371fbd'),
+            teamId: team._id,
+            position: gplayer.position,
+            age: !isNaN(gplayer.age) ? parseInt(gplayer.age) : 0,
+            jerseyNumber: !isNaN(gplayer.number) ? parseInt(gplayer.number) : 0,
+            gId: gplayer.id
+          });
+          await nhlPlayer.save();
+          console.log(JSON.stringify(nhlPlayer));
+        }
+      }      
+      console.log(splayers);
+    }
+    res.json('success');
+  } catch (error) {
+    console.log(error);
+    res.status(500).send('Server error');
+  }
+}
+
+
 module.exports = {
   getPlayersByProps,
   addNBAPlayersToDatabase,
@@ -850,5 +984,8 @@ module.exports = {
   setNBAImage,
   updateNFLPlayers,
   setNHLImage,
-  updatePlayerFromGoal
+  updatePlayerFromGoal,
+  updateNFLPlayerFromGoal,
+  updateNHLPlayerFromGoal,
+  updateFBSPlayerFromGoal
 };

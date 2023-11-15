@@ -176,6 +176,41 @@ const fetchNBAPlayersFromGoal = async (teamId) => {
     })
 }
 
+const fetchNFLPlayersFromGoal = async (teamId) => {
+
+  return axios.get(`${GOAL_API_BASEURL}/football/${teamId}_rosters?json=1`)
+    .then(response => { 
+      const players = response.data.team.position;
+      //console.log(players);
+      return players;
+    }).catch(error => {
+      console.log(error);
+    })
+}
+
+const fetchNHLPlayersFromGoal = async (teamId) => {
+  console.log(`${GOAL_API_BASEURL}/hockey/${teamId}_rosters?json=1`);
+  return axios.get(`${GOAL_API_BASEURL}/hockey/${teamId}_rosters?json=1`)
+    .then(response => { 
+      const players = response.data.team.position;
+      //console.log(players);
+      return players;
+    }).catch(error => {
+      console.log(error);
+    })
+}
+
+const fetchFBSPlayersFromGoal = async (teamId) => {
+
+  return axios.get(`${GOAL_API_BASEURL}/football/${teamId}_rosters?json=1`)
+    .then(response => { 
+      const players = response.data.team.position;
+      //console.log(players);
+      return players;
+    }).catch(error => {
+      console.log(error);
+    })
+}
 
 module.exports = {
   fetchPlayerNumber,
@@ -186,5 +221,8 @@ module.exports = {
   fetchSoccerPlayerProfile,
   fetchMLBPlayerNumber,
   fetchImageFromPrize,
-  fetchNBAPlayersFromGoal
+  fetchNBAPlayersFromGoal,
+  fetchNFLPlayersFromGoal,
+  fetchNHLPlayersFromGoal,
+  fetchFBSPlayersFromGoal
 };
