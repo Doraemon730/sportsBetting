@@ -1526,23 +1526,23 @@ const getMMAEventsfromGoal = async() => {
                     });
                     let homePlayer = await SPlayer.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.localteam['@id']});
                     if (!homePlayer) {
-                        homePlayer = new Player({
+                        homePlayer = new SPlayer({
                             sportId: new ObjectId('6554d8f5fe0f72406f460f6a'),
                             name: game.localteam['@name'],
                             gId: game.localteam['@id'],
                             position: "F"
                         });
-                        await homePlayer.await();
+                        await homePlayer.save();
                     }
-                    let awayPlayer = await Player.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.awayteam['@id']});
+                    let awayPlayer = await SPlayer.findOne({sportId:new ObjectId('6554d8f5fe0f72406f460f6a'), gId: game.awayteam['@id']});
                     if (!awayPlayer) {
-                        awayPlayer = new Player({
+                        awayPlayer = new SPlayer({
                             sportId: new ObjectId('6554d8f5fe0f72406f460f6a'),
                             name: game.awayteam['@name'],
                             gId: game.awayteam['@id'],
                             position: "F"
                         });
-                        await awayPlayer.await();
+                        await awayPlayer.save();
                     }                                        
                     myEvent.name = homePlayer.name + " vs " + awayPlayer.name;
                     myEvent.competitors.push(homePlayer);
@@ -1560,22 +1560,24 @@ const getMMAEventsfromGoal = async() => {
                     }
                     let types = game.odds.type.filter((obj) => obj.bookmaker != undefined);
                     for (let type of types) {
+                        console.log(JSON.stringify(type));
                         let odds = type.bookmaker.odd;
+                        if(!odds)
+                            continue;
                         let result = odds.map(item => {
-                            let name = item.name.split(/ (\w+:)/)[0];
-                            let condition = item.name.split(/ (\w+:)/)[1].replace(':', '');
-                            let value = item.name.split(/ (\w+:)/)[2].replace(':', '');;
+                            let name = item['@name'].split(/ (\w+:)/)[0];
+                            let condition = item['@name'].split(/ (\w+:)/)[1].replace(':', '');
+                            let value = item['@name'].split(/ (\w+:)/)[2].replace(':', '');;
 
                             return {
                                 name,
                                 condition,
-                                value: parseFloat(value),
-                                us: item.us
+                                value: parseFloat(value)
                             };
                         });
                         let arr = new Array(result.length).fill(1);
-                        let prop = await Prop.findOne({ srId: type.id, sportId: new ObjectId('6554d8f5fe0f72406f460f6a') });
-                        console.log(type.id + type.value);
+                        let prop = await Prop.findOne({ srId: type['@id'], sportId: new ObjectId('6554d8f5fe0f72406f460f6a') });
+                        console.log(type['@id'] + type['@value']);
                         if (!prop)
                             continue;
                         console.log(prop.name);
@@ -1587,9 +1589,6 @@ const getMMAEventsfromGoal = async() => {
                                 console.log(nextIndex);
                                 arr[nextIndex] = 0;
                                 console.log(name + ": " + result[i].value);
-                                // let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
-                                // if (diff > 30)
-                                //     continue;
                                 let player = await SPlayer.findOne({ name: new RegExp(name, 'i') });
                                 if (!player)
                                     continue;
