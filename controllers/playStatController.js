@@ -905,7 +905,7 @@ const updateNBAPlayerStats = async () => {
                         }
                     }
                     if(playerStat.stats.length == 5)
-                        playerStat.stats.splice(0);
+                        playerStat.stats.splice(0, 1);
                     console.log(result);
                     playerStat.stats.push(result);
                     await playerStat.save();

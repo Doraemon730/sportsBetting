@@ -146,7 +146,7 @@ const getNBAMatchData = async () => {
                 }
             }
             if (match.status == 'Final' || match.status == "Final/OT" || match.status == 'After Over Time') {
-                await updateNBABet(match)
+                updateNBABet(match)
             }
         }
 
@@ -423,6 +423,7 @@ const updateNBABet = async (match) => {
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
                 console.log(pTotal + " : " + refund + " : " + tie);
+                console.log(win + " : " + lost);
                 if(bet.betType == "high") {
                     if(lost > 0) {
                         bet.prize = 0;
@@ -686,7 +687,7 @@ const getNFLMatchData = async () => {
                 }
             }
             if (match.status === 'Final' || match.status == 'After Over Time') {
-                await updateNFLBet(match);
+                updateNFLBet(match);
             }
         }
     } catch (err) {
@@ -1388,7 +1389,7 @@ const getCFBMatchData = async () => {
                 }
             }
             if (match.status == 'Final' || match.status == 'After Over Time') {
-                await updateNFLBet(match)
+                updateNFLBet(match)
             }
         }
     } catch (err) {

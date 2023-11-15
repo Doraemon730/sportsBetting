@@ -1,0 +1,2 @@
+11/15/2023, 6:35:11 AM : Server started on port 5000 - Function: Server.<anonymous>, Line: at Server.<anonymous> (G:\Projects\sportsBetting\server.js:130:11)
+11/15/2023, 6:35:15 AM : MongoDB Connected... - Function: connectDB, Line: at connectDB (G:\Projects\sportsBetting\config\db.js:9:13)
