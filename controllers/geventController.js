@@ -422,8 +422,10 @@ const updateNBABet = async (match) => {
             }
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
-                if (bet.betType == "high") {
-                    if (lost > 0) {
+                console.log(pTotal + " : " + refund + " : " + tie);
+                console.log(win + " : " + lost);
+                if(bet.betType == "high") {
+                    if(lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
@@ -719,7 +721,7 @@ const updateNFLBet = async (match) => {
             if (!bet || bet.status != 'pending')
                 continue;
             console.log("id" + bet._id);
-            let finished = 0, win = 0, refund = 0, lost = 0;
+            let finished = 0, win = 0, refund = 0, lost = 0, tie = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
                     let result, player, play1;
@@ -787,6 +789,8 @@ const updateNFLBet = async (match) => {
                         if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                             pick.overUnder == "under" && pick.result < pick.prop.odds) {
                             win += 1;
+                        } else if(pick.result == pick.prop.odds) {
+                            tie += 1;
                         } else {
                             lost += 1;
                         }
@@ -805,8 +809,9 @@ const updateNFLBet = async (match) => {
             }
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
-                if (bet.betType == "high") {
-                    if (lost > 0) {
+                console.log(pTotal + " : " + refund + " : " + tie);
+                if(bet.betType == "high") {
+                    if(lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
@@ -1066,7 +1071,7 @@ const updateNHLBet = async (match) => {
             if (!bet || bet.status != 'pending')
                 continue;
             console.log("id" + bet._id);
-            let finished = 0, win = 0, refund = 0, lost = 0;
+            let finished = 0, win = 0, refund = 0, lost = 0, tie = 0;
             for (const pick of bet.picks) {
                 if (String(pick.contestId) == String(event._id)) {
                     let result, player, play1;
@@ -1106,6 +1111,8 @@ const updateNHLBet = async (match) => {
                         if (pick.overUnder == "over" && pick.result > pick.prop.odds ||
                             pick.overUnder == "under" && pick.result < pick.prop.odds) {
                             win += 1;
+                        } else if(pick.result == pick.prop.odds) {
+                            tie +=1 ;
                         } else {
                             lost += 1;
                         }
@@ -1124,8 +1131,9 @@ const updateNHLBet = async (match) => {
             }
             if (finished == bet.picks.length) {
                 let pTotal = bet.picks.length - refund - tie;
-                if (bet.betType == "high") {
-                    if (lost > 0) {
+                console.log(pTotal + " : " + refund + " : " + tie);
+                if(bet.betType == "high") {
+                    if(lost > 0) {
                         bet.prize = 0;
                         bet.status = "lost";
                     } else {
