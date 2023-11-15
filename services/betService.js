@@ -52,11 +52,11 @@ const cronMonthlyRewardJob = () => {
   console.log('Rewards for the last month updated' + time);
 }
 
-const cronMatchJob = () => {
-  getLiveDataByEvent();
-  const time = new Date().toString();
-  console.log('Cron Job for Tracking Live Game Data' + time);
-}
+// const cronMatchJob = () => {
+//   getLiveDataByEvent();
+//   const time = new Date().toString();
+//   console.log('Cron Job for Tracking Live Game Data' + time);
+// }
 
 const cronWeekEventJob = () => {
   //getWeekEventAll();
@@ -84,10 +84,10 @@ const cronMatchDataJobs = () => {
 }
 // Set up the cron job
 module.exports = {
-  WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
-  ThursdayJob: cron.schedule(cronThursdaySchedule, cronThursdayJob),
+  // WednesdayJob: cron.schedule(cronWednesdaySchedule, cronWednesdayJob),
+  // ThursdayJob: cron.schedule(cronThursdaySchedule, cronThursdayJob),
   EtherJob: cron.schedule(cronEtherPriceSchedule, cronEtherPriceJob),
-  MatchJob: cron.schedule(cronMatchSchedule, cronMatchJob),
+  // MatchJob: cron.schedule(cronMatchSchedule, cronMatchJob),
   WeeklyRewardJob: cron.schedule(cronWeeklySchedule, cronWeeklyRewardJob),
   MonthlyRewardJob: cron.schedule(cronMonthlySchedule, cronMonthlyRewardJob),
   WeekEventJob: cron.schedule(cronWeekEventSchedule, cronWeekEventJob),

@@ -4,33 +4,33 @@ require('../utils/log');
 const getAllSports = async (req, res) => {
     try {
         let sports = await Sport.aggregate([
-            { 
+            {
                 $lookup: {
-                  from: 'props', 
-                  localField: '_id', 
-                  foreignField: 'sportId',
-                  as: 'result'
+                    from: 'props',
+                    localField: '_id',
+                    foreignField: 'sportId',
+                    as: 'result'
                 }
-              },
-              { 
-                $unwind: '$result' 
-              },
-              { 
-                $match: { 
-                  'result.available': true 
+            },
+            {
+                $unwind: '$result'
+            },
+            {
+                $match: {
+                    'result.available': true
                 }
-              },
-              {
+            },
+            {
                 $group: {
-                  _id: '$_id',
-                  name: { $first: '$name' }, // replace 'name' with your other field names
-                  props: {
-                    $push: '$result'
-                  }
+                    _id: '$_id',
+                    name: { $first: '$name' }, // replace 'name' with your other field names
+                    props: {
+                        $push: '$result'
+                    }
                 }
-              },
+            },
         ]);
-        // sports = sports.filter(item => item.name !== "CFB");    
+        sports = sports.filter(item => item.name !== "Soccer");
 
         res.status(200).json(sports);
     } catch (error) {
