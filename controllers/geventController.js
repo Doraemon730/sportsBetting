@@ -1,6 +1,7 @@
 const Event = require('../models/Event');
 const Player = require('../models/Player');
 const SPlayer = require('../models/SPlayer');
+const PoolBet = require('../models/Poolbet.js');
 const Prop = require('../models/Prop');
 const User = require('../models/User');
 const Team = require('../models/Team');
@@ -988,16 +989,32 @@ const updateNFLBet = async (match) => {
             }
             else {
                 await bet.save();
-
                 console.log("Bet udpated : " + JSON.stringify(bet));
             }
         }
         event.state = 3;
+        let betResult = 1;
+        if(match.awayTeam.totalscore > match.homeTeam.totalscore)
+            betResult = -1;
+        else if(match.awayTeam.totalscore == match.homeTeam.totalscore)
+            betResult = 0;
+        await PoolBet.updateMany({'events.event': event._id}, {$set:{'events.betResult': betResult}});
         await event.save();
     } catch (error) {
         console.log(error);
     }
 };
+
+const testPoolBets = async (req, res) =>{
+    const {eventId, result} = req.body;
+    try {
+        await PoolBet.updateMany({ 'events.event': new ObjectId(eventId) },{ $set: {"events.$[elem].betResult": result} }, {arrayFilters: [{"elem.event": new ObjectId(eventId)}]});
+        res.json("success");
+    } catch(error) {
+        console.log(error);
+        res.status(500).send("error");
+    }
+}
 const getNHLMatchData = async () => {
     try {
         let matchList = await fetchNHLMatchData();
@@ -2308,5 +2325,6 @@ module.exports = {
     getFBSEventsfromGoal,
     getMMAEventsfromGoal,
     getMatchData,
-    getSportEventAll
+    getSportEventAll,
+    testPoolBets
 }
