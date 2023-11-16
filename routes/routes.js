@@ -346,5 +346,5 @@ router.post('/pool/getBetRes', auth, poolController.getBetRes);
 router.post('/pool/testPool', auth, geventController.testPoolBets);
 router.post('/admin/getmmaEventsG', geventController.getMMAEventsfromGoal);
 
-
+router.post('/admin/updatePlayerSportType', playerController.updateIndividualPlayer);
 module.exports = router;

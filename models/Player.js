@@ -32,6 +32,9 @@ const PlayerSchema = new mongoose.Schema({
   gId: {
     type: String
   },
+  sportType: {
+    type: String
+  },
   odds: [
     {
       id: {
