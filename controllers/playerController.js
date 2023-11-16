@@ -90,8 +90,8 @@ const getTopPlayerBy = async (req, res) => {
         } // Unwind the 'prop' array created by the lookup
       },
       {
-        $match:{
-          'prop.available':true
+        $match: {
+          'prop.available': true
         }
       },
       {
@@ -134,7 +134,8 @@ const getTopPlayerBy = async (req, res) => {
               playerId: '$_id',
               playerName: '$name',
               remoteId: '$remoteId',
-              gId:'$gId',
+              gId: '$gId',
+              sportType: '$sportType',
               playerPosition: '$position',
               contestId: '$odds.event',
               playerNumber: '$jerseyNumber',
@@ -167,7 +168,7 @@ const getTopPlayerBy = async (req, res) => {
     let tackles = ["DE", "DL", "LE", "RE", "DT", "NT", "LB", "MLB", "ILB", "OLB", "LOLB", "ROLB", "SLB", "WLB", "DB", "CB", "S", "SS", "FS"];
     result.props = props.map((prop) => prop.displayName);
     for (const prop of props) {
-      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];      
+      const playersToBet = players.filter(player => String(player._id) === String(prop._id))[0];
       result[prop.displayName] = playersToBet ? playersToBet.topPlayers : [];
       result[prop.displayName].sort((a, b) => a.contestStartTime - b.contestStartTime);
       now.setHours(0, 0, 0, 0);
@@ -741,14 +742,14 @@ const resetOdds = async (req, res) => {
 
 const updatePlayerFromGoal = async (req, res) => {
   try {
-    const teams = await Team.find({sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
-    for (let team of teams){
+    const teams = await Team.find({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855') });
+    for (let team of teams) {
       const gplayers = await fetchNBAPlayersFromGoal(team.gId);
-      const splayers = await Player.find({sportId:new ObjectId('64f78bc5d0686ac7cf1a6855'), teamId: team._id});
+      const splayers = await Player.find({ sportId: new ObjectId('64f78bc5d0686ac7cf1a6855'), teamId: team._id });
       console.log(team.name + ": " + splayers.length);
-      for(let gplayer of gplayers) {
-        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
-        if(splayer){
+      for (let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name));
+        if (splayer) {
           splayer.gId = gplayer.id;
           splayer.name = gplayer.name;
           await splayer.save();
@@ -765,7 +766,7 @@ const updatePlayerFromGoal = async (req, res) => {
           await nbaPlayer.save();
           console.log(JSON.stringify(nbaPlayer));
         }
-      }      
+      }
       console.log(splayers);
     }
     res.json('success');
@@ -777,18 +778,18 @@ const updatePlayerFromGoal = async (req, res) => {
 
 const updateNFLPlayerFromGoal = async (req, res) => {
   try {
-    const teams = await Team.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
-    for (let team of teams){
+    const teams = await Team.find({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8') });
+    for (let team of teams) {
       const positions = await fetchNFLPlayersFromGoal(team.gId);
       let gplayers = [];
-      for(let position of positions){
+      for (let position of positions) {
         gplayers.push(...position.player);
       }
-      const splayers = await Player.find({sportId:new ObjectId('650e0b6fb80ab879d1c142c8'), teamId: team._id});
+      const splayers = await Player.find({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), teamId: team._id });
       console.log(team.name + ": " + splayers.length);
-      for(let gplayer of gplayers) {
-        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
-        if(splayer){
+      for (let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name));
+        if (splayer) {
           splayer.gId = gplayer.id;
           splayer.position = gplayer.position;
           splayer.name = gplayer.name;
@@ -806,7 +807,7 @@ const updateNFLPlayerFromGoal = async (req, res) => {
           await nbaPlayer.save();
           console.log(JSON.stringify(nbaPlayer));
         }
-      }      
+      }
       console.log(splayers);
     }
     res.json('success');
@@ -818,26 +819,26 @@ const updateNFLPlayerFromGoal = async (req, res) => {
 
 const updateFBSPlayerFromGoal = async (req, res) => {
   try {
-    const teams = await Team.find({sportId: new ObjectId('652f31fdfb0c776ae3db47e1')});
-    for (let team of teams){
+    const teams = await Team.find({ sportId: new ObjectId('652f31fdfb0c776ae3db47e1') });
+    for (let team of teams) {
       const positions = await fetchNFLPlayersFromGoal(team.gId);
       let gplayers = [];
-      for(let position of positions){
+      for (let position of positions) {
         gplayers.push(...position.player);
       }
-      const splayers = await Player.find({sportId:new ObjectId('652f31fdfb0c776ae3db47e1'), teamId: team._id});
+      const splayers = await Player.find({ sportId: new ObjectId('652f31fdfb0c776ae3db47e1'), teamId: team._id });
       console.log(team.name + ": " + splayers.length);
-      for(let gplayer of gplayers) {
-        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
-        if(splayer){
+      for (let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name));
+        if (splayer) {
           splayer.gId = gplayer.id;
           splayer.position = gplayer.position;
           splayer.name = gplayer.name;
           await splayer.save();
         } else {
-          if(gplayer.number == "" || gplayer.age == "" || isNaN(gplayer.age) || isNaN(gplayer.number) ||parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
+          if (gplayer.number == "" || gplayer.age == "" || isNaN(gplayer.age) || isNaN(gplayer.number) || parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
             continue;
-            console.log(gplayer.name);
+          console.log(gplayer.name);
           const nbaPlayer = new Player({
             name: gplayer.name,
             sportId: new ObjectId('652f31fdfb0c776ae3db47e1'),
@@ -850,7 +851,7 @@ const updateFBSPlayerFromGoal = async (req, res) => {
           await nbaPlayer.save();
           console.log(JSON.stringify(nbaPlayer));
         }
-      }      
+      }
       console.log(splayers);
     }
     res.json('success');
@@ -862,27 +863,27 @@ const updateFBSPlayerFromGoal = async (req, res) => {
 
 const updateNHLPlayerFromGoal = async (req, res) => {
   try {
-    const teams = await Team.find({sportId: new ObjectId('65108faf4fa2698548371fbd')});
-    for (let team of teams){
+    const teams = await Team.find({ sportId: new ObjectId('65108faf4fa2698548371fbd') });
+    for (let team of teams) {
       const positions = await fetchNHLPlayersFromGoal(team.gId);
       let gplayers = [];
-      for(let position of positions){
+      for (let position of positions) {
         let players = confirmArray(position.player);
         gplayers.push(...players);
       }
-      const splayers = await Player.find({sportId:new ObjectId('65108faf4fa2698548371fbd'), teamId: team._id});
+      const splayers = await Player.find({ sportId: new ObjectId('65108faf4fa2698548371fbd'), teamId: team._id });
       console.log(team.name + ": " + splayers.length);
-      for(let gplayer of gplayers) {
-        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name) );
-        if(splayer){
+      for (let gplayer of gplayers) {
+        let splayer = splayers.find((p) => p.name.includes(gplayer.name) || gplayer.name.includes(p.name));
+        if (splayer) {
           splayer.gId = gplayer.id;
           splayer.position = gplayer.position;
           splayer.name = gplayer.name;
           await splayer.save();
         } else {
-          if(gplayer.number == "" || gplayer.age == "" || parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
+          if (gplayer.number == "" || gplayer.age == "" || parseInt(gplayer.age) == "NaN" || parseInt(gplayer.number) == "NaN")
             continue;
-            console.log(gplayer.name);
+          console.log(gplayer.name);
           const nhlPlayer = new Player({
             name: gplayer.name,
             sportId: new ObjectId('65108faf4fa2698548371fbd'),
@@ -895,7 +896,7 @@ const updateNHLPlayerFromGoal = async (req, res) => {
           await nhlPlayer.save();
           console.log(JSON.stringify(nhlPlayer));
         }
-      }      
+      }
       console.log(splayers);
     }
     res.json('success');
@@ -907,8 +908,8 @@ const updateNHLPlayerFromGoal = async (req, res) => {
 
 const updateIndividualPlayer = async (req, res) => {
   try {
-    const {sportId, sportType} = req.body;
-    await Player.updateMany({sportId: new ObjectId(sportId)}, {$set: {sportType: sportType}});
+    const { sportId, sportType } = req.body;
+    await Player.updateMany({ sportId: new ObjectId(sportId) }, { $set: { sportType: sportType } });
     res.json("Update Success");
   } catch (error) {
     console.log(error);
