@@ -1847,22 +1847,22 @@ const summarizeMMAPlayerStats = async (match) => {
     let players = [];
 
     let localPlayer = {}
-    localPlayer['id'] = match['localteam']['@id'];
-    localPlayer['name'] = match['localteam']['@name'];
-    let strikes_total = match['stats']['localteam']['strikes_total']
-    localPlayer['Significant Strikes'] = strikes_total['@head'] + strikes_total['@body'] + strikes_total['@legs'];
-    localPlayer['Takedowns'] = match['stats']['localteam']['takedowns']['@att'];
-    let knockdowns = match['stats']['localteam']['knockdowns']['@total'];
+    localPlayer['id'] = parseInt(match['localteam']['@id']);
+    localPlayer['name'] = parseInt(match['localteam']['@name']);
+    let strikes_power = match['stats']['localteam']['strikes_power']
+    localPlayer['Significant Strikes'] = parseInt(strikes_power['@head']) + parseInt(strikes_power['@body']) + parseInt(strikes_power['@legs']);
+    localPlayer['Takedowns'] = parseInt(match['stats']['localteam']['takedowns']['@landed']);
+    let knockdowns = parseInt(match['stats']['localteam']['knockdowns']['@total']);
     localPlayer['Fantasy Score'] = localPlayer['Significant Strikes'] * 0.6 + localPlayer['Takedowns'] * 6 + knockdowns * 12;
     players.push(localPlayer)
 
     let awayPlayer = {}
-    awayPlayer['id'] = match['awayteam']['@id'];
-    awayPlayer['name'] = match['awayteam']['@name'];
-    strikes_total = match['stats']['awayteam']['strikes_total']
-    awayPlayer['Significant Strikes'] = strikes_total['@head'] + strikes_total['@body'] + strikes_total['@legs'];
-    awayPlayer['Takedowns'] = match['stats']['awayteam']['takedowns']['@att'];
-    knockdowns = match['stats']['awayteam']['knockdowns']['@total'];
+    awayPlayer['id'] = parseInt(match['awayteam']['@id']);
+    awayPlayer['name'] = parseInt(match['awayteam']['@name']);
+    strikes_power = match['stats']['awayteam']['strikes_power']
+    awayPlayer['Significant Strikes'] = parseInt(strikes_power['@head']) + parseInt(strikes_power['@body']) + parseInt(strikes_power['@legs']);
+    awayPlayer['Takedowns'] = parseInt(match['stats']['awayteam']['takedowns']['@landed']);
+    knockdowns = parseInt(match['stats']['awayteam']['knockdowns']['@total']);
     localPlayer['Fantasy Score'] = awayPlayer['Significant Strikes'] * 0.6 + awayPlayer['Takedowns'] * 6 + knockdowns * 12;
     players.push(awayPlayer)
 
