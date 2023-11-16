@@ -52,7 +52,7 @@ const fetchNFLTeams = async () => {
       return conferences;
     })
     .catch(error => {
-      throw new Error('Error retrieving NHL schedule:', error);
+      throw new Error('Error retrieving NFL schedule:', error);
     });
 }
 

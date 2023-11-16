@@ -18,6 +18,7 @@ const configureController = require('../controllers/configureController');
 const bonusController = require('../controllers/bonusController');
 const playStatController = require('../controllers/playStatController');
 const geventController = require('../controllers/geventController');
+const poolController = require('../controllers/poolController');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { checkRegister, checkLogin, checkUpdate, checkResetPassword, checkEmail } = require('../middleware/checkObject');
@@ -338,4 +339,12 @@ router.post('/admin/getfbsEventsG', geventController.getFBSEventsfromGoal);
 router.post('/props/update', propController.updateProps);
 
 
+router.post('/pool/getmatchlist', auth, poolController.getMatchList);
+router.post('/pool/betPool', auth, poolController.betPool);
+router.post('/pool/checkPoolBet', auth, poolController.checkPoolBet);
+router.post('/pool/getBetRes', auth, poolController.getBetRes);
+router.post('/pool/testPool', auth, geventController.testPoolBets);
+router.post('/admin/getmmaEventsG', geventController.getMMAEventsfromGoal);
+
+router.post('/admin/updatePlayerSportType', playerController.updateIndividualPlayer);
 module.exports = router;
