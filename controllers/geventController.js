@@ -1494,7 +1494,7 @@ const getNBAEventsfromGoal = async () => {
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if (diff > 30)
                                 continue;
-                            let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                            let player = await Player.findOne({ name: new RegExp(name, 'i'), sportId: new ObjectId('64f78bc5d0686ac7cf1a6855')});
                             if (!player)
                                 continue;
                             const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
@@ -1607,7 +1607,7 @@ const getMMAEventsfromGoal = async() => {
                                 console.log(nextIndex);
                                 arr[nextIndex] = 0;
                                 console.log(name + ": " + result[i].value);
-                                let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                                let player = await Player.findOne({ name: new RegExp(name, 'i'), sportId: new ObjectId('6554d8f5fe0f72406f460f6a')});
                                 if (!player)
                                     continue;
                                 const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
@@ -1720,7 +1720,7 @@ const getNFLEventsfromGoal = async () => {
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if (diff > 30)
                                 continue;
-                            let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                            let player = await Player.findOne({ name: new RegExp(name, 'i'), sportId: new ObjectId('650e0b6fb80ab879d1c142c8')});
                             if (!player)
                                 continue;
                             const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
@@ -1831,7 +1831,7 @@ const getFBSEventsfromGoal = async () => {
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if (diff > 30)
                                 continue;
-                            let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                            let player = await Player.findOne({ name: new RegExp(name, 'i'), sportId: new ObjectId('652f31fdfb0c776ae3db47e1') });
                             if (!player)
                                 continue;
                             const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
@@ -1937,7 +1937,7 @@ const getNHLEventsfromGoal = async () => {
                             let diff = Math.abs(Math.abs(result[i].us) - Math.abs(result[nextIndex].us));
                             if (diff > 30)
                                 continue;
-                            let player = await Player.findOne({ name: new RegExp(name, 'i') });
+                            let player = await Player.findOne({ name: new RegExp(name, 'i'),  sportId: new ObjectId('65108faf4fa2698548371fbd')});
                             if (!player)
                                 continue;
                             const index = player.odds.findIndex((odd) => String(odd.id) == String(prop._id));
