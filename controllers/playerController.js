@@ -905,6 +905,16 @@ const updateNHLPlayerFromGoal = async (req, res) => {
   }
 }
 
+const updateIndividualPlayer = async (req, res) => {
+  try {
+    const {sportId, sportType} = req.body;
+    await Player.updateMany({sportId: new ObjectId(sportId)}, {$set: {sportType: sportType}});
+    res.json("Update Success");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 
 module.exports = {
   getPlayersByProps,
@@ -930,5 +940,6 @@ module.exports = {
   updatePlayerFromGoal,
   updateNFLPlayerFromGoal,
   updateNHLPlayerFromGoal,
-  updateFBSPlayerFromGoal
+  updateFBSPlayerFromGoal,
+  updateIndividualPlayer
 };
