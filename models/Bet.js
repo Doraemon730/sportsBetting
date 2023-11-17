@@ -49,8 +49,7 @@ const BetSchema = new mongoose.Schema({
     },
     teamId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'team',
-      required: true
+      ref: 'team'
     },
     prop: {
       propName: {
