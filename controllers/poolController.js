@@ -75,7 +75,7 @@ const getMatchList = async (req, res) => {
         
         let pool_res = {
             games,
-            prizepool: pool.prizepool,
+            prizepool: pool.prizepool / 0.9,
             participants: pool.participants.length
         };
         return res.json(pool_res);
