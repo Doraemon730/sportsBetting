@@ -3,7 +3,7 @@ const Sport = require('../models/Sport');
 const User = require('../models/User');
 const Pools = require('../models/Pools');
 const Transaction = require("../models/Transaction");
-const PoolBet = require('../models/poolbet');
+const PoolBet = require('../models/Poolbets');
 const { USD2Ether, Ether2USD } = require("../utils/util");
 const { setUserLevel } = require("../controllers/userController");
 const { getReferralPrize } = require("../controllers/referralController")
@@ -33,9 +33,9 @@ const getMatchList = async (req, res) => {
     const today = new Date();
     const dayOfWeek = today.getDay();
 
-    // Check if today is Tuesday or Wednesday
-    if (dayOfWeek !== 2 && dayOfWeek !== 3) { // 0 is Sunday, 1 is Monday, and so on
-        return res.status(400).send('Error : You can only get list in Tuesday or Wednesday'); // Return empty array if not Tuesday or Wednesday
+    // Check if today is Tuesday to Thursday
+    if (dayOfWeek < 2 || dayOfWeek > 4) { // 0 is Sunday, 1 is Monday, and so on
+        return res.status(400).send('Error : You can only get list from Tuesday to Thursday'); // Return empty array if not Tuesday or Wednesday
     }
 
     // Calculate the start and end dates for the current week
@@ -43,12 +43,12 @@ const getMatchList = async (req, res) => {
     startDate.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 2)); // Adjust for Sunday
 
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 6);
+    endDate.setDate(startDate.getDate() + 7);
 
     try {
         const events = await Event.find({
             sportId: sportsData._id, //'650e0b6fb80ab879d1c142c8',
-            startTime: { $gte: startDate, $lt: endDate },
+            startTime: { $gte: startDate, $lte: endDate },
             // state: 0
         });
         const startedEvents = events.filter(event => event.state != 0);
@@ -66,16 +66,18 @@ const getMatchList = async (req, res) => {
             pool.save();
         }
 
-        let pool_res = events.map(event => ({
+        let games = events.map(event => ({
             _id: event._id,
             startTime: event.startTime,
             competitors: event.competitors,
             name: event.name,
           }));
         
-          pool_res.push({prizepool: pool.prizepool,
+        let pool_res = {
+            games,
+            prizepool: pool.prizepool,
             participants: pool.participants.length
-        })
+        };
         return res.json(pool_res);
     } catch (error) {
         console.error('Error retrieving events:', error);
@@ -99,9 +101,9 @@ const checkPoolBet = async (req, res) => {
     const today = new Date();
     const dayOfWeek = today.getDay();
 
-    // Check if today is Tuesday or Wednesday
-    if (dayOfWeek !== 2 && dayOfWeek !== 3) { // 0 is Sunday, 1 is Monday, and so on
-        return res.status(400).send('Error : You can only get list in Tuesday or Wednesday'); // Return empty array if not Tuesday or Wednesday
+    // Check if today is Tuesday to Thursday
+    if (dayOfWeek < 2 || dayOfWeek > 4) { // 0 is Sunday, 1 is Monday, and so on
+        return res.status(400).send('Error : You can only get list from Tuesday to Thursday'); // Return empty array if not Tuesday or Wednesday
     }
 
 
@@ -184,9 +186,9 @@ const getBetRes = async (req, res) => {
     const today = new Date();
     const dayOfWeek = today.getDay();
 
-    // Check if today is Tuesday or Wednesday
-    if (dayOfWeek !== 2 && dayOfWeek !== 3) { // 0 is Sunday, 1 is Monday, and so on
-        return res.status(400).send('Error : You can only get list in Tuesday or Wednesday'); // Return empty array if not Tuesday or Wednesday
+    // Check if today is Tuesday to Thursday
+    if (dayOfWeek < 2 || dayOfWeek > 4) { // 0 is Sunday, 1 is Monday, and so on
+        return res.status(400).send('Error : You can only get list from Tuesday to Thursday'); // Return empty array if not Tuesday or Wednesday
     }
 
     // Check valid user
@@ -263,7 +265,7 @@ const betPool = async (req, res) => {
         }
 
         // Check balance
-        let entryFee = betAmount * 1.1;
+        let entryFee = betAmount;// * 0.9;
         console.log(entryFee)
         if (currencyType === "ETH") {
             entryFee = await Ether2USD(entryFee);
@@ -305,7 +307,7 @@ const betPool = async (req, res) => {
             userId,
             entryFee: entryFeeSave,
             entryFeeETH: entryFeeEtherSave,
-            serverFeeETH: entryFeeEtherSave / 11,
+            serverFeeETH: entryFeeEtherSave / 10,
             events: betResults.map(result => ({
                 event: result.eventId,
                 result: result.matchResult,
@@ -340,7 +342,8 @@ const betPool = async (req, res) => {
 
         const pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date())-0), sportId: sportsData._id})
         pool.participants.push({poolbetId: myBet._id});
-        pool.prizepool += Number(betAmount);
+        pool.prizepool += Number(entryFee);
+        pool.prizepoolETH += Number(entryFeeEther);
         pool.save();
 
         user.password = undefined;
