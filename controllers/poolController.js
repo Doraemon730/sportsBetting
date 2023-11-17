@@ -53,7 +53,7 @@ const getMatchList = async (req, res) => {
         });
         const startedEvents = events.filter(event => event.state != 0);
         if( startedEvents.length != 0 ) {
-            // return res.status(400).send('Error : First match already started, You cant get list');
+            return res.status(400).send('Error : First match already started, You cant get list');
         }
 
         let pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()), sportId: sportsData._id})
@@ -271,11 +271,11 @@ const betPool = async (req, res) => {
                 await user.save();
                 return res.status(400).send({ message: "Invalid Contest." });
             }
-            // if (event.startTime <= new Date().getTime()) {
-            //     user.isPending = false;
-            //     await user.save();
-            //     return res.status(400).send({ message: "Contest has already started." });
-            // }
+            if (event.startTime <= new Date().getTime()) {
+                user.isPending = false;
+                await user.save();
+                return res.status(400).send({ message: "Contest has already started." });
+            }
 
         }
 
