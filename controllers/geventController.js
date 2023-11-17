@@ -993,9 +993,9 @@ const updateNFLBet = async (match) => {
             }
         }
         event.state = 3;
-        let betResult = 1;
+        let betResult = -1;
         if (match.awayTeam.totalscore > match.homeTeam.totalscore)
-            betResult = -1;
+            betResult = 1;
         else if (match.awayTeam.totalscore == match.homeTeam.totalscore)
             betResult = 0;
         await PoolBet.updateMany({ 'events.event': event._id }, { $set: { 'events.betResult': betResult } });
