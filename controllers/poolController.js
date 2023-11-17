@@ -19,14 +19,14 @@ const { getISOWeek } = require('date-fns');
 
 const getMatchList = async (req, res) => {
     let { sports } = req.body;
-    
+
     //validation check
-    if(sports.length === 0) {
+    if (sports.length === 0) {
         return res.status(400).json({ message: "Invalid sports" });
     }
-    
+
     let sportsData = await Sport.findOne({ name: sports });
-    if(!sportsData) {
+    if (!sportsData) {
         return res.status(400).json({ message: "Invalid sports" });
     }
 
@@ -52,14 +52,14 @@ const getMatchList = async (req, res) => {
             // state: 0
         });
         const startedEvents = events.filter(event => event.state != 0);
-        if( startedEvents.length != 0 ) {
+        if (startedEvents.length != 0) {
             return res.status(400).send('Error : First match already started, You cant get list');
         }
 
-        let pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()), sportId: sportsData._id})
-        if(!pool) {
+        let pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()), sportId: sportsData._id })
+        if (!pool) {
             pool = new Pools({
-                ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()), 
+                ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()),
                 sportId: sportsData._id,
                 startTime: new Date(),
             });
@@ -71,8 +71,8 @@ const getMatchList = async (req, res) => {
             startTime: event.startTime,
             competitors: event.competitors,
             name: event.name,
-          }));
-        
+        }));
+
         let pool_res = {
             games,
             prizepool: pool.prizepool / 0.9,
@@ -87,14 +87,14 @@ const getMatchList = async (req, res) => {
 
 const checkPoolBet = async (req, res) => {
     let { sports } = req.body;
-    
+
     //validation check
-    if(sports.length === 0) {
+    if (sports.length === 0) {
         return res.status(400).json({ message: "Invalid sports" });
     }
-    
+
     let sportsData = await Sport.findOne({ name: sports });
-    if(!sportsData) {
+    if (!sportsData) {
         return res.status(400).json({ message: "Invalid sports" });
     }
 
@@ -107,20 +107,20 @@ const checkPoolBet = async (req, res) => {
     }
 
 
-    let pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date()) - 1), sportId: sportsData._id})
-    if(!pool) {
+    let pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date()) - 1), sportId: sportsData._id })
+    if (!pool) {
         return res.status(400).send('Error : No betPool registered');
     }
-    if( pool.state == 3 ) {
+    if (pool.state == 3) {
         return res.status(400).send('Error : Poolbet is already checked');
     }
 
     let isAllFinished = true;
-    let poolbets = await PoolBet.find({ISOweek: pool.ISOweek, sportId: pool.sportId});
+    let poolbets = await PoolBet.find({ ISOweek: pool.ISOweek, sportId: pool.sportId });
     console.log(poolbets.length)
     for (let bet of poolbets) {
         let wins = 0;
-        for(let e of bet.events) {
+        for (let e of bet.events) {
             wins = e.isSkipped ? wins + 1 : e.result == e.betResult ? wins + 1 : wins;
             isAllFinished = e.betResult == -100 && !e.isSkipped ? false : isAllFinished;
         }
@@ -129,7 +129,7 @@ const checkPoolBet = async (req, res) => {
         bet.save();
     }
 
-    if(isAllFinished) {
+    if (isAllFinished) {
         pool.state = 3;
         let winners = poolbets.filter(bet => bet.wins == pool.topwins);
         pool.winners = winners.map(winner => ({
@@ -137,8 +137,8 @@ const checkPoolBet = async (req, res) => {
         }))
 
         const entryFee = pool.prizepool / winners.length;
-        for(let winner of winners) {
-            let user = await User.findOne({_id: new ObjectId(winner.userId)})
+        for (let winner of winners) {
+            let user = await User.findOne({ _id: new ObjectId(winner.userId) })
             console.log(winner.userId);
             console.log(user)
             winner.prize = entryFee;
@@ -152,7 +152,7 @@ const checkPoolBet = async (req, res) => {
 
             //transaction
             const transaction = new Transaction({
-                userId : winner.userId,
+                userId: winner.userId,
                 amountETH: entryFeeEther,
                 amountUSD: entryFee,
                 transactionType: "prize"
@@ -161,10 +161,10 @@ const checkPoolBet = async (req, res) => {
             await user.save();
         }
     }
-    
+
 
     pool.save();
-    
+
     //return pool.state == 3 ? res.json({message: 'Betcheck is finished'}) : res.status(400).json({message: 'Error: Betcheck is not finished'})
     return res.json(pool);
 }
@@ -172,14 +172,14 @@ const checkPoolBet = async (req, res) => {
 const getBetRes = async (req, res) => {
     let { sports } = req.body;
     const userId = new ObjectId(req.user.id);
-    
+
     //validation check
-    if(sports.length === 0) {
+    if (sports.length === 0) {
         return res.status(400).json({ message: "Invalid sports" });
     }
-    
+
     let sportsData = await Sport.findOne({ name: sports });
-    if(!sportsData) {
+    if (!sportsData) {
         return res.status(400).json({ message: "Invalid sports" });
     }
 
@@ -193,16 +193,16 @@ const getBetRes = async (req, res) => {
 
     // Check valid user
     let user = await User.findOne({ _id: userId });
-    if(!user) {
+    if (!user) {
         return res.status(400).send('Error : Not registered user');
     }
 
     const isoweek = dayOfWeek > 3 ? getISOWeek(new Date()) : getISOWeek(new Date()) - 1;
-    const pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + isoweek, sportId: sportsData._id})
-    if(!pool) {
+    const pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + isoweek, sportId: sportsData._id })
+    if (!pool) {
         return res.status(400).send('Error : No betPool registered');
     }
-    if( pool.state != 3 ) {
+    if (pool.state != 3) {
         return res.status(400).send('Error : Poolbet is not finished');
     }
 
@@ -210,8 +210,9 @@ const getBetRes = async (req, res) => {
         participants: pool.participants.length,
         prizepool: pool.prizepool,
         topwins: pool.topwins,
-        winners: pool.winners});
-    
+        winners: pool.winners
+    });
+
 }
 
 const betPool = async (req, res) => {
@@ -220,15 +221,14 @@ const betPool = async (req, res) => {
         let { betAmount, betResults, sports, currencyType } = req.body;
         const userId = new ObjectId(req.user.id);
         betResults = JSON.parse(betResults);
-        
+
         // Validate inputs
-        
+
         const sportsData = await Sport.findOne({ name: sports });
-        if(!sportsData) {
+        if (!sportsData) {
             return res.status(400).json({ message: "Invalid sports" });
         }
         const sportId = new ObjectId(sportsData._id);
-
         /////
         const today = new Date();
         const dayOfWeek = today.getDay();
@@ -243,18 +243,18 @@ const betPool = async (req, res) => {
             startTime: { $gte: startDate, $lte: endDate },
             // state: 0
         });
-        
-        if(betResults.length != events.length) {
+
+        if (betResults.length != events.length) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
-        
+
         const skipped_bets = betResults.filter(e => e.isSkipped).length;
         console.log(betAmount)
         console.log(skipped_bets)
-        if(!((betAmount == 10 && skipped_bets <= 0) || (betAmount == 20 && skipped_bets <= 1) || (betAmount == 40 && skipped_bets <= 2) || (betAmount == 80 && skipped_bets <= 3))) {
+        if (!((betAmount == 10 && skipped_bets <= 0) || (betAmount == 20 && skipped_bets <= 1) || (betAmount == 40 && skipped_bets <= 2) || (betAmount == 80 && skipped_bets <= 3))) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
-        
+
         let user = await User.findOne({ _id: userId });
         if (user.isPending) {
             return res.status(400).json({ message: "You are pending." });
@@ -352,9 +352,9 @@ const betPool = async (req, res) => {
             transactionType: "bet"
         });
         await transaction.save();
-        
-        getReferralPrize(user._id, entryFeeEtherSave);
 
+        getReferralPrize(user._id, entryFeeEtherSave);
+      
         const pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date())-0), sportId: sportsData._id})
         pool.participants.push({poolbetId: myBet._id});
         pool.prizepool += Number(entryFee * 0.9);
@@ -365,7 +365,7 @@ const betPool = async (req, res) => {
         user.privateKey = undefined;
         res.json({ betInfo: myBet, userInfo: user });
     } catch (error) {
-        console.error(error);
+        console.log(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
