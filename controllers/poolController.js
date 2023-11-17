@@ -354,11 +354,11 @@ const betPool = async (req, res) => {
         await transaction.save();
 
         getReferralPrize(user._id, entryFeeEtherSave);
-
-        const pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date()) - 0), sportId: sportsData._id })
-        pool.participants.push({ poolbetId: myBet._id });
-        pool.prizepool += Number(entryFee);
-        pool.prizepoolETH += Number(entryFeeEther);
+      
+        const pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date())-0), sportId: sportsData._id})
+        pool.participants.push({poolbetId: myBet._id});
+        pool.prizepool += Number(entryFee * 0.9);
+        pool.prizepoolETH += Number(entryFeeEther * 0.9);
         pool.save();
 
         user.password = undefined;
