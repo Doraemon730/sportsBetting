@@ -229,8 +229,22 @@ const betPool = async (req, res) => {
             return res.status(400).json({ message: "Invalid sports" });
         }
         const sportId = new ObjectId(sportsData._id);
+        /////
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 2)); // Adjust for Sunday
 
-        if (betResults.length != 10) {
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 7);
+
+        const events = await Event.find({
+            sportId: sportsData._id, //'650e0b6fb80ab879d1c142c8',
+            startTime: { $gte: startDate, $lte: endDate },
+            // state: 0
+        });
+
+        if (betResults.length != events.length) {
             return res.status(400).json({ message: "Invalid Betting." });
         }
 
