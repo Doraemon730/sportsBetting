@@ -325,7 +325,7 @@ const betPool = async (req, res) => {
             serverFeeETH: entryFeeEtherSave / 10,
             events: betResults.map(result => ({
                 event: result.eventId,
-                result: result.matchResult,
+                result: result.matchResult ? result.matchResult : -100,
                 isSkipped: result.isSkipped,
             })),
             ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()),
