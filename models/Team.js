@@ -25,6 +25,9 @@ const TeamSchema = new mongoose.Schema({
   },
   gId:{
     type:String
+  },
+  logo: {
+    type: String
   }
 }, {timestamps:true});
 
