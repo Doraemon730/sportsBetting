@@ -26,6 +26,10 @@ const PoolsSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    prizepoolETH: {
+        type: Number,
+        default: 0
+    },
     topwins: {
         type: Number,
         default: 0
