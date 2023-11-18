@@ -29,6 +29,7 @@ const EventSchema = new mongoose.Schema({
         country_code: { type: String },
         abbreviation: { type: String },
         rotation_number: { type: String },
+        logo: {type: String},
         teamId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'team'
