@@ -1000,7 +1000,7 @@ const updateNFLBet = async (match) => {
             betResult = 0;
 
         console.log(betResult);
-        await PoolBet.updateMany({'events.event': event._id}, {$set:{'events.result': betResult}});
+        await PoolBet.updateMany({ 'events.event': event._id }, { $set: { 'events.result': betResult } });
         await event.save();
     } catch (error) {
         console.log(error);
@@ -1292,18 +1292,18 @@ const updateCFBBet = async (match) => {
         }
         event.state = 3;
         let betResult = 1;
-        if(match.awayTeam.totalscore > match.homeTeam.totalscore)
+        if (match.awayTeam.totalscore > match.homeTeam.totalscore)
             betResult = -1;
-        else if(match.awayTeam.totalscore == match.homeTeam.totalscore)
+        else if (match.awayTeam.totalscore == match.homeTeam.totalscore)
             betResult = 0;
-        
+
         await event.save();
     } catch (error) {
         console.log(error);
     }
 };
-const testPoolBets = async (req, res) =>{
-    const {eventId, result} = req.body;
+const testPoolBets = async (req, res) => {
+    const { eventId, result } = req.body;
     try {
         await PoolBet.updateMany({ 'events.event': new ObjectId(eventId) }, { $set: { "events.$[elem].betResult": result } }, { arrayFilters: [{ "elem.event": new ObjectId(eventId) }] });
         res.json("success");
@@ -2273,12 +2273,12 @@ const getSportEventAll = async () => {
     }
 }
 
-const summarizeMMAPlayerStats = async (match) => {
+const summarizeMMAPlayerStats = (match) => {
     let players = [];
 
     let localPlayer = {}
     localPlayer['id'] = parseInt(match['localteam']['@id']);
-    localPlayer['name'] = parseInt(match['localteam']['@name']);
+    localPlayer['name'] = match['localteam']['@name'];
     let strikes_power = match['stats']['localteam']['strikes_power']
     localPlayer['Significant Strikes'] = parseInt(strikes_power['@head']) + parseInt(strikes_power['@body']) + parseInt(strikes_power['@legs']);
     localPlayer['Takedowns'] = parseInt(match['stats']['localteam']['takedowns']['@landed']);
@@ -2288,7 +2288,7 @@ const summarizeMMAPlayerStats = async (match) => {
 
     let awayPlayer = {}
     awayPlayer['id'] = parseInt(match['awayteam']['@id']);
-    awayPlayer['name'] = parseInt(match['awayteam']['@name']);
+    awayPlayer['name'] = match['awayteam']['@name'];
     strikes_power = match['stats']['awayteam']['strikes_power']
     awayPlayer['Significant Strikes'] = parseInt(strikes_power['@head']) + parseInt(strikes_power['@body']) + parseInt(strikes_power['@legs']);
     awayPlayer['Takedowns'] = parseInt(match['stats']['awayteam']['takedowns']['@landed']);
@@ -2614,11 +2614,11 @@ const updateMMABet = async (match) => {
 
 const updateNFLTeams = async (req, res) => {
     try {
-        let events = await Event.find({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), state: 0});
+        let events = await Event.find({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), state: 0 });
         for (let event of events) {
             for (let competitor of event.competitors) {
                 console.log(competitor.name);
-                let team1 = await Team.findOne({sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), name: competitor.name});
+                let team1 = await Team.findOne({ sportId: new ObjectId('650e0b6fb80ab879d1c142c8'), name: competitor.name });
                 console.log(JSON.stringify(team1));
                 console.log(team1.logo);
                 competitor.logo = team1.logo;
