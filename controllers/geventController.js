@@ -17,7 +17,7 @@ const {
     fetchNFLMatchData,
     fetchNHLMatchData,
     fetchCFBMatchData,
-    fetchMMSMatchData,
+    fetchMMAMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,
@@ -1639,6 +1639,7 @@ const getMatchData = async () => {
     await getNFLMatchData();
     await getNHLMatchData();
     await getCFBMatchData();
+    await getMMAMatchData();
 }
 
 const getNFLEventsfromGoal = async () => {
@@ -2002,9 +2003,9 @@ const summarizeMMAPlayerStats = async (match) => {
 }
 
 
-const getMMSMatchData = async () => {
+const getMMAMatchData = async () => {
     try {
-        let matchList = await fetchMMSMatchData();
+        let matchList = await fetchMMAMatchData();
         if (matchList == null)
             return;
         for (const match of matchList) {
