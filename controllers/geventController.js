@@ -2344,7 +2344,7 @@ const getMMAMatchData = async () => {
                         await bet.save();
                 }
             }
-            if (match.status == 'Final' || match.status == 'After Over Time') {
+            if (match['@status'] == 'Final' || match['@status'] == 'After Over Time') {
                 updateMMABet(match)
             }
         }
