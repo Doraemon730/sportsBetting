@@ -216,6 +216,7 @@ const getBetRes = async (req, res) => {
 }
 
 const betPool = async (req, res) => {
+    let user;
     try {
         // console.log(JSON.stringify(req.body));
         let { betAmount, betResults, sports, currencyType } = req.body;
@@ -255,7 +256,7 @@ const betPool = async (req, res) => {
             return res.status(400).json({ message: "Invalid Betting." });
         }
 
-        let user = await User.findOne({ _id: userId });
+        user = await User.findOne({ _id: userId });
         if (user.isPending) {
             return res.status(400).json({ message: "You are pending." });
         }
@@ -325,7 +326,7 @@ const betPool = async (req, res) => {
             serverFeeETH: entryFeeEtherSave / 10,
             events: betResults.map(result => ({
                 event: result.eventId,
-                result: result.matchResult,
+                betResult: result.matchResult ? result.matchResult : -100,
                 isSkipped: result.isSkipped,
             })),
             ISOweek: '' + new Date().getFullYear() + getISOWeek(new Date()),
@@ -354,11 +355,11 @@ const betPool = async (req, res) => {
         await transaction.save();
 
         getReferralPrize(user._id, entryFeeEtherSave);
-
-        const pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date()) - 0), sportId: sportsData._id })
-        pool.participants.push({ poolbetId: myBet._id });
-        pool.prizepool += Number(entryFee);
-        pool.prizepoolETH += Number(entryFeeEther);
+      
+        const pool = await Pools.findOne({ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date())-0), sportId: sportsData._id})
+        pool.participants.push({poolbetId: myBet._id});
+        pool.prizepool += Number(entryFee * 0.9);
+        pool.prizepoolETH += Number(entryFeeEther * 0.9);
         pool.save();
 
         user.password = undefined;
@@ -366,6 +367,9 @@ const betPool = async (req, res) => {
         res.json({ betInfo: myBet, userInfo: user });
     } catch (error) {
         console.log(error);
+
+        user.isPending = false;
+        await user.save();
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
