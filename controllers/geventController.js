@@ -2306,7 +2306,7 @@ const getMMAMatchData = async () => {
         if (matchList == null)
             return;
         for (const match of matchList) {
-            if (match.status != 'Not Started' && match.status != 'Final' && match.status != 'After Over Time') {
+            if (match['@status'] != 'Not Started' && match['@status'] != 'Final' && match['@status'] != 'After Over Time') {
                 if (match.stats) {
                     let event = await Event.findOne({ gId: match['@id'] })
                     if (!event)
