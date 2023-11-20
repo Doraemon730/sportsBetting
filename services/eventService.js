@@ -36,7 +36,7 @@ const {
     GOAL_NFL_MATCH_DATA_URL,
     GOAL_NHL_MATCH_DATA_URL,
     GOAL_CFB_MATCH_DATA_URL,
-    GOAL_MMS_MATCH_DATA_URL,
+    GOAL_MMA_MATCH_DATA_URL,
     GOAL_API_BASEURL
 } = require('../config/constant');
 const { confirmArray } = require('../utils/util')
@@ -430,7 +430,7 @@ const fetchNHLMatchData = async () => {
         });
 }
 
-const fetchMMSMatchData = async () => {
+const fetchMMAMatchData = async () => {
     const currentDate = new Date();
     currentDate.setHours(currentDate.getHours() - 2);
     const day = String(currentDate.getDate()).padStart(2, '0');
@@ -438,14 +438,14 @@ const fetchMMSMatchData = async () => {
     const year = currentDate.getFullYear();
     const date = `${day}.${month}.${year}`;
     console.log(date);
-    return axios.get(`${GOAL_MMS_MATCH_DATA_URL}&date=${date}`)
+    return axios.get(`${GOAL_MMA_MATCH_DATA_URL}&date=${date}`)
         .then(response => {
             let match = response.data.scores.category.match;
             let matchData = confirmArray(match);
             return matchData;
         })
         .catch(error => {
-            console.log('Error retrieving MMS data from Goal:' + error);
+            console.log('Error retrieving MMA data from Goal:' + error);
             return null;
         });
 }
@@ -470,7 +470,7 @@ const fetchNBAEventsFromGoal = async () => {
         })
 }
 
-const fetchMMAEventsFromGoal = async() => {
+const fetchMMAEventsFromGoal = async () => {
     const today = moment();
     const tomorrow = moment().add(6, 'days');
     const date1 = today.format('DD.MM.YYYY');
@@ -589,7 +589,7 @@ module.exports = {
     fetchNFLMatchData,
     fetchNHLMatchData,
     fetchCFBMatchData,
-    fetchMMSMatchData,
+    fetchMMAMatchData,
     fetchNBAEventsFromGoal,
     fetchNFLEventsFromGoal,
     fetchNHLEventsFromGoal,

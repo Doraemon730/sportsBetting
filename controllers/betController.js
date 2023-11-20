@@ -462,7 +462,7 @@ const getAllBetsByUserId = async (req, res) => {
         results.totalPages = totalPages;
         results.results = await Bet.find({ userId }).skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
-            select: '_id name position jerseyNumber headshot remoteId'
+            select: '_id name position jerseyNumber headshot remoteId sportType'
         }).populate({
             path: 'picks.contestId',
             select: '_id startTime name'
@@ -507,7 +507,7 @@ const getAllBetsByUserIdAdmin = async (req, res) => {
         results.totalPages = totalPages;
         results.results = await Bet.find({ userId }).skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
-            select: '_id name position jerseyNumber headshot'
+            select: '_id name position jerseyNumber headshot sportType'
         }).populate({
             path: 'picks.contestId',
             select: '_id startTime name'
@@ -551,7 +551,7 @@ const getAllBets = async (req, res) => {
         results.totalPages = totalPages;
         results.results = await Bet.find().skip(startIndex).limit(limit).populate({
             path: 'picks.playerId',
-            select: '_id name position jerseyNumber headshot'
+            select: '_id name position jerseyNumber headshot sportType'
         }).populate({
             path: 'picks.contestId',
             select: '_id startTime name'
