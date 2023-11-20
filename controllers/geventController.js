@@ -729,7 +729,7 @@ const updateNFLBet = async (match) => {
                 if (String(pick.contestId) == String(event._id)) {
                     let result, player, play1;
                     const play = await Player.findById(pick.playerId);
-                    console.log("player " + player);
+                    console.log("player " + play);
                     player = players.find(item => item.id == play.gId);
                     if (player) {
                         if (player.minutes == "0")
@@ -994,9 +994,9 @@ const updateNFLBet = async (match) => {
         }
         event.state = 3;
         let betResult = -1;
-        if (match.awayTeam.totalscore > match.homeTeam.totalscore)
+        if (match.awayteam.totalscore > match.hometeam.totalscore)
             betResult = 1;
-        else if (match.awayTeam.totalscore == match.homeTeam.totalscore)
+        else if (match.awayteam.totalscore == match.hometeam.totalscore)
             betResult = 0;
 
         console.log(betResult);
