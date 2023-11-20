@@ -1291,11 +1291,7 @@ const updateCFBBet = async (match) => {
             }
         }
         event.state = 3;
-        let betResult = 1;
-        if (match.awayTeam.totalscore > match.homeTeam.totalscore)
-            betResult = -1;
-        else if (match.awayTeam.totalscore == match.homeTeam.totalscore)
-            betResult = 0;
+        
 
         await event.save();
     } catch (error) {
