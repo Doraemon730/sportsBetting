@@ -85,6 +85,154 @@ const getMatchList = async (req, res) => {
     }
 }
 
+const getEntries = async (req, res) => {
+    let { sports } = req.body;
+    const userId = new ObjectId(req.user.id);
+
+    //validation check
+    if (sports.length === 0) {
+        return res.status(400).json({ message: "Invalid sports" });
+    }
+
+    let sportsData = await Sport.findOne({ name: sports });
+    if (!sportsData) {
+        return res.status(400).json({ message: "Invalid sports" });
+    }
+
+    // Check valid user
+    let user = await User.findOne({ _id: userId });
+    if (!user) {
+        return res.status(400).send('Error : Not registered user');
+    }
+
+    let today = new Date();
+    today.setDate(today.getDate() - 0);
+    const dayOfWeek = today.getDay();
+
+    // Check if today is Tuesday to Thursday
+    // if (dayOfWeek < 2 || dayOfWeek > 4) { // 0 is Sunday, 1 is Monday, and so on
+    //     return res.status(400).send('Error : You can only get list from Tuesday to Thursday'); // Return empty array if not Tuesday or Wednesday
+    // }
+
+    // Calculate the start and end dates for the current week
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 2)); // Adjust for Sunday
+
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 7);
+
+    try {
+        const events = await Event.find({
+            sportId: sportsData._id, //'650e0b6fb80ab879d1c142c8',
+            startTime: { $gte: startDate, $lte: endDate },
+            // state: 0
+        });
+        // const startedEvents = events.filter(event => event.state != 0);
+        // if (startedEvents.length != 0) {
+        //     return res.status(400).send('Error : First match already started, You cant get list');
+        // }
+
+
+        let pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date())-0), sportId: sportsData._id })
+        if (!pool) {
+            return res.status(400).send('Error : No pool is registered');
+        }
+        let poolbets = await PoolBet.find({ ISOweek: pool.ISOweek, sportId: pool.sportId, userId }).populate({
+            path: 'events.event',
+            select: 'competitors name'
+        });
+
+        let games = events.map(event => ({
+            _id: event._id,
+            startTime: event.startTime,
+            competitors: event.competitors,
+            name: event.name,
+        }));
+
+        let pool_res = {
+            // games,
+            poolbets,
+            prizepool: pool.prizepool / 0.9,
+            participants: pool.participants.length
+        };
+        return res.json(pool_res);
+    } catch (error) {
+        console.error('Error retrieving events:', error);
+        res.status(500).send('Error retrieving events:');
+    }
+}
+
+const getAllData = async (req, res) => {
+    let { sports, date } = req.body;
+    const userId = new ObjectId(req.user.id);
+
+    //validation check
+    if (sports.length === 0) {
+        return res.status(400).json({ message: "Invalid sports" });
+    }
+
+    let sportsData = await Sport.findOne({ name: sports });
+    if (!sportsData) {
+        return res.status(400).json({ message: "Invalid sports" });
+    }
+
+    // Check valid user
+    let user = await User.findOne({ _id: userId });
+    if (!user) {
+        return res.status(400).send('Error : Not registered user');
+    }
+
+    const startDate = new Date(date);
+    startDate.setDate(startDate.getDate() - 0);
+    const dayOfWeek = startDate.getDay();
+
+    startDate.setDate(startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 2)); // Adjust for Sunday
+
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 7);
+
+    try {
+        const events = await Event.find({
+            sportId: sportsData._id, //'650e0b6fb80ab879d1c142c8',
+            startTime: { $gte: startDate, $lte: endDate },
+            // state: 0
+        });
+
+        let pool = await Pools.findOne({ ISOweek: '' + new Date().getFullYear() + (getISOWeek(new Date(date))-0), sportId: sportsData._id })
+        if (!pool) {
+            return res.status(400).send('Error : No pool is registered');
+        }
+        let poolbets = await PoolBet.find({ ISOweek: pool.ISOweek, sportId: pool.sportId, userId }).populate({
+            path: 'events.event',
+            select: 'competitors name'
+        });
+
+        let games = events.map(event => ({
+            _id: event._id,
+            startTime: event.startTime,
+            competitors: event.competitors,
+            name: event.name,
+        }));
+
+        let pool_res = {
+            games,
+            poolbets,
+            prizepool: pool.prizepool / 0.9,
+            prizepoolETH: pool.prizepoolETH / 0.9,
+            serverFeeUSD: pool.prizepool / 9,
+            serverFeeETH: pool.prizepoolETH / 9,
+            participants: pool.participants,
+            topwins: pool.topwins,
+            winners: pool.winners,
+            startTime: pool.startTime,
+        };
+        return res.json(pool_res);
+    } catch (error) {
+        console.error('Error retrieving events:', error);
+        res.status(500).send('Error retrieving events:');
+    }
+}
+
 const checkPoolBet = async (req, res) => {
     let { sports } = req.body;
 
@@ -377,5 +525,7 @@ module.exports = {
     getMatchList,
     betPool,
     checkPoolBet,
-    getBetRes
+    getBetRes,
+    getEntries,
+    getAllData
 }
