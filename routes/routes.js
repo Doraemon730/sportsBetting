@@ -348,6 +348,6 @@ router.post('/pool/getAllData', admin, poolController.getAllData);
 
 router.post('/pool/testPool', auth, geventController.testPoolBets);
 router.post('/admin/getmmaEventsG', geventController.getMMAEventsfromGoal);
-
+router.post('/admin/updateNFLTeam', geventController.updateNFLTeams);
 router.post('/admin/updatePlayerSportType', playerController.updateIndividualPlayer);
 module.exports = router;
