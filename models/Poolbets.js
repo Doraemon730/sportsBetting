@@ -27,7 +27,7 @@ const PoolBetSchema = new mongoose.Schema({
     default: 0
   },
   events: [{
-      event: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' },
+      event: { type: mongoose.Schema.Types.ObjectId, ref: 'event' },
       result: { type: Number, enum: [-100, -1, 0, 1], default: -100},
       isSkipped: { type: Boolean, default: false },
       betResult: { type: Number, enum: [-100, -1, 0, 1], default: -100, required: true },
