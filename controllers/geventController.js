@@ -460,6 +460,7 @@ const updateNBABet = async (match) => {
                                 case 3:
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                     bet.status = "win";
+                                    break;
                                 case 4:
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                     bet.status = "win";
@@ -846,6 +847,7 @@ const updateNFLBet = async (match) => {
                                 case 3:
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                     bet.status = "win";
+                                    break;
                                 case 4:
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                     bet.status = "win";
@@ -1144,6 +1146,7 @@ const updateCFBBet = async (match) => {
                                 case 3:
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                     bet.status = "win";
+                                    break;
                                 case 4:
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                     bet.status = "win";
@@ -1291,7 +1294,7 @@ const updateCFBBet = async (match) => {
             }
         }
         event.state = 3;
-        
+
 
         await event.save();
     } catch (error) {
@@ -1477,6 +1480,7 @@ const updateNHLBet = async (match) => {
                                 case 3:
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                     bet.status = "win";
+                                    break;
                                 case 4:
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                     bet.status = "win";
@@ -2455,6 +2459,7 @@ const updateMMABet = async (match) => {
                                 case 3:
                                     bet.prize = bet.entryFee * BET_3_3_HIGH;
                                     bet.status = "win";
+                                    break;
                                 case 4:
                                     bet.prize = bet.entryFee * BET_4_4_HIGH;
                                     bet.status = "win";
